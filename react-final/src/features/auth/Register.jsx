@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../../redux/slices/authSlice';
 import { useRegister } from './userRegister';
 
@@ -58,14 +59,14 @@ const StepLevel = ({ value, update, userName, isGirl }) => {
 };
 
 const StepInterests = ({ selectedList, toggleInterest, userName, isGirl }) => {
- const items = [
-  { id: 'songs', label: '🎶 שירים ומוזיקה' }, 
-  { id: 'dance', label: '💃 ריקוד' }, // החלפנו את חיות בריקוד
-  { id: 'games', label: '🎮 משחקי מחשב' },
-  { id: 'movies', label: '🎬 סרטים וסדרות' }, 
-  { id: 'stories', label: '📚 סיפורים מעניינים' },
-  { id: 'sports', label: '⚽ ספורט ומשחקים' }
-];
+  const items = [
+    { id: 'songs', label: '🎶 שירים ומוזיקה' }, 
+    { id: 'dance', label: '💃 ריקוד' }, 
+    { id: 'games', label: '🎮 משחקי מחשב' },
+    { id: 'movies', label: '🎬 סרטים וסדרות' }, 
+    { id: 'stories', label: '📚 סיפורים מעניינים' },
+    { id: 'sports', label: '⚽ ספורט ומשחקים' }
+  ];
   return (
     <div className="flex flex-col gap-4 animate-fadeIn">
       <h2 className="text-2xl font-bold text-white text-center">מה {isGirl ? 'את הכי אוהבת' : 'אתה הכי אוהב'}, <span className="text-yellow-400">{userName}</span>?</h2>
@@ -104,6 +105,7 @@ const StepContact = ({ value, update }) => {
 export default function Register() {
   const totalSteps = 6; 
   const dispatch = useDispatch(); 
+  const navigate = useNavigate();
   const { currentStep, formData, isLoadingPath, nextStep, prevStep, updateFields, toggleInterest, isFirstStep, isLastStep } = useRegister(totalSteps);
 
   const progressPercent = (currentStep / totalSteps) * 100;
@@ -127,7 +129,7 @@ export default function Register() {
 
     if (isLastStep) {
       dispatch(registerUser(formData));
-      alert('הכל נשמר! עכשיו עוברים למסך הבית.'); 
+      navigate('/dashboard'); 
     } else {
       nextStep();
     }
@@ -139,7 +141,6 @@ export default function Register() {
         <div className="flex flex-col items-center gap-6 animate-pulse">
           <div className="text-6xl animate-spin">⚙️</div>
           <h2 className="text-3xl font-bold text-white text-center">מכינים לך את המסלול המושלם...</h2>
-          <p className="text-yellow-400 text-lg">מתאימים לך שירים ומשחקים 🎮🎶</p>
         </div>
       </div>
     );
@@ -162,7 +163,6 @@ export default function Register() {
           {currentStep === 6 && (
             <div className="animate-fadeIn">
               <h2 className="text-yellow-400 font-bold text-xl text-center mb-4">המסלול שלך מוכן! 🎉</h2>
-              <p className="text-white text-center mb-6 text-sm">כדי שנוכל לשמור אותו, נצטרך כמה פרטים אחרונים:</p>
               <StepContact value={formData} update={updateFields} />
             </div>
           )}

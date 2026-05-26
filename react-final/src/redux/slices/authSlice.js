@@ -1,25 +1,40 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+// 1. קריאת הנתונים מהזיכרון המקומי ברגע שהדפדפן טוען את האפליקציה
+const storedUser = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+const storedToken = localStorage.getItem('token');
+
+// 2. הגדרת המצב ההתחלתי עם הנתונים שנשמרו (אם קיימים)
 const initialState = {
-  user: null,          // מתחילים בלי משתמש בכלל
-  isAuthenticated: false // אף אחד לא מחובר בהתחלה
+  user: storedUser,
+  isAuthenticated: !!storedToken
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    // החזרנו את ההרשמה!
     registerUser: (state, action) => {
-      // כאן הסוד: אנחנו לוקחים בדיוק את מה שהכפתור בדף ההתחברות שולח אלינו!
+      state.user = action.payload;
+      state.isAuthenticated = true;
+    },
+    loginUser: (state, action) => {
       state.user = action.payload;
       state.isAuthenticated = true;
     },
     logoutUser: (state) => {
       state.user = null;
       state.isAuthenticated = false;
+      
+      // ניקוי יסודי של הזיכרון בעת התנתקות יזומה
+      localStorage.removeItem('token');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('user');
     }
   }
 });
 
-export const { registerUser, logoutUser } = authSlice.actions;
+// מייצאים עכשיו את כל שלוש הפעולות
+export const { registerUser, loginUser, logoutUser } = authSlice.actions;
 export default authSlice.reducer;

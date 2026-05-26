@@ -1,106 +1,121 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { getTeacherDashboardData } from '../../services/teacherService';
 
 export default function TeacherDashboard() {
-  // נתוני דמו לסטטיסטיקות של המורה
-  const stats = [
-    { id: 1, label: 'סך הכל תלמידים', value: '48', icon: '👥', color: 'text-blue-400 bg-blue-500/10' },
-    { id: 2, label: 'משימות הממתינות לבדיקה', value: '14', icon: '📝', color: 'text-yellow-400 bg-yellow-500/10' },
-    { id: 3, label: 'ממוצע ציונים שבועי', value: '86.5', icon: '📈', color: 'text-emerald-400 bg-emerald-500/10' },
-    { id: 4, label: 'אחוז פעילות השבוע', value: '92%', icon: '⚡', color: 'text-purple-400 bg-purple-500/10' },
-  ];
+  // משיכת פרטי המורה המחובר מתוך ה-Redux
+  const { user } = useSelector((state) => state.auth);
 
-  // רשימת התלמידים שצריכים עזרה או תשומת לב מיוחדת
-  const alerts = [
-    { id: 1, name: 'נועה לוי', issue: 'לא הגישה את 2 המשימות האחרונות', severity: 'high' },
-    { id: 2, name: 'איתי כהן', issue: 'ציון נמוך (62) במבדק Present Simple', severity: 'medium' },
-    { id: 3, name: 'מיכל אברהם', issue: 'לא התחברה למערכת מעל שבוע', severity: 'high' }
-  ];
+  // מצבים לניהול הנתונים והטעינה
+  const [stats, setStats] = useState({ totalStudents: 0, activeCourses: 0, pendingExercises: 0 });
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const data = await getTeacherDashboardData();
+        setStats(data.stats);
+        setStudents(data.students);
+      } catch (err) {
+        console.log('השרת לא החזיר נתונים, מפעיל נתוני גיבוי לצורך תצוגה:', err);
+        // נתוני גיבוי מקצועיים כדי שהמערכת לא תישאר ריקה בזמן הפיתוח
+        setStats({ totalStudents: 28, activeCourses: 4, pendingExercises: 12 });
+        setStudents([
+          { id: 1, name: 'ישראל ישראלי', email: 'israel@gmail.com', progress: '85%', lastActive: 'היום' },
+          { id: 2, name: 'נועה כהן', email: 'noah@gmail.com', progress: '92%', lastActive: 'אתמול' },
+          { id: 3, name: 'אברהם לוי', email: 'avi@gmail.com', progress: '64%', lastActive: 'לפני יומים' },
+          { id: 4, name: 'מיכל רז', email: 'michal@gmail.com', progress: '100%', lastActive: 'היום' }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white font-bold text-xl">
+        <div className="animate-pulse">טוען נתוני מערכת... ⏳</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8" dir="rtl">
-      
-      {/* כותרת עליונה */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">📊 שלום, המורה!</h1>
-        <p className="text-gray-400 mt-1">ברוך הבא ללוח הבקרה שלך. הנה סקירה של מה שקורה בכיתות שלך היום.</p>
+    <div className="min-h-screen bg-slate-950 text-white p-6 md:p-10" dir="rtl">
+      {/* כותרת ראשית ומברכת */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">
+          שלום, המורה {user?.name || 'היקר'} 👋
+        </h1>
+        <p className="text-gray-400 mt-2">ברוך הבא ללוח הבקרה שלך. הנה תמונת המצב של הכיתות שלך נכון להיום.</p>
       </div>
 
-      {/* קוביות סטטיסטיקה מהירה */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map(item => (
-          <div key={item.id} className="bg-white/5 border border-white/10 rounded-3xl p-6 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-400">{item.label}</p>
-              <p className="text-3xl font-black mt-2 tracking-tight">{item.value}</p>
-            </div>
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${item.color}`}>
-              {item.icon}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* תיבת התראות וצווארי בקבוק (תלמידים שצריכים עזרה) */}
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 lg:col-span-1 space-y-4">
-          <h3 className="text-xl font-bold text-red-400 flex items-center gap-2">
-            ⚠️ תלמידים בטיפול דחוף
-          </h3>
-          <p className="text-xs text-gray-400">תלמידים שחווים קושי או שלא הגישו מטלות בזמן.</p>
-          
-          <div className="space-y-3 mt-4">
-            {alerts.map(alert => (
-              <div key={alert.id} className={`p-4 rounded-2xl border flex flex-col gap-1 ${
-                alert.severity === 'high' 
-                  ? 'bg-red-500/5 border-red-500/20' 
-                  : 'bg-yellow-500/5 border-yellow-500/20'
-              }`}>
-                <span className="font-bold text-sm text-white">{alert.name}</span>
-                <span className="text-xs text-gray-400">{alert.issue}</span>
-              </div>
-            ))}
-          </div>
+      {/* כרטיסי סטטיסטיקה מהירה */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="bg-white/5 border border-white/10 p-6 rounded-2xl shadow-xl hover:border-indigo-500/50 transition-all">
+          <div className="text-sm text-gray-400 font-bold mb-1">סה"כ תלמידים רשומים</div>
+          <div className="text-4xl font-black text-indigo-400">{stats.totalStudents}</div>
         </div>
 
-        {/* גרף/סקירה של משימות שמחכות לבדיקה */}
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 lg:col-span-2 flex flex-col justify-between">
-          <div>
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              📥 משימות אחרונות שהוגשו
-            </h3>
-            <p className="text-xs text-gray-400 mt-1">מטלות שתלמידים סיימו ומחכות לציון או פידבק סופי שלך.</p>
-            
-            <div className="mt-6 space-y-4">
-              <div className="flex justify-between items-center bg-black/20 p-4 rounded-xl border border-white/5">
-                <div>
-                  <p className="font-semibold text-sm">חיבור: חופשת החלומות שלי</p>
-                  <p className="text-xs text-gray-400">הוגש על ידי: דניאל רדקליף | כיתה ט'1</p>
-                </div>
-                <button className="bg-indigo-600 hover:bg-indigo-500 text-xs font-bold px-4 py-2 rounded-lg transition-all">
-                  בדוק כעת
-                </button>
-              </div>
+        <div className="bg-white/5 border border-white/10 p-6 rounded-2xl shadow-xl hover:border-cyan-500/50 transition-all">
+          <div className="text-sm text-gray-400 font-bold mb-1">קורסים פעילים במערכת</div>
+          <div className="text-4xl font-black text-cyan-400">{stats.activeCourses}</div>
+        </div>
 
-              <div className="flex justify-between items-center bg-black/20 p-4 rounded-xl border border-white/5">
-                <div>
-                  <p className="font-semibold text-sm">תרגול אוצר מילים מורחב</p>
-                  <p className="text-xs text-gray-400">הוגש על ידי: שירה לוי | כיתה ט'3</p>
-                </div>
-                <button className="bg-indigo-600 hover:bg-indigo-500 text-xs font-bold px-4 py-2 rounded-lg transition-all">
-                  בדוק כעת
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="bg-white/5 border border-white/10 p-6 rounded-2xl shadow-xl hover:border-emerald-500/50 transition-all">
+          <div className="text-sm text-gray-400 font-bold mb-1">תרגילים הממתינים לבדיקה</div>
+          <div className="text-4xl font-black text-emerald-400">{stats.pendingExercises}</div>
+        </div>
+      </div>
 
-          <button className="w-full text-center text-sm font-bold text-yellow-400 hover:text-yellow-300 mt-6 md:mt-0 pt-4 border-t border-white/5">
-            צפה בכל 14 המשימות הממתינות לבדיקה ←
+      {/* אזור ניהול ותצוגת תלמידים */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 shadow-2xl">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-white">רשימת תלמידים ומעקב התקדמות</h2>
+          <button className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-xl text-sm transition-all shadow-md">
+            + הוספת תלמיד חדש
           </button>
         </div>
 
+        {/* טבלת תלמידים רספונסיבית */}
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-right border-collapse">
+            <thead>
+              <tr className="border-b border-white/10 text-gray-400 text-sm">
+                <th className="pb-3 pr-2">שם מלא</th>
+                <th className="pb-3">אימייל</th>
+                <th className="pb-3 text-center">אחוז התקדמות</th>
+                <th className="pb-3 pl-2 text-left">פעילות אחרונה</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5 text-sm">
+              {students.map((student) => (
+                <tr key={student.id} className="hover:bg-white/5 transition-colors">
+                  <td className="py-4 pr-2 font-bold text-white">{student.name}</td>
+                  <td className="py-4 text-gray-300">{student.email}</td>
+                  <td className="py-4">
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="font-bold text-emerald-400">{student.progress}</span>
+                      <div className="w-24 bg-gray-700 h-2 rounded-full overflow-hidden hidden sm:block">
+                        <div 
+                          className="bg-emerald-400 h-full rounded-full" 
+                          style={{ width: student.progress }}
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 pl-2 text-left text-gray-400">{student.lastActive}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-
     </div>
   );
 }

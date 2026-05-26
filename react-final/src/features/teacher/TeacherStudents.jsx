@@ -1,42 +1,55 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function TeacherStudents() {
-  const students = [
-    { id: 1, name: 'דניאל רדקליף', grade: 'ט\'1', average: 92, status: 'מצוין' },
-    { id: 2, name: 'נועה לוי', grade: 'ט\'2', average: 65, status: 'זקוק לעזרה' },
-    { id: 3, name: 'שירה כהן', grade: 'ט\'1', average: 88, status: 'טוב מאוד' },
-  ];
+  const [students, setStudents] = useState([
+    { id: 1, name: 'נועם לוי', age: 12, email: 'noam@gmail.com', course: 'אנגלית למתחילים', progress: 85, lastActive: 'היום' },
+    { id: 2, name: 'איתי כהן', age: 15, email: 'itay@gmail.com', course: 'דקדוק מתקדם', progress: 40, lastActive: 'אתמול' },
+    { id: 3, name: 'שירה אברהם', age: 11, email: 'shira@gmail.com', course: 'אנגלית למתחילים', progress: 100, lastActive: 'לפני 3 ימים' },
+    { id: 4, name: 'מיכל יוסף', age: 16, email: 'michal@gmail.com', course: 'אנגלית עסקית', progress: 12, lastActive: 'לפני שבוע' },
+  ]);
 
   return (
     <div className="space-y-6" dir="rtl">
-      <div className="bg-white/5 p-6 rounded-3xl border border-white/10">
-        <h1 className="text-3xl font-bold">👥 ניהול תלמידים</h1>
-        <p className="text-gray-400 mt-2">מעקב אחר התקדמות התלמידים בכיתות שלך.</p>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">👥 חברי הקורסים שלי</h1>
+        <p className="text-gray-400 mt-1">מעקב התקדמות, גילאים ופעילות אחרונה של התלמידים שלך.</p>
       </div>
-      <div className="bg-white/5 rounded-3xl border border-white/10 overflow-hidden">
+
+      {/* טבלת תלמידים */}
+      <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden shadow-lg">
         <table className="w-full text-right">
-          <thead className="bg-black/20 border-b border-white/10 text-gray-400 text-sm">
+          <thead className="bg-white/5 text-gray-400 text-sm font-semibold">
             <tr>
-              <th className="p-4">שם התלמיד</th>
-              <th className="p-4">כיתה</th>
-              <th className="p-4">ממוצע ציונים</th>
-              <th className="p-4">סטטוס</th>
-              <th className="p-4">פעולות</th>
+              <th className="p-4">שם התלמיד/ה</th>
+              <th className="p-4">גיל</th>
+              <th className="p-4">קורס רשום</th>
+              <th className="p-4">התקדמות בקורס</th>
+              <th className="p-4">פעילות אחרונה</th>
+              <th className="p-4 text-left">פעולות</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
-            {students.map(s => (
-              <tr key={s.id} className="hover:bg-white/5 transition-all">
-                <td className="p-4 font-bold">{s.name}</td>
-                <td className="p-4 text-gray-300">{s.grade}</td>
-                <td className="p-4 font-bold text-emerald-400">{s.average}</td>
+          <tbody className="divide-y divide-white/5 text-sm text-white">
+            {students.map((student) => (
+              <tr key={student.id} className="hover:bg-white/[0.02] transition-colors">
+                <td className="p-4 font-bold">{student.name}</td>
+                <td className="p-4 text-gray-300 font-medium">{student.age} <span className="text-xs text-gray-500">שנים</span></td>
+                <td className="p-4 text-gray-400">{student.course}</td>
                 <td className="p-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${s.status === 'מצוין' ? 'bg-emerald-500/20 text-emerald-400' : s.status === 'זקוק לעזרה' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'}`}>
-                    {s.status}
-                  </span>
+                  <div className="flex items-center gap-3 w-full max-w-[150px]">
+                    <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full" 
+                        style={{ width: `${student.progress}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs font-mono font-bold">{student.progress}%</span>
+                  </div>
                 </td>
-                <td className="p-4">
-                  <button className="text-indigo-400 hover:text-indigo-300 font-medium text-sm transition-colors">צפה בפרופיל</button>
+                <td className="p-4 text-gray-400">{student.lastActive}</td>
+                <td className="p-4 text-left">
+                  <button className="bg-white/5 hover:bg-white/10 text-gray-300 text-xs px-3 py-1.5 rounded-lg font-bold transition-all">
+                    שלח הודעה 💬
+                  </button>
                 </td>
               </tr>
             ))}

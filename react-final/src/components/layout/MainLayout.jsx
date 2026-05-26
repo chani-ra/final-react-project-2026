@@ -24,6 +24,7 @@ export default function MainLayout() {
   };
 
   // כל התפריטים המלאים לפי התפקיד של המשתמש
+  // כל התפריטים המלאים לפי התפקיד של המשתמש
   const getNavLinks = () => {
     const menus = {
       student: [
@@ -36,19 +37,21 @@ export default function MainLayout() {
       teacher: [
         { name: 'לוח בקרה', path: '/teacher/dashboard', icon: '📊' },
         { name: 'הכיתות שלי', path: '/teacher/students', icon: '👥' },
-        { name: 'יצירת שיעור', path: '/teacher/create', icon: '✨' },
-        { name: 'ספריית תכנים', path: '/teacher/library', icon: '📂' },
+        { name: 'העלאת תוכן (וידאו/שמע)', path: '/teacher/create', icon: '✨' },
+        { name: 'הספרייה שלי', path: '/teacher/library', icon: '📂' },
         { name: 'בדיקת משימות', path: '/teacher/grading', icon: '✅' }
       ],
       admin: [
         { name: 'נתוני מערכת', path: '/admin/dashboard', icon: '📈' },
-        { name: 'ניהול משתמשים', path: '/admin/users', icon: '⚙️' },
-        { name: 'ניהול קורסים', path: '/admin/courses', icon: '🗂️' },
+        { name: 'ניהול משתמשים', path: '/admin/users', icon: '👥' },
+        { name: 'מאגר תוכן (שירים ושיעורים)', path: '/admin/content', icon: '🗂️' },
+        { name: 'הודעות ופידבקים', path: '/admin/messages', icon: '💬' },
         { name: 'הגדרות', path: '/admin/settings', icon: '🛠️' }
       ]
     };
-    return menus[user.role] || [];
+    return menus[user?.role] || [];
   };
+   
 
   // בחירת צבעים דינמית
   const bgColor = theme === 'dark' ? 'bg-slate-950 text-white' : 'bg-stone-50 text-slate-900';

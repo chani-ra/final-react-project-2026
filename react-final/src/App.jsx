@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import Register from './features/auth/Register';
+import Login from './features/auth/Login';
 //student components
 import StudentDashboard from './features/student/StudentDashboard';
 import Tasks from './features/student/Tasks';
@@ -17,14 +18,13 @@ import TeacherLibrary from './features/teacher/TeacherLibrary';
 import TeacherGrading from './features/teacher/TeacherGrading';
 
 //admin components
-
+import AdminDashboard from './features/admin/AdminDashboard';
 // קומפוננטות זמניות (Stubs) כדי שהניווט יעבוד עכשיו בלי שגיאות:
 // שימי לב: השורה של Tasks נמחקה מפה כדי שלא תהיה התנגשות!
 
 
 
 // דפי מנהל זמניים
-const AdminDashboard = () => <div className="p-6"><h1 className="text-2xl font-bold">📈 נתוני מערכת ראשיים</h1></div>;
 const AdminUsers = () => <div className="p-6"><h1 className="text-2xl font-bold">⚙️ ניהול משתמשים והרשאות</h1></div>;
 const AdminCourses = () => <div className="p-6"><h1 className="text-2xl font-bold">🗂️ ניהול קורסים במערכת</h1></div>;
 const AdminSettings = () => <div className="p-6"><h1 className="text-2xl font-bold">🛠️ הגדרות מערכת גלובליות</h1></div>;
@@ -35,7 +35,7 @@ export default function App() {
       <Routes>
         {/* דף כניסה/הרשמה - מחוץ ל-Navbar */}
         <Route path="/" element={<Register />} />
-        
+        <Route path="/login" element={<Login />} />
         {/* כל הדפים המוגנים שנמצאים בתוך המעטפת (MainLayout) */}
         <Route element={<MainLayout />}>
           

@@ -1,24 +1,19 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  user: null,         // כאן יישמרו השם, הגיל, המגדר וכו' אחרי ההרשמה
-  isAuthenticated: false // האם המשתמש מחובר כרגע למערכת
+  user: null,          // מתחילים בלי משתמש בכלל
+  isAuthenticated: false // אף אחד לא מחובר בהתחלה
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // פונקציה שמקבלת את נתוני הילד ושומרת אותם ברידקס הכללי
     registerUser: (state, action) => {
-      // כאן אנחנו משדרגים את הנתונים ומכניסים את ה-role
-      state.user = {
-        ...action.payload,
-        role: 'teacher' // הוספנו את התפקיד כברירת מחדל
-      };
+      // כאן הסוד: אנחנו לוקחים בדיוק את מה שהכפתור בדף ההתחברות שולח אלינו!
+      state.user = action.payload;
       state.isAuthenticated = true;
     },
-    // פונקציית התנתקות
     logoutUser: (state) => {
       state.user = null;
       state.isAuthenticated = false;

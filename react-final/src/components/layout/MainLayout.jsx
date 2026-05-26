@@ -1,66 +1,136 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Outlet, useNavigate } from 'react-router-dom';
+import { logoutUser } from '../../redux/slices/authSlice';
 
 export default function MainLayout() {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+  // מצב תאורה
+  const [theme, setTheme] = useState('light');
 
-  // יצירתיות: הוספנו פונקציה שמחזירה תפריט עשיר יותר
-  const getNavLinks = () => {
-    if (!user) return [];
-    
-    const baseLinks = {
-      student: [
-        { name: 'דשבורד', path: '/dashboard', icon: '🏠' },
-        { name: 'שיעורים', path: '/lessons', icon: '📚' },
-        { name: 'צ\'אט בולט', path: '/chat', icon: '🤖' }
-      ],
-      teacher: [
-        { name: 'ניהול תלמידים', path: '/teacher/students', icon: '👥' },
-        { name: 'ספריית תכנים', path: '/teacher/library', icon: '📂' },
-        { name: 'יצירת שיעור', path: '/teacher/create', icon: '✨' }
-      ],
-      admin: [
-        { name: 'לוח בקרה', path: '/admin/dashboard', icon: '📊' },
-        { name: 'ניהול משתמשים', path: '/admin/users', icon: '⚙️' }
-      ]
-    };
-    return baseLinks[user.role] || [];
+  // הגנה על הנתיב - אם אין משתמש, חזור לדף הבית
+  useEffect(() => {
+    if (!user) navigate('/');
+  }, [user, navigate]);
+
+  if (!user) return null;
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    navigate('/');
   };
 
-  const links = getNavLinks();
+  // כל התפריטים המלאים לפי התפקיד של המשתמש
+  const getNavLinks = () => {
+    const menus = {
+      student: [
+        { name: 'דשבורד', path: '/dashboard', icon: '🏠' },
+        { name: 'הקורסים שלי', path: '/courses', icon: '📚' },
+        { name: 'המשימות שלי', path: '/tasks', icon: '📝' },
+        { name: 'צ\'אט בולט', path: '/chat', icon: '🤖' },
+        { name: 'מילון אישי', path: '/dictionary', icon: '📖' }
+      ],
+      teacher: [
+        { name: 'לוח בקרה', path: '/teacher/dashboard', icon: '📊' },
+        { name: 'הכיתות שלי', path: '/teacher/students', icon: '👥' },
+        { name: 'יצירת שיעור', path: '/teacher/create', icon: '✨' },
+        { name: 'ספריית תכנים', path: '/teacher/library', icon: '📂' },
+        { name: 'בדיקת משימות', path: '/teacher/grading', icon: '✅' }
+      ],
+      admin: [
+        { name: 'נתוני מערכת', path: '/admin/dashboard', icon: '📈' },
+        { name: 'ניהול משתמשים', path: '/admin/users', icon: '⚙️' },
+        { name: 'ניהול קורסים', path: '/admin/courses', icon: '🗂️' },
+        { name: 'הגדרות', path: '/admin/settings', icon: '🛠️' }
+      ]
+    };
+    return menus[user.role] || [];
+  };
+
+  // בחירת צבעים דינמית
+  const bgColor = theme === 'dark' ? 'bg-slate-950 text-white' : 'bg-stone-50 text-slate-900';
+  const navColor = theme === 'dark' ? 'bg-slate-900 border-white/10' : 'bg-white border-stone-200';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans">
-      {/* Navbar מעוצב עם צל עדין */}
-      <nav className="bg-slate-900 border-b border-white/10 p-4 flex justify-between items-center px-8 shadow-xl">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-yellow-400 rounded-lg animate-pulse" />
-          <span className="font-bold text-2xl tracking-tight text-white">English<span className="text-yellow-400">Wise</span></span>
-        </div>
+    <div className={`min-h-screen ${bgColor} transition-colors duration-500`} dir="rtl">
+      
+      {/* ה-Navbar העליון */}
+      <nav className={`${navColor} border-b px-6 py-3 flex justify-between items-center shadow-sm`}>
         
-        <div className="flex gap-2">
-          {links.map(link => (
-            <button 
-              key={link.path} 
-              onClick={() => navigate(link.path)} 
-              className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-white/10 transition-all duration-200 text-sm font-medium"
-            >
-              <span>{link.icon}</span> {link.name}
-            </button>
-          ))}
+        {/* לוגו ותפריט ימני */}
+        <div className="flex items-center gap-8">
+          <div className="text-2xl font-black tracking-tight text-yellow-500 cursor-pointer" onClick={() => navigate('/dashboard')}>
+            English<span className={theme === 'dark' ? 'text-white' : 'text-slate-900'}>Wise</span>
+          </div>
+          
+          <div className="hidden md:flex gap-2">
+            {getNavLinks().map((link) => (
+              <button 
+                key={link.path} 
+                onClick={() => navigate(link.path)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all
+                  ${theme === 'dark' ? 'hover:bg-white/10 hover:text-yellow-400' : 'hover:bg-stone-100 hover:text-yellow-600'}`}
+              >
+                <span className="text-lg">{link.icon}</span> {link.name}
+              </button>
+            ))}
+          </div>
         </div>
 
+        {/* תפריט שמאלי (התראות, תאורה, התנתקות) */}
         <div className="flex items-center gap-4">
-           <button className="text-xl">🔔</button>
-           <div className="w-10 h-10 bg-gradient-to-tr from-yellow-400 to-orange-500 rounded-full border-2 border-slate-800" />
+          <button className="relative p-2 rounded-full hover:bg-black/5 transition-all text-xl" title="התראות">
+            🔔
+            {/* נקודה אדומה להתראה חדשה */}
+            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+          </button>
+          
+          <button 
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="p-2 rounded-full hover:bg-black/5 transition-all text-xl"
+            title="החלף מצב תאורה"
+          >
+            {theme === 'dark' ? '💡' : '🌙'}
+          </button>
+          
+          <div className="h-8 w-px bg-gray-300 mx-2"></div> {/* קו הפרדה */}
+          
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-bold hidden sm:block">{user.name}</span>
+            <button 
+              onClick={handleLogout} 
+              className="bg-red-50 text-red-500 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-bold transition-all"
+            >
+              התנתק
+            </button>
+          </div>
         </div>
       </nav>
 
+      {/* סרגל התקדמות שמופיע רק לתלמידים */}
+      {user.role === 'student' && (
+        <div className="px-8 pt-4 max-w-7xl mx-auto">
+          <div className="flex justify-between text-xs mb-1 font-semibold opacity-70">
+            <span>התקדמות כללית בקורסים</span>
+            <span>{user.progress || 0}%</span>
+          </div>
+          <div className="h-1.5 bg-gray-200 rounded-full w-full overflow-hidden shadow-inner">
+            <div 
+              className="h-full bg-yellow-400 rounded-full transition-all duration-1000" 
+              style={{ width: `${user.progress || 0}%` }} 
+            />
+          </div>
+        </div>
+      )}
+
+      {/* תוכן הדף המשתנה (הדשבורד, הצ'אט וכו') יכנס כאן */}
       <main className="p-8 max-w-7xl mx-auto">
         <Outlet />
       </main>
+      
     </div>
   );
 }

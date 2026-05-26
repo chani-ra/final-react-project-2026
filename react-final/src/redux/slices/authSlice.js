@@ -11,10 +11,14 @@ const authSlice = createSlice({
   reducers: {
     // פונקציה שמקבלת את נתוני הילד ושומרת אותם ברידקס הכללי
     registerUser: (state, action) => {
-      state.user = action.payload;
+      // כאן אנחנו משדרגים את הנתונים ומכניסים את ה-role
+      state.user = {
+        ...action.payload,
+        role: 'teacher' // הוספנו את התפקיד כברירת מחדל
+      };
       state.isAuthenticated = true;
     },
-    // פונקציית התנתקות (נצטרך בהמשך)
+    // פונקציית התנתקות
     logoutUser: (state) => {
       state.user = null;
       state.isAuthenticated = false;

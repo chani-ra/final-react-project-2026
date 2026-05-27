@@ -35,3 +35,15 @@ export const getCourseById = async (courseId) => {
     throw error.response?.data?.message || "נכשל בטעינת הקורס";
   }
 };
+
+export const refreshPersonalizedCourse = async (courseId) => {
+  try {
+    const response = await axiosConfig.post(
+      `/courses/${courseId}/refresh-personalized`
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "נכשל ברענון המסלול האישי";
+  }
+};

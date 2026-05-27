@@ -6,6 +6,8 @@ export default function TeacherCreate() {
   const [selectedIcon, setSelectedIcon] = useState("🧠");
   const [isDragging, setIsDragging] = useState(false);
 
+  const [publishMode, setPublishMode] = useState("draft");
+
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState("");
 
@@ -108,13 +110,17 @@ export default function TeacherCreate() {
     setComposer("לא ידוע");
     setLyricist("לא ידוע");
     setSelectedIcon("🧠");
+    setPublishMode("draft");
   };
 
   const validateForm = () => {
     if (!title.trim()) return "נא למלא כותרת";
     if (!topic.trim()) return "נא למלא נושא לימוד";
     if (!file) return "נא לבחור קובץ";
-    if (Number(minAge) > Number(maxAge)) return "גיל מינימלי לא יכול להיות גדול מגיל מקסימלי";
+
+    if (Number(minAge) > Number(maxAge)) {
+      return "גיל מינימלי לא יכול להיות גדול מגיל מקסימלי";
+    }
 
     if (contentType === "audio") {
       if (!duration) return "נא למלא משך שיר";
@@ -151,7 +157,11 @@ export default function TeacherCreate() {
     formData.append("expectations", JSON.stringify(expectations));
 
     formData.append("lessonLanguage", "he");
-    formData.append("isPublic", "true");
+
+    // כאן ההבדל החשוב:
+    // draft => לא מפורסם
+    // published => מפורסם לתלמידים ול-AI
+    formData.append("isPublic", publishMode === "published" ? "true" : "false");
 
     if (contentType === "video") {
       formData.append("video", file);
@@ -173,7 +183,14 @@ export default function TeacherCreate() {
 
       setMessage({
         type: "success",
-        text: contentType === "video" ? "השיעור עלה בהצלחה! 🚀" : "השיר עלה בהצלחה! 🎵",
+        text:
+          publishMode === "published"
+            ? contentType === "video"
+              ? "השיעור פורסם בהצלחה! 🚀"
+              : "השיר פורסם בהצלחה! 🎵"
+            : contentType === "video"
+            ? "השיעור נשמר כטיוטה 📝"
+            : "השיר נשמר כטיוטה 📝",
       });
 
       resetForm();
@@ -187,9 +204,12 @@ export default function TeacherCreate() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto" dir="rtl">
       <div>
-        <h1 className="text-3xl font-bold text-white">✨ יצירת והעלאת תוכן חכם</h1>
+        <h1 className="text-3xl font-bold text-white">
+          ✨ יצירת והעלאת תוכן חכם
+        </h1>
         <p className="text-gray-400 mt-1">
-          כל תוכן שתעלי יקבל תגיות חכמות כדי שה־AI יוכל לשלב אותו במסלולים אישיים לתלמידים.
+          כל תוכן שתעלי יקבל תגיות חכמות כדי שה־AI יוכל לשלב אותו במסלולים
+          אישיים לתלמידים — רק אם תבחרי לפרסם אותו.
         </p>
       </div>
 
@@ -241,7 +261,9 @@ export default function TeacherCreate() {
 
       <div className="bg-white/5 border border-white/10 p-8 rounded-3xl space-y-8">
         <section>
-          <h2 className="text-xl font-bold mb-4 text-yellow-400">פרטי התוכן</h2>
+          <h2 className="text-xl font-bold mb-4 text-yellow-400">
+            פרטי התוכן
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -286,11 +308,15 @@ export default function TeacherCreate() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold mb-4 text-yellow-400">תיוג חכם ל־AI</h2>
+          <h2 className="text-xl font-bold mb-4 text-yellow-400">
+            תיוג חכם ל־AI
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">קטגוריה</label>
+              <label className="block text-sm font-bold text-gray-300 mb-2">
+                קטגוריה
+              </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -305,7 +331,9 @@ export default function TeacherCreate() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">רמה</label>
+              <label className="block text-sm font-bold text-gray-300 mb-2">
+                רמה
+              </label>
               <select
                 value={level}
                 onChange={(e) => setLevel(e.target.value)}
@@ -397,9 +425,51 @@ export default function TeacherCreate() {
           </div>
         </section>
 
+        <section>
+          <h2 className="text-xl font-bold mb-4 text-yellow-400">
+            מצב פרסום
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() => setPublishMode("draft")}
+              className={`p-5 rounded-2xl text-right border transition-all ${
+                publishMode === "draft"
+                  ? "bg-white/10 border-yellow-400 text-white"
+                  : "bg-slate-900 border-white/10 text-gray-300 hover:bg-white/5"
+              }`}
+            >
+              <div className="text-2xl mb-2">📝</div>
+              <div className="font-black text-lg">שמור כטיוטה</div>
+              <div className="text-sm text-gray-400 mt-1">
+                התוכן יישמר בספרייה שלך, אבל תלמידים וה־AI עדיין לא ישתמשו בו.
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPublishMode("published")}
+              className={`p-5 rounded-2xl text-right border transition-all ${
+                publishMode === "published"
+                  ? "bg-emerald-500/20 border-emerald-400 text-white"
+                  : "bg-slate-900 border-white/10 text-gray-300 hover:bg-white/5"
+              }`}
+            >
+              <div className="text-2xl mb-2">🚀</div>
+              <div className="font-black text-lg">פרסם לתלמידים</div>
+              <div className="text-sm text-gray-400 mt-1">
+                התוכן יהיה זמין לתלמידים, ויוכל להיכנס למסלולים אישיים של AI.
+              </div>
+            </button>
+          </div>
+        </section>
+
         {contentType === "audio" && (
           <section>
-            <h2 className="text-xl font-bold mb-4 text-yellow-400">פרטי שיר</h2>
+            <h2 className="text-xl font-bold mb-4 text-yellow-400">
+              פרטי שיר
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
@@ -442,7 +512,9 @@ export default function TeacherCreate() {
         )}
 
         <section>
-          <h2 className="text-xl font-bold mb-4 text-yellow-400">קובץ מדיה</h2>
+          <h2 className="text-xl font-bold mb-4 text-yellow-400">
+            קובץ מדיה
+          </h2>
 
           <div className="mb-5">
             <label className="block text-sm font-bold text-gray-300 mb-2">
@@ -489,7 +561,9 @@ export default function TeacherCreate() {
             </span>
 
             <p className="text-gray-300 font-bold text-sm relative z-0">
-              {fileName ? `✅ קובץ נבחר: ${fileName}` : "גררי לכאן או לחצי לבחירה"}
+              {fileName
+                ? `✅ קובץ נבחר: ${fileName}`
+                : "גררי לכאן או לחצי לבחירה"}
             </p>
           </div>
         </section>
@@ -503,7 +577,11 @@ export default function TeacherCreate() {
               : "bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/50"
           }`}
         >
-          {isLoading ? "מעלה לשרת..." : "שמור והעלה תוכן חכם 🚀"}
+          {isLoading
+            ? "מעלה לשרת..."
+            : publishMode === "published"
+            ? "שמור ופרסם תוכן 🚀"
+            : "שמור כטיוטה 📝"}
         </button>
       </div>
     </div>

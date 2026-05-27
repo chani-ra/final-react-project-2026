@@ -42,6 +42,7 @@ export default function MainLayout() {
         { name: "לוח בקרה", path: "/teacher/dashboard", icon: "📊" },
         { name: "הכיתות שלי", path: "/teacher/students", icon: "👥" },
         { name: "העלאת תוכן", path: "/teacher/create", icon: "✨" },
+        { name: "יצירת תרגיל", path: "/teacher/exercises/create", icon: "📝" },
         { name: "הספרייה שלי", path: "/teacher/library", icon: "📂" },
         { name: "בדיקת משימות", path: "/teacher/grading", icon: "✅" },
       ],

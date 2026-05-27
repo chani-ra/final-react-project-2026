@@ -11,17 +11,22 @@ export default function EditContentModal({
 }) {
   const isSaving = actionLoadingId === editingItemId;
 
+  const title =
+    editType === "lesson"
+      ? "עריכת שיעור"
+      : editType === "song"
+      ? "עריכת שיר"
+      : "עריכת תרגיל";
+
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-2xl shadow-2xl">
+      <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h2 className="text-2xl font-black text-white">
-              {editType === "lesson" ? "עריכת שיעור" : "עריכת שיר"}
-            </h2>
+            <h2 className="text-2xl font-black text-white">{title}</h2>
 
             <p className="text-gray-400 text-sm mt-1">
-              עדכני פרטים בסיסיים. שינוי קובץ מדיה נעשה בשלב הבא.
+              עדכני פרטים בסיסיים. שינוי קובץ מדיה יטופל בשלב נפרד.
             </p>
           </div>
 
@@ -55,6 +60,7 @@ export default function EditContentModal({
               <TextArea
                 label="תיאור"
                 value={editForm.description}
+                rows={3}
                 onChange={(value) =>
                   setEditForm((prev) => ({ ...prev, description: value }))
                 }
@@ -70,6 +76,28 @@ export default function EditContentModal({
                 setEditForm((prev) => ({ ...prev, theme: value }))
               }
             />
+          )}
+
+          {editType === "exercise" && (
+            <>
+              <TextArea
+                label="תיאור"
+                value={editForm.description}
+                rows={3}
+                onChange={(value) =>
+                  setEditForm((prev) => ({ ...prev, description: value }))
+                }
+              />
+
+              <TextArea
+                label="הוראות התרגיל"
+                value={editForm.instructions}
+                rows={6}
+                onChange={(value) =>
+                  setEditForm((prev) => ({ ...prev, instructions: value }))
+                }
+              />
+            </>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -102,6 +130,30 @@ export default function EditContentModal({
               ]}
             />
           </div>
+
+          {editType === "exercise" && (
+            <label className="flex items-center gap-3 bg-slate-950/70 border border-white/10 rounded-2xl p-4 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={editForm.isPublic}
+                onChange={(e) =>
+                  setEditForm((prev) => ({
+                    ...prev,
+                    isPublic: e.target.checked,
+                  }))
+                }
+                className="w-5 h-5 accent-yellow-400"
+              />
+
+              <div>
+                <div className="font-bold text-white">פרסם למסלולים אישיים</div>
+
+                <div className="text-gray-400 text-sm">
+                  אם מסומן, התרגיל יכול להיכנס לקורסים של תלמידים לאחר רענון.
+                </div>
+              </div>
+            </label>
+          )}
         </div>
 
         <div className="flex flex-col md:flex-row gap-3 mt-8">
@@ -144,7 +196,7 @@ function TextInput({ label, value, onChange }) {
 }
 
 // שדה טקסט ארוך
-function TextArea({ label, value, onChange }) {
+function TextArea({ label, value, onChange, rows = 3 }) {
   return (
     <div>
       <label className="block text-sm font-bold text-gray-300 mb-2">
@@ -152,7 +204,7 @@ function TextArea({ label, value, onChange }) {
       </label>
 
       <textarea
-        rows="3"
+        rows={rows}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="w-full bg-slate-950 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-yellow-400"

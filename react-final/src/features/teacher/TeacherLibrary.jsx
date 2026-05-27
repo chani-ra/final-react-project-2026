@@ -13,6 +13,12 @@ import {
   updateSongPublishStatus,
 } from "../../services/teacherService";
 
+import {
+  getTeacherExercises,
+  updateExercise,
+  deleteExercise,
+} from "../../services/exerciseService";
+
 import TeacherContentCard from "./components/TeacherContentCard";
 import EditContentModal from "./components/EditContentModal";
 
@@ -23,6 +29,7 @@ export default function TeacherLibrary() {
   const [activeTab, setActiveTab] = useState("lessons");
   const [lessons, setLessons] = useState([]);
   const [songs, setSongs] = useState([]);
+  const [exercises, setExercises] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState("");
@@ -35,16 +42,21 @@ export default function TeacherLibrary() {
     topic: "",
     theme: "",
     description: "",
+    instructions: "",
     category: "general",
     level: "beginner",
+    isPublic: false,
   });
 
   const teacherId = user?._id || user?.id;
 
-  // טעינת שיעורים ושירים של המורה
+  // טעינת כל ספריית המורה: שיעורים, שירים ותרגילים
   const loadLibrary = async () => {
     if (!teacherId) {
-      setMessage({ type: "error", text: "לא נמצא מזהה מורה. נסי להתחבר מחדש." });
+      setMessage({
+        type: "error",
+        text: "לא נמצא מזהה מורה. נסי להתחבר מחדש.",
+      });
       setLoading(false);
       return;
     }
@@ -53,13 +65,16 @@ export default function TeacherLibrary() {
       setLoading(true);
       setMessage({ type: "", text: "" });
 
-      const [teacherLessons, teacherSongs] = await Promise.all([
-        getTeacherLessons(teacherId),
-        getTeacherSongs(teacherId),
-      ]);
+      const [teacherLessons, teacherSongs, teacherExercises] =
+        await Promise.all([
+          getTeacherLessons(teacherId),
+          getTeacherSongs(teacherId),
+          getTeacherExercises(teacherId),
+        ]);
 
       setLessons(teacherLessons || []);
       setSongs(teacherSongs || []);
+      setExercises(teacherExercises || []);
     } catch (error) {
       setMessage({ type: "error", text: error.toString() });
     } finally {
@@ -71,12 +86,15 @@ export default function TeacherLibrary() {
     loadLibrary();
   }, [teacherId]);
 
-  // מחיקת פריט תוכן
+  // מחיקת פריט תוכן לפי סוג
   const handleDelete = async (item, type) => {
-    const confirmDelete = window.confirm(
-      type === "lesson" ? "האם למחוק את השיעור?" : "האם למחוק את השיר?"
-    );
+    const labels = {
+      lesson: "השיעור",
+      song: "השיר",
+      exercise: "התרגיל",
+    };
 
+    const confirmDelete = window.confirm(`האם למחוק את ${labels[type]}?`);
     if (!confirmDelete) return;
 
     try {
@@ -85,12 +103,24 @@ export default function TeacherLibrary() {
       if (type === "lesson") {
         await deleteLesson(item._id);
         setLessons((prev) => prev.filter((lesson) => lesson._id !== item._id));
-        setMessage({ type: "success", text: "השיעור נמחק בהצלחה" });
-      } else {
+      }
+
+      if (type === "song") {
         await deleteSong(item._id);
         setSongs((prev) => prev.filter((song) => song._id !== item._id));
-        setMessage({ type: "success", text: "השיר נמחק בהצלחה" });
       }
+
+      if (type === "exercise") {
+        await deleteExercise(item._id);
+        setExercises((prev) =>
+          prev.filter((exercise) => exercise._id !== item._id)
+        );
+      }
+
+      setMessage({
+        type: "success",
+        text: `${labels[type]} נמחק בהצלחה`,
+      });
     } catch (error) {
       setMessage({ type: "error", text: error.toString() });
     } finally {
@@ -98,7 +128,7 @@ export default function TeacherLibrary() {
     }
   };
 
-  // פרסום או החזרה לטיוטה
+  // פרסום או החזרה לטיוטה לפי סוג תוכן
   const handleTogglePublish = async (item, type) => {
     try {
       setActionLoadingId(item._id);
@@ -116,7 +146,9 @@ export default function TeacherLibrary() {
               : lesson
           )
         );
-      } else {
+      }
+
+      if (type === "song") {
         const response = await updateSongPublishStatus(item._id, newStatus);
         const updatedSong = response.song;
 
@@ -129,9 +161,30 @@ export default function TeacherLibrary() {
         );
       }
 
+      if (type === "exercise") {
+        const response = await updateExercise(item._id, {
+          isPublic: newStatus,
+        });
+
+        const updatedExercise = response.exercise;
+
+        setExercises((prev) =>
+          prev.map((exercise) =>
+            exercise._id === item._id
+              ? {
+                  ...exercise,
+                  isPublic: updatedExercise?.isPublic ?? newStatus,
+                }
+              : exercise
+          )
+        );
+      }
+
       setMessage({
         type: "success",
-        text: newStatus ? "התוכן פורסם לתלמידים ולמסלולי AI" : "התוכן הוחזר לטיוטה",
+        text: newStatus
+          ? "התוכן פורסם ויכול להיכנס למסלולים אישיים"
+          : "התוכן הוחזר לטיוטה",
       });
     } catch (error) {
       setMessage({ type: "error", text: error.toString() });
@@ -150,8 +203,10 @@ export default function TeacherLibrary() {
       topic: item.topic || "",
       theme: item.theme || "",
       description: item.description || "",
+      instructions: item.instructions || "",
       category: item.category || "general",
       level: item.level || "beginner",
+      isPublic: Boolean(item.isPublic),
     });
   };
 
@@ -165,12 +220,14 @@ export default function TeacherLibrary() {
       topic: "",
       theme: "",
       description: "",
+      instructions: "",
       category: "general",
       level: "beginner",
+      isPublic: false,
     });
   };
 
-  // שמירת עריכה של שיעור או שיר
+  // שמירת עריכה לפי סוג התוכן
   const handleSaveEdit = async () => {
     if (!editingItem) return;
 
@@ -188,7 +245,9 @@ export default function TeacherLibrary() {
 
         setLessons((prev) =>
           prev.map((lesson) =>
-            lesson._id === editingItem._id ? { ...lesson, ...response.lesson } : lesson
+            lesson._id === editingItem._id
+              ? { ...lesson, ...response.lesson }
+              : lesson
           )
         );
 
@@ -212,6 +271,27 @@ export default function TeacherLibrary() {
         setMessage({ type: "success", text: "השיר עודכן בהצלחה" });
       }
 
+      if (editType === "exercise") {
+        const response = await updateExercise(editingItem._id, {
+          title: editForm.title,
+          description: editForm.description,
+          instructions: editForm.instructions,
+          category: editForm.category,
+          level: editForm.level,
+          isPublic: editForm.isPublic,
+        });
+
+        setExercises((prev) =>
+          prev.map((exercise) =>
+            exercise._id === editingItem._id
+              ? { ...exercise, ...response.exercise }
+              : exercise
+          )
+        );
+
+        setMessage({ type: "success", text: "התרגיל עודכן בהצלחה" });
+      }
+
       closeEditModal();
     } catch (error) {
       setMessage({ type: "error", text: error.toString() });
@@ -220,16 +300,41 @@ export default function TeacherLibrary() {
     }
   };
 
-  const itemsToShow = activeTab === "lessons" ? lessons : songs;
-  const activeType = activeTab === "lessons" ? "lesson" : "song";
+  const tabs = [
+    { id: "lessons", label: "שיעורים", icon: "🎬", count: lessons.length },
+    { id: "songs", label: "שירים", icon: "🎵", count: songs.length },
+    {
+      id: "exercises",
+      label: "תרגילים",
+      icon: "📝",
+      count: exercises.length,
+    },
+  ];
+
+  const itemsByTab = {
+    lessons,
+    songs,
+    exercises,
+  };
+
+  const typeByTab = {
+    lessons: "lesson",
+    songs: "song",
+    exercises: "exercise",
+  };
+
+  const itemsToShow = itemsByTab[activeTab] || [];
+  const activeType = typeByTab[activeTab];
 
   const publishedCount =
     lessons.filter((item) => item.isPublic).length +
-    songs.filter((item) => item.isPublic).length;
+    songs.filter((item) => item.isPublic).length +
+    exercises.filter((item) => item.isPublic).length;
 
   const draftCount =
     lessons.filter((item) => !item.isPublic).length +
-    songs.filter((item) => !item.isPublic).length;
+    songs.filter((item) => !item.isPublic).length +
+    exercises.filter((item) => !item.isPublic).length;
 
   if (loading) {
     return (
@@ -244,17 +349,28 @@ export default function TeacherLibrary() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">📂 הספרייה שלי</h1>
+
           <p className="text-gray-400 mt-1">
-            ניהול שיעורים ושירים: צפייה, האזנה, עריכה, פרסום, טיוטה ומחיקה.
+            ניהול שיעורים, שירים ותרגילים: צפייה, האזנה, עריכה, פרסום, טיוטה
+            ומחיקה.
           </p>
         </div>
 
-        <button
-          onClick={() => navigate("/teacher/create")}
-          className="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black px-6 py-3 rounded-xl transition-all shadow-lg"
-        >
-          + העלאת תוכן חדש
-        </button>
+        <div className="flex flex-col md:flex-row gap-3">
+          <button
+            onClick={() => navigate("/teacher/exercises/create")}
+            className="bg-indigo-500 hover:bg-indigo-400 text-white font-black px-6 py-3 rounded-xl transition-all shadow-lg"
+          >
+            + יצירת תרגיל
+          </button>
+
+          <button
+            onClick={() => navigate("/teacher/create")}
+            className="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black px-6 py-3 rounded-xl transition-all shadow-lg"
+          >
+            + העלאת תוכן
+          </button>
+        </div>
       </div>
 
       {message.text && (
@@ -269,51 +385,61 @@ export default function TeacherLibrary() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <section className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <StatCard title="שיעורים" value={lessons.length} />
         <StatCard title="שירים" value={songs.length} />
-        <StatCard title="מפורסמים" value={publishedCount} color="text-emerald-400" />
+        <StatCard title="תרגילים" value={exercises.length} />
+        <StatCard
+          title="מפורסמים"
+          value={publishedCount}
+          color="text-emerald-400"
+        />
         <StatCard title="טיוטות" value={draftCount} color="text-yellow-400" />
-      </div>
+      </section>
 
-      <div className="flex gap-2 border-b border-white/10">
-        <TabButton
-          isActive={activeTab === "lessons"}
-          onClick={() => setActiveTab("lessons")}
-          label={`🎬 שיעורים (${lessons.length})`}
-          activeClass="border-indigo-400 text-indigo-400"
-        />
-
-        <TabButton
-          isActive={activeTab === "songs"}
-          onClick={() => setActiveTab("songs")}
-          label={`🎵 שירים (${songs.length})`}
-          activeClass="border-emerald-400 text-emerald-400"
-        />
-      </div>
+      <section className="flex gap-2 border-b border-white/10 overflow-x-auto">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`shrink-0 pb-4 px-4 font-bold text-sm transition-all border-b-2 ${
+              activeTab === tab.id
+                ? "border-yellow-400 text-yellow-400"
+                : "border-transparent text-gray-400 hover:text-white"
+            }`}
+          >
+            {tab.icon} {tab.label} ({tab.count})
+          </button>
+        ))}
+      </section>
 
       {itemsToShow.length === 0 ? (
-        <EmptyState
-          type={activeType}
-          onClick={() => navigate("/teacher/create")}
-        />
+        <EmptyState type={activeType} onClick={() => {
+          if (activeType === "exercise") {
+            navigate("/teacher/exercises/create");
+          } else {
+            navigate("/teacher/create");
+          }
+        }} />
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {itemsToShow.map((item) => (
             <TeacherContentCard
               key={item._id}
               item={item}
               type={activeType}
               actionLoadingId={actionLoadingId}
-              onView={() =>
-                activeType === "lesson" && navigate(`/teacher/lesson/${item._id}`)
-              }
+              onView={() => {
+                if (activeType === "lesson") {
+                  navigate(`/teacher/lesson/${item._id}`);
+                }
+              }}
               onEdit={() => openEditModal(item, activeType)}
               onTogglePublish={() => handleTogglePublish(item, activeType)}
               onDelete={() => handleDelete(item, activeType)}
             />
           ))}
-        </div>
+        </section>
       )}
 
       {editingItem && (
@@ -341,41 +467,44 @@ function StatCard({ title, value, color = "text-white" }) {
   );
 }
 
-// כפתור טאב
-function TabButton({ isActive, onClick, label, activeClass }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`pb-4 px-4 font-bold text-sm transition-all border-b-2 ${
-        isActive ? activeClass : "border-transparent text-gray-400 hover:text-white"
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
-
-// תצוגה כשאין תוכן
+// מצב ריק לפי סוג תוכן
 function EmptyState({ type, onClick }) {
-  const isLesson = type === "lesson";
+  const config = {
+    lesson: {
+      icon: "🎬",
+      title: "אין שיעורים בספרייה",
+      text: "העלי שיעור ראשון כדי להתחיל לבנות מאגר תוכן חכם.",
+      button: "העלאת שיעור",
+    },
+    song: {
+      icon: "🎵",
+      title: "אין שירים בספרייה",
+      text: "העלי שיר ראשון כדי להעשיר את מסלולי הלמידה.",
+      button: "העלאת שיר",
+    },
+    exercise: {
+      icon: "📝",
+      title: "אין תרגילים בספרייה",
+      text: "צרי תרגיל ראשון ידנית או בעזרת AI.",
+      button: "יצירת תרגיל",
+    },
+  };
+
+  const item = config[type];
 
   return (
     <div className="text-center py-16 bg-white/5 rounded-3xl border border-dashed border-white/10">
-      <div className="text-5xl mb-4">{isLesson ? "🎬" : "🎵"}</div>
-      <h2 className="text-2xl font-bold mb-2">
-        {isLesson ? "אין שיעורים בספרייה" : "אין שירים בספרייה"}
-      </h2>
-      <p className="text-gray-400 mb-6">
-        {isLesson
-          ? "העלי שיעור ראשון כדי להתחיל לבנות מאגר תוכן חכם."
-          : "העלי שיר ראשון כדי להעשיר את מסלולי הלמידה."}
-      </p>
+      <div className="text-5xl mb-4">{item.icon}</div>
+
+      <h2 className="text-2xl font-bold mb-2">{item.title}</h2>
+
+      <p className="text-gray-400 mb-6">{item.text}</p>
 
       <button
         onClick={onClick}
         className="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black px-8 py-3 rounded-xl"
       >
-        {isLesson ? "העלאת שיעור" : "העלאת שיר"}
+        {item.button}
       </button>
     </div>
   );

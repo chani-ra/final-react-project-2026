@@ -10,23 +10,25 @@ export default function TeacherContentCard({
   onDelete,
 }) {
   const isLesson = type === "lesson";
+  const isSong = type === "song";
+  const isExercise = type === "exercise";
   const isLoading = actionLoadingId === item._id;
 
   const title = item.title || item.theme || "ללא כותרת";
 
   const subtitle = isLesson
     ? item.description || "אין תיאור לשיעור זה."
-    : `מלחין: ${item.composer || "לא צוין"} · משך: ${
-        item.duration || "לא צוין"
-      }`;
+    : isSong
+    ? `מלחין: ${item.composer || "לא צוין"} · משך: ${item.duration || "לא צוין"}`
+    : item.description || "תרגיל לתרגול אישי";
+
+  const icon = isLesson ? item.icon || "🎬" : isSong ? "🎵" : "📝";
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-3xl p-6 hover:border-yellow-400/30 transition-all">
       <div className="flex justify-between items-start gap-4">
         <div>
-          <div className="text-4xl mb-3">
-            {isLesson ? item.icon || "🎬" : "🎵"}
-          </div>
+          <div className="text-4xl mb-3">{icon}</div>
 
           <h3 className="text-2xl font-bold text-white">{title}</h3>
 
@@ -40,7 +42,7 @@ export default function TeacherContentCard({
 
       <ContentMeta item={item} />
 
-      {!isLesson && (
+      {isSong && item.audioFileName && (
         <div className="bg-black/20 border border-white/10 rounded-2xl p-4 mt-5">
           <p className="text-gray-400 text-sm mb-3">
             האזנה לשיר לפני פרסום או עריכה:
@@ -53,6 +55,22 @@ export default function TeacherContentCard({
           >
             הדפדפן שלך לא תומך בנגן אודיו.
           </audio>
+        </div>
+      )}
+
+      {isExercise && (
+        <div className="bg-black/20 border border-white/10 rounded-2xl p-4 mt-5">
+          <p className="text-gray-400 text-sm mb-2">הוראות התרגיל:</p>
+
+          <p className="text-gray-300 text-sm line-clamp-5 whitespace-pre-line">
+            {item.instructions || "לא הוזנו הוראות לתרגיל."}
+          </p>
+
+          {item.createdByAI && (
+            <div className="mt-3 bg-indigo-500/10 text-indigo-300 border border-indigo-400/20 px-3 py-1 rounded-full text-xs font-bold w-fit">
+              נוצר בעזרת AI ✨
+            </div>
+          )}
         </div>
       )}
 
@@ -101,7 +119,6 @@ export default function TeacherContentCard({
   );
 }
 
-// תגית מצב פרסום
 function PublishBadge({ isPublic }) {
   return isPublic ? (
     <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-bold">
@@ -114,7 +131,6 @@ function PublishBadge({ isPublic }) {
   );
 }
 
-// פרטי רמה, קטגוריה וגיל
 function ContentMeta({ item }) {
   return (
     <div className="flex flex-wrap gap-2 mt-3">
@@ -135,7 +151,6 @@ function ContentMeta({ item }) {
   );
 }
 
-// תרגום רמות לתצוגה
 function getLevelLabel(level) {
   const labels = {
     beginner: "מתחילים",
@@ -149,7 +164,6 @@ function getLevelLabel(level) {
   return labels[level] || level || "לא צוין";
 }
 
-// תרגום קטגוריות לתצוגה
 function getCategoryLabel(category) {
   const labels = {
     grammar: "דקדוק",

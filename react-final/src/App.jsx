@@ -22,6 +22,7 @@ import Dictionary from "./features/student/Dictionary";
 import TeacherDashboard from "./features/teacher/TeacherDashboard";
 import TeacherStudents from "./features/teacher/TeacherStudents";
 import TeacherCreate from "./features/teacher/TeacherCreate";
+import TeacherExerciseBuilder from "./features/teacher/TeacherExerciseBuilder";
 import TeacherLibrary from "./features/teacher/TeacherLibrary";
 import TeacherGrading from "./features/teacher/TeacherGrading";
 import LessonView from "./features/teacher/LessonView";
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
           <Route path="/teacher/students" element={<TeacherStudents />} />
           <Route path="/teacher/create" element={<TeacherCreate />} />
+          <Route path="/teacher/exercises/create" element={<TeacherExerciseBuilder />} />
           <Route path="/teacher/library" element={<TeacherLibrary />} />
           <Route path="/teacher/grading" element={<TeacherGrading />} />
           <Route path="/teacher/lesson/:lessonId" element={<LessonView />} />

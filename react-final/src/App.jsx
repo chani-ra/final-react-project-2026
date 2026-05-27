@@ -1,5 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast'; // הוספנו את זה
+
+import Home from './components/Home';
 import MainLayout from './components/layout/MainLayout';
 import Register from './features/auth/Register';
 import Login from './features/auth/Login';
@@ -31,10 +34,14 @@ const AdminSettings = () => <div className="p-6"><h1 className="text-2xl font-bo
 export default function App() {
   return (
     <Router>
+      {/* הרכיב הזה מאפשר להודעות היפות לקפוץ בכל האתר */}
+      <Toaster position="top-center" reverseOrder={false} />
+      
       <Routes>
         {/* דפי כניסה והרשמה - מחוץ ל-Navbar */}
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Home />} />
+<Route path="/login" element={<Login />} />
+<Route path="/register" element={<Register />} />
 
         {/* כל הדפים המוגנים שנמצאים בתוך המעטפת (MainLayout) */}
         <Route element={<MainLayout />}>
@@ -53,6 +60,7 @@ export default function App() {
           <Route path="/teacher/library" element={<TeacherLibrary />} />
           <Route path="/teacher/grading" element={<TeacherGrading />} />
           <Route path="/teacher/lesson/:lessonId" element={<LessonView />} />
+          
           {/* נתיבים המיועדים למנהל - מעודכן לפי האפיון החדש */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />

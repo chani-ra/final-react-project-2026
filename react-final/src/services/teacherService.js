@@ -19,21 +19,24 @@ axiosConfig.interceptors.request.use((config) => {
  */
 export const getTeacherDashboardData = async (instructorId) => {
   try {
-    // 1. קריאה לסטטיסטיקות של המורה
+    if (!instructorId) {
+      throw new Error("חסר מזהה מורה לטעינת לוח הבקרה");
+    }
+
     const statsResponse = await axiosConfig.get(`/lessons/stats/${instructorId}`);
-    
-    // 2. קריאה לרשימת השיעורים האחרונים שהמורה העלה
-    const lessonsResponse = await axiosConfig.get(`/lessons/instructor/${instructorId}?limit=5`);
+
+    const lessonsResponse = await axiosConfig.get(
+      `/lessons/instructor/${instructorId}?limit=5`
+    );
 
     return {
       stats: statsResponse.data.stats,
-      lessons: lessonsResponse.data.lessons
+      lessons: lessonsResponse.data.lessons || [],
     };
   } catch (error) {
-    throw error.response?.data?.message || 'נכשל בטעינת נתוני לוח הבקרה';
+    throw error.response?.data?.message || error.message || "נכשל בטעינת נתוני לוח הבקרה";
   }
 };
-
 /**
  * 2. העלאת שיעור חדש 
  */

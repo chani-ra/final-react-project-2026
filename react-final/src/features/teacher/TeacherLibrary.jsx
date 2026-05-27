@@ -1,17 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { getTeacherLessons, getTeacherSongs } from '../../services/teacherService';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast'; // ודאי שהותקן
+import { getTeacherLessons, getTeacherSongs, deleteLesson, deleteSong } from '../../services/teacherService';
+
 export default function TeacherLibrary() {
   const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
   
-  // ניהול הטאב הנוכחי: 'lessons' או 'songs'
   const [activeTab, setActiveTab] = useState('lessons');
-  
   const [lessons, setLessons] = useState([]);
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-useEffect(() => {
+
+  const handleViewLesson = (lessonId) => {
+    navigate(`/teacher/lesson/${lessonId}`);
+  };
+
+  const handleDeleteLesson = async (lessonId) => {
+    // הסרנו את ה-confirm! המחיקה תתבצע מיידית עם משוב ויזואלי
+    try {
+      await deleteLesson(lessonId);
+      setLessons(lessons.filter(l => l._id !== lessonId));
+      toast.success('השיעור הוסר מהספרייה');
+    } catch (err) {
+      console.error(err);
+      toast.error('לא ניתן היה למחוק את השיעור');
+    }
+  };
+
+  const handleDeleteSong = async (songId) => {
+    // הסרנו את ה-confirm!
+    try {
+      await deleteSong(songId);
+      setSongs(songs.filter(s => s._id !== songId));
+      toast.success('השיר הוסר מהספרייה');
+    } catch (err) {
+      console.error(err);
+      toast.error('לא ניתן היה למחוק את השיר');
+    }
+  };
+
+  useEffect(() => {
     const loadLibraryData = async () => {
       if (!user?._id && !user?.id) return;
       const teacherId = user._id || user.id;
@@ -19,7 +50,6 @@ useEffect(() => {
       setLoading(true);
       setError('');
 
-      // 1. ניסיון טעינת שיעורים
       try {
         const lessonsData = await getTeacherLessons(teacherId);
         setLessons(lessonsData);
@@ -28,13 +58,11 @@ useEffect(() => {
         setError('היה קושי בטעינת השיעורים שלך מהשרת.');
       }
 
-      // 2. ניסיון טעינת שירים (בנפרד - כדי ש-404 כאן לא יפיל את השיעורים)
       try {
         const songsData = await getTeacherSongs(teacherId);
         setSongs(songsData);
       } catch (err) {
-        console.error('שגיאה בטעינת שירים (כתובת ה-API כנראה דורשת התאמה):', err);
-        // אנחנו לא נועלים את המסך, פשוט משאירים מערך שירים ריק בינתיים
+        console.error('שגיאה בטעינת שירים:', err);
       }
 
       setLoading(false);
@@ -53,7 +81,6 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white p-6 md:p-10" dir="rtl">
-      {/* כותרת הדף */}
       <div className="mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">
@@ -63,7 +90,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* ניווט פנימי (Tabs) בין שיעורים לשירים */}
       <div className="flex border-b border-white/10 mb-8 gap-6">
         <button
           onClick={() => setActiveTab('lessons')}
@@ -87,7 +113,6 @@ useEffect(() => {
 
       {error && <div className="text-red-400 mb-4 text-sm font-semibold bg-red-500/10 p-3 rounded-xl">{error}</div>}
 
-      {/* תצוגת שיעורים */}
       {activeTab === 'lessons' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {lessons.length === 0 ? (
@@ -109,9 +134,9 @@ useEffect(() => {
                 <div className="border-t border-white/5 pt-4 mt-auto flex justify-between items-center text-xs text-gray-500">
                   <span>נוצר ב: {new Date(lesson.createdAt).toLocaleDateString('he-IL')}</span>
                   <div className="flex gap-2">
-                    <button className="text-indigo-400 hover:underline font-bold">צפייה</button>
+                    <button onClick={() => handleViewLesson(lesson._id)} className="text-indigo-400 hover:underline font-bold">צפייה</button>
                     <span className="text-white/20">|</span>
-                    <button className="text-red-400 hover:underline font-bold">מחיקה</button>
+                    <button onClick={() => handleDeleteLesson(lesson._id)} className="text-red-400 hover:underline font-bold">מחיקה</button>
                   </div>
                 </div>
               </div>
@@ -120,7 +145,6 @@ useEffect(() => {
         </div>
       )}
 
-      {/* תצוגת שירים */}
       {activeTab === 'songs' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {songs.length === 0 ? (
@@ -144,7 +168,7 @@ useEffect(() => {
                   <div className="flex gap-2">
                     <button className="text-cyan-400 hover:underline font-bold">השמעה</button>
                     <span className="text-white/20">|</span>
-                    <button className="text-red-400 hover:underline font-bold">מחיקה</button>
+                    <button onClick={() => handleDeleteSong(song._id)} className="text-red-400 hover:underline font-bold">מחיקה</button>
                   </div>
                 </div>
               </div>

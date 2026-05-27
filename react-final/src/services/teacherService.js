@@ -17,22 +17,17 @@ axiosConfig.interceptors.request.use((config) => {
 /**
  * 1. משיכת נתונים ללוח הבקרה (תצוגה ראשונית)
  */
-export const getTeacherDashboardData = async () => {
+export const getTeacherDashboardData = async (instructorId) => {
   try {
-    // ⚠️ זמני: השרת שלך כרגע חוסם את נתיבי ה- GET /courses ו- GET /exercises
-    // לכן ביטלנו את הקריאות אליהם כדי למנוע את שגיאת ה-404.
-    // כשתסיימי לבנות את הקונטרולרים בשרת, תוכלי להחזיר את הקריאות מול השרת.
+    // 1. קריאה לסטטיסטיקות של המורה
+    const statsResponse = await axiosConfig.get(`/lessons/stats/${instructorId}`);
     
+    // 2. קריאה לרשימת השיעורים האחרונים שהמורה העלה
+    const lessonsResponse = await axiosConfig.get(`/lessons/instructor/${instructorId}?limit=5`);
+
     return {
-      stats: {
-        totalStudents: 28,
-        activeCourses: 5, // נתון דמי במקום קריסה
-        pendingExercises: 12 // נתון דמי במקום קריסה
-      },
-      students: [
-        { id: 1, name: 'ישראל ישראלי', email: 'israel@gmail.com', progress: '85%', lastActive: 'היום' },
-        { id: 2, name: 'נועה כהן', email: 'noah@gmail.com', progress: '92%', lastActive: 'אתמול' }
-      ]
+      stats: statsResponse.data.stats,
+      lessons: lessonsResponse.data.lessons
     };
   } catch (error) {
     throw error.response?.data?.message || 'נכשל בטעינת נתוני לוח הבקרה';
@@ -56,8 +51,6 @@ export const createLesson = async (formData) => {
  */
 export const uploadSong = async (formData) => {
   try {
-    // ✅ התיקון: הנתיב שונה ל- /songs/song לפי ההגדרה בשרת
-    // ✅ Axios מזהה לבד שזה FormData ומגדיר Multipart אוטומטית!
     const response = await axiosConfig.post('/songs/song', formData);
     return response.data;
   } catch (error) {
@@ -74,5 +67,71 @@ export const askAIHelper = async (prompt) => {
     return response.data;
   } catch (error) {
     throw error.response?.data?.message || 'שגיאה בתקשורת מול רכיב ה-AI';
+  }
+};
+
+/**
+ * 5. יצירת בוחן חדש לשיעור (Quizzes)
+ */
+export const createQuiz = async (quizData) => {
+  try {
+    const response = await axiosConfig.post('/quizzes', quizData);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'נכשל ביצירת הבוחן במערכת';
+  }
+};
+
+/**
+ * 6. משיכת כל השיעורים שהמורה הנוכחי העלה (עבור "הספרייה שלי")
+ */
+export const getTeacherLessons = async (instructorId) => {
+  try {
+    const response = await axiosConfig.get(`/lessons/instructor/${instructorId}`);
+    return response.data.lessons || response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'נכשל בטעינת השיעורים שלך';
+  }
+};
+
+/**
+ * 7. משיכת כל השירים שהמורה הנוכחי העלה (עבור "הספרייה שלי")
+ */
+export const getTeacherSongs = async (instructorId) => {
+  try {
+    const response = await axiosConfig.get(`/songs/instructor/${instructorId}`);
+    return response.data.songs || response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'נכשל בטעינת השירים שלך';
+  }
+};
+
+// 8. מחיקת שיר
+export const deleteSong = async (songId) => {
+  try {
+    const response = await axiosConfig.delete(`/songs/song/${songId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'נכשל במחיקת השיר';
+  }
+};
+
+// 9. עדכון שיר
+export const updateSong = async (songId, formData) => {
+  try {
+    const response = await axiosConfig.put(`/songs/song/${songId}`, formData);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'נכשל בעדכון השיר';
+  }
+};
+
+// 10. מחיקת שיעור
+export const deleteLesson = async (lessonId) => {
+  try {
+    const response = await axiosConfig.delete(`/lessons/${lessonId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || 'נכשל במחיקת השיעור';
   }
 };

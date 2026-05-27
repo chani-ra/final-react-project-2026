@@ -45,13 +45,20 @@ export default function TeacherCreate() {
     formData.append('title', title);
     formData.append('topic', topic);
     formData.append('icon', selectedIcon);
-    
-    // ✅ שינוי מ-language ל-lessonLanguage כדי להתאים לשרת החדש
     formData.append('lessonLanguage', 'he'); 
     formData.append('isPublic', false);
     formData.append('description', '');
-    
     formData.append(contentType === 'video' ? 'video' : 'audioFile', file);
+
+    // 👇 הנה התוספת שלנו: אם זה שיר, ניתן לשרת את כל השדות שהוא דורש!
+    if (contentType === 'audio') {
+      formData.append('theme', 'כללי');
+      formData.append('duration', 180); // מספר (נגיד 180 שניות)
+      formData.append('level', 'מתחילים');
+      formData.append('targetAge', 'all');
+      formData.append('composer', 'לא ידוע');
+      formData.append('lyricist', 'לא ידוע');
+    }
 
     try {
       if (contentType === 'video') {

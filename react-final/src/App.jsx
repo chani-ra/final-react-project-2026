@@ -14,6 +14,8 @@ import Tasks from "./features/student/Tasks";
 import Chat from "./features/student/Chat";
 import Courses from "./features/student/Courses";
 import CourseDetails from "./features/student/CourseDetails";
+import CreatePersonalCourse from "./features/student/CreatePersonalCourse";
+import ExerciseView from "./features/student/ExerciseView";
 import Dictionary from "./features/student/Dictionary";
 
 // teacher components
@@ -55,6 +57,8 @@ export default function App() {
           <Route path="/dashboard" element={<StudentDashboard />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/course/:courseId" element={<CourseDetails />} />
+          <Route path="/create-personal-course" element={<CreatePersonalCourse />} />
+          <Route path="/exercise/:exerciseId" element={<ExerciseView />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/dictionary" element={<Dictionary />} />

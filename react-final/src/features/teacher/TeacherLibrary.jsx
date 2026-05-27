@@ -1,181 +1,382 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast'; // ודאי שהותקן
-import { getTeacherLessons, getTeacherSongs, deleteLesson, deleteSong } from '../../services/teacherService';
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
+import {
+  getTeacherLessons,
+  getTeacherSongs,
+  deleteLesson,
+  deleteSong,
+  updateLesson,
+  updateSong,
+  updateLessonPublishStatus,
+  updateSongPublishStatus,
+} from "../../services/teacherService";
+
+import TeacherContentCard from "./components/TeacherContentCard";
+import EditContentModal from "./components/EditContentModal";
 
 export default function TeacherLibrary() {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-  
-  const [activeTab, setActiveTab] = useState('lessons');
+
+  const [activeTab, setActiveTab] = useState("lessons");
   const [lessons, setLessons] = useState([]);
   const [songs, setSongs] = useState([]);
+
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [actionLoadingId, setActionLoadingId] = useState("");
+  const [message, setMessage] = useState({ type: "", text: "" });
 
-  const handleViewLesson = (lessonId) => {
-    navigate(`/teacher/lesson/${lessonId}`);
-  };
+  const [editingItem, setEditingItem] = useState(null);
+  const [editType, setEditType] = useState("");
+  const [editForm, setEditForm] = useState({
+    title: "",
+    topic: "",
+    theme: "",
+    description: "",
+    category: "general",
+    level: "beginner",
+  });
 
-  const handleDeleteLesson = async (lessonId) => {
-    // הסרנו את ה-confirm! המחיקה תתבצע מיידית עם משוב ויזואלי
-    try {
-      await deleteLesson(lessonId);
-      setLessons(lessons.filter(l => l._id !== lessonId));
-      toast.success('השיעור הוסר מהספרייה');
-    } catch (err) {
-      console.error(err);
-      toast.error('לא ניתן היה למחוק את השיעור');
+  const teacherId = user?._id || user?.id;
+
+  // טעינת שיעורים ושירים של המורה
+  const loadLibrary = async () => {
+    if (!teacherId) {
+      setMessage({ type: "error", text: "לא נמצא מזהה מורה. נסי להתחבר מחדש." });
+      setLoading(false);
+      return;
     }
-  };
 
-  const handleDeleteSong = async (songId) => {
-    // הסרנו את ה-confirm!
     try {
-      await deleteSong(songId);
-      setSongs(songs.filter(s => s._id !== songId));
-      toast.success('השיר הוסר מהספרייה');
-    } catch (err) {
-      console.error(err);
-      toast.error('לא ניתן היה למחוק את השיר');
+      setLoading(true);
+      setMessage({ type: "", text: "" });
+
+      const [teacherLessons, teacherSongs] = await Promise.all([
+        getTeacherLessons(teacherId),
+        getTeacherSongs(teacherId),
+      ]);
+
+      setLessons(teacherLessons || []);
+      setSongs(teacherSongs || []);
+    } catch (error) {
+      setMessage({ type: "error", text: error.toString() });
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const loadLibraryData = async () => {
-      if (!user?._id && !user?.id) return;
-      const teacherId = user._id || user.id;
+    loadLibrary();
+  }, [teacherId]);
 
-      setLoading(true);
-      setError('');
+  // מחיקת פריט תוכן
+  const handleDelete = async (item, type) => {
+    const confirmDelete = window.confirm(
+      type === "lesson" ? "האם למחוק את השיעור?" : "האם למחוק את השיר?"
+    );
 
-      try {
-        const lessonsData = await getTeacherLessons(teacherId);
-        setLessons(lessonsData);
-      } catch (err) {
-        console.error('שגיאה בטעינת שיעורים:', err);
-        setError('היה קושי בטעינת השיעורים שלך מהשרת.');
+    if (!confirmDelete) return;
+
+    try {
+      setActionLoadingId(item._id);
+
+      if (type === "lesson") {
+        await deleteLesson(item._id);
+        setLessons((prev) => prev.filter((lesson) => lesson._id !== item._id));
+        setMessage({ type: "success", text: "השיעור נמחק בהצלחה" });
+      } else {
+        await deleteSong(item._id);
+        setSongs((prev) => prev.filter((song) => song._id !== item._id));
+        setMessage({ type: "success", text: "השיר נמחק בהצלחה" });
+      }
+    } catch (error) {
+      setMessage({ type: "error", text: error.toString() });
+    } finally {
+      setActionLoadingId("");
+    }
+  };
+
+  // פרסום או החזרה לטיוטה
+  const handleTogglePublish = async (item, type) => {
+    try {
+      setActionLoadingId(item._id);
+
+      const newStatus = !item.isPublic;
+
+      if (type === "lesson") {
+        const response = await updateLessonPublishStatus(item._id, newStatus);
+        const updatedLesson = response.lesson;
+
+        setLessons((prev) =>
+          prev.map((lesson) =>
+            lesson._id === item._id
+              ? { ...lesson, isPublic: updatedLesson?.isPublic ?? newStatus }
+              : lesson
+          )
+        );
+      } else {
+        const response = await updateSongPublishStatus(item._id, newStatus);
+        const updatedSong = response.song;
+
+        setSongs((prev) =>
+          prev.map((song) =>
+            song._id === item._id
+              ? { ...song, isPublic: updatedSong?.isPublic ?? newStatus }
+              : song
+          )
+        );
       }
 
-      try {
-        const songsData = await getTeacherSongs(teacherId);
-        setSongs(songsData);
-      } catch (err) {
-        console.error('שגיאה בטעינת שירים:', err);
+      setMessage({
+        type: "success",
+        text: newStatus ? "התוכן פורסם לתלמידים ולמסלולי AI" : "התוכן הוחזר לטיוטה",
+      });
+    } catch (error) {
+      setMessage({ type: "error", text: error.toString() });
+    } finally {
+      setActionLoadingId("");
+    }
+  };
+
+  // פתיחת חלון עריכה
+  const openEditModal = (item, type) => {
+    setEditingItem(item);
+    setEditType(type);
+
+    setEditForm({
+      title: item.title || "",
+      topic: item.topic || "",
+      theme: item.theme || "",
+      description: item.description || "",
+      category: item.category || "general",
+      level: item.level || "beginner",
+    });
+  };
+
+  // סגירת חלון עריכה
+  const closeEditModal = () => {
+    setEditingItem(null);
+    setEditType("");
+
+    setEditForm({
+      title: "",
+      topic: "",
+      theme: "",
+      description: "",
+      category: "general",
+      level: "beginner",
+    });
+  };
+
+  // שמירת עריכה של שיעור או שיר
+  const handleSaveEdit = async () => {
+    if (!editingItem) return;
+
+    try {
+      setActionLoadingId(editingItem._id);
+
+      if (editType === "lesson") {
+        const response = await updateLesson(editingItem._id, {
+          title: editForm.title,
+          topic: editForm.topic,
+          description: editForm.description,
+          category: editForm.category,
+          level: editForm.level,
+        });
+
+        setLessons((prev) =>
+          prev.map((lesson) =>
+            lesson._id === editingItem._id ? { ...lesson, ...response.lesson } : lesson
+          )
+        );
+
+        setMessage({ type: "success", text: "השיעור עודכן בהצלחה" });
       }
 
-      setLoading(false);
-    };
+      if (editType === "song") {
+        const response = await updateSong(editingItem._id, {
+          title: editForm.title,
+          theme: editForm.theme,
+          category: editForm.category,
+          level: editForm.level,
+        });
 
-    loadLibraryData();
-  }, [user]);
+        setSongs((prev) =>
+          prev.map((song) =>
+            song._id === editingItem._id ? { ...song, ...response.song } : song
+          )
+        );
+
+        setMessage({ type: "success", text: "השיר עודכן בהצלחה" });
+      }
+
+      closeEditModal();
+    } catch (error) {
+      setMessage({ type: "error", text: error.toString() });
+    } finally {
+      setActionLoadingId("");
+    }
+  };
+
+  const itemsToShow = activeTab === "lessons" ? lessons : songs;
+  const activeType = activeTab === "lessons" ? "lesson" : "song";
+
+  const publishedCount =
+    lessons.filter((item) => item.isPublic).length +
+    songs.filter((item) => item.isPublic).length;
+
+  const draftCount =
+    lessons.filter((item) => !item.isPublic).length +
+    songs.filter((item) => !item.isPublic).length;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white font-bold text-xl">
+      <div className="min-h-[60vh] flex items-center justify-center text-white font-bold text-xl">
         <div className="animate-pulse">טוען את הספרייה שלך... 📂</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6 md:p-10" dir="rtl">
-      <div className="mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+    <div className="space-y-6" dir="rtl">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">
-            הספרייה שלי 📂
-          </h1>
-          <p className="text-gray-400 mt-2">כאן נמצאים כל התכנים, השיעורים והשירים שהעלית למערכת.</p>
+          <h1 className="text-3xl font-bold tracking-tight">📂 הספרייה שלי</h1>
+          <p className="text-gray-400 mt-1">
+            ניהול שיעורים ושירים: צפייה, האזנה, עריכה, פרסום, טיוטה ומחיקה.
+          </p>
         </div>
-      </div>
 
-      <div className="flex border-b border-white/10 mb-8 gap-6">
         <button
-          onClick={() => setActiveTab('lessons')}
-          className={`pb-4 text-lg font-bold transition-all relative ${
-            activeTab === 'lessons' ? 'text-indigo-400' : 'text-gray-400 hover:text-white'
-          }`}
+          onClick={() => navigate("/teacher/create")}
+          className="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black px-6 py-3 rounded-xl transition-all shadow-lg"
         >
-          שיעורים שהועלו ({lessons.length})
-          {activeTab === 'lessons' && <div className="absolute bottom-0 right-0 left-0 h-0.5 bg-indigo-400 rounded-full" />}
-        </button>
-        <button
-          onClick={() => setActiveTab('songs')}
-          className={`pb-4 text-lg font-bold transition-all relative ${
-            activeTab === 'songs' ? 'text-cyan-400' : 'text-gray-400 hover:text-white'
-          }`}
-        >
-          שירים במערכת ({songs.length})
-          {activeTab === 'songs' && <div className="absolute bottom-0 right-0 left-0 h-0.5 bg-cyan-400 rounded-full" />}
+          + העלאת תוכן חדש
         </button>
       </div>
 
-      {error && <div className="text-red-400 mb-4 text-sm font-semibold bg-red-500/10 p-3 rounded-xl">{error}</div>}
-
-      {activeTab === 'lessons' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lessons.length === 0 ? (
-            <p className="text-gray-500 col-span-full py-10 text-center">עדיין לא העלית אף שיעור במערכת.</p>
-          ) : (
-            lessons.map((lesson) => (
-              <div key={lesson._id} className="bg-white/5 border border-white/10 p-5 rounded-2xl shadow-xl hover:border-indigo-500/40 transition-all flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between items-start mb-3">
-                    <span className="text-2xl">{lesson.icon || '🎬'}</span>
-                    <span className="text-xs font-bold bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-md">
-                      {lesson.topic || 'כללי'}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-bold text-white mb-2 line-clamp-1">{lesson.title}</h3>
-                  <p className="text-sm text-gray-400 line-clamp-2 mb-4">{lesson.description || 'אין תיאור לשיעור זה.'}</p>
-                </div>
-                
-                <div className="border-t border-white/5 pt-4 mt-auto flex justify-between items-center text-xs text-gray-500">
-                  <span>נוצר ב: {new Date(lesson.createdAt).toLocaleDateString('he-IL')}</span>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleViewLesson(lesson._id)} className="text-indigo-400 hover:underline font-bold">צפייה</button>
-                    <span className="text-white/20">|</span>
-                    <button onClick={() => handleDeleteLesson(lesson._id)} className="text-red-400 hover:underline font-bold">מחיקה</button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
+      {message.text && (
+        <div
+          className={`p-4 rounded-2xl font-bold ${
+            message.type === "success"
+              ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
+              : "bg-red-500/10 border border-red-500/30 text-red-400"
+          }`}
+        >
+          {message.text}
         </div>
       )}
 
-      {activeTab === 'songs' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {songs.length === 0 ? (
-            <p className="text-gray-500 col-span-full py-10 text-center">עדיין לא העלית אף שיר במערכת.</p>
-          ) : (
-            songs.map((song) => (
-              <div key={song._id} className="bg-white/5 border border-white/10 p-5 rounded-2xl shadow-xl hover:border-cyan-500/40 transition-all flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between items-start mb-3">
-                    <span className="text-2xl">🎵</span>
-                    <span className="text-xs font-bold bg-cyan-500/20 text-cyan-300 px-2.5 py-1 rounded-md">
-                      {song.genre || 'שיר'}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-bold text-white mb-1 line-clamp-1">{song.title}</h3>
-                  <p className="text-xs text-gray-400 mb-4">אמן/יוצר: {song.artist || 'לא מצוין'}</p>
-                </div>
-                
-                <div className="border-t border-white/5 pt-4 mt-auto flex justify-between items-center text-xs text-gray-500">
-                  <span>נוצר ב: {new Date(song.createdAt).toLocaleDateString('he-IL')}</span>
-                  <div className="flex gap-2">
-                    <button className="text-cyan-400 hover:underline font-bold">השמעה</button>
-                    <span className="text-white/20">|</span>
-                    <button onClick={() => handleDeleteSong(song._id)} className="text-red-400 hover:underline font-bold">מחיקה</button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatCard title="שיעורים" value={lessons.length} />
+        <StatCard title="שירים" value={songs.length} />
+        <StatCard title="מפורסמים" value={publishedCount} color="text-emerald-400" />
+        <StatCard title="טיוטות" value={draftCount} color="text-yellow-400" />
+      </div>
+
+      <div className="flex gap-2 border-b border-white/10">
+        <TabButton
+          isActive={activeTab === "lessons"}
+          onClick={() => setActiveTab("lessons")}
+          label={`🎬 שיעורים (${lessons.length})`}
+          activeClass="border-indigo-400 text-indigo-400"
+        />
+
+        <TabButton
+          isActive={activeTab === "songs"}
+          onClick={() => setActiveTab("songs")}
+          label={`🎵 שירים (${songs.length})`}
+          activeClass="border-emerald-400 text-emerald-400"
+        />
+      </div>
+
+      {itemsToShow.length === 0 ? (
+        <EmptyState
+          type={activeType}
+          onClick={() => navigate("/teacher/create")}
+        />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {itemsToShow.map((item) => (
+            <TeacherContentCard
+              key={item._id}
+              item={item}
+              type={activeType}
+              actionLoadingId={actionLoadingId}
+              onView={() =>
+                activeType === "lesson" && navigate(`/teacher/lesson/${item._id}`)
+              }
+              onEdit={() => openEditModal(item, activeType)}
+              onTogglePublish={() => handleTogglePublish(item, activeType)}
+              onDelete={() => handleDelete(item, activeType)}
+            />
+          ))}
         </div>
       )}
+
+      {editingItem && (
+        <EditContentModal
+          editType={editType}
+          editForm={editForm}
+          setEditForm={setEditForm}
+          actionLoadingId={actionLoadingId}
+          editingItemId={editingItem._id}
+          onClose={closeEditModal}
+          onSave={handleSaveEdit}
+        />
+      )}
+    </div>
+  );
+}
+
+// כרטיס סטטיסטיקה קטן
+function StatCard({ title, value, color = "text-white" }) {
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+      <div className="text-sm text-gray-400">{title}</div>
+      <div className={`text-3xl font-black mt-1 ${color}`}>{value}</div>
+    </div>
+  );
+}
+
+// כפתור טאב
+function TabButton({ isActive, onClick, label, activeClass }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`pb-4 px-4 font-bold text-sm transition-all border-b-2 ${
+        isActive ? activeClass : "border-transparent text-gray-400 hover:text-white"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+// תצוגה כשאין תוכן
+function EmptyState({ type, onClick }) {
+  const isLesson = type === "lesson";
+
+  return (
+    <div className="text-center py-16 bg-white/5 rounded-3xl border border-dashed border-white/10">
+      <div className="text-5xl mb-4">{isLesson ? "🎬" : "🎵"}</div>
+      <h2 className="text-2xl font-bold mb-2">
+        {isLesson ? "אין שיעורים בספרייה" : "אין שירים בספרייה"}
+      </h2>
+      <p className="text-gray-400 mb-6">
+        {isLesson
+          ? "העלי שיעור ראשון כדי להתחיל לבנות מאגר תוכן חכם."
+          : "העלי שיר ראשון כדי להעשיר את מסלולי הלמידה."}
+      </p>
+
+      <button
+        onClick={onClick}
+        className="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black px-8 py-3 rounded-xl"
+      >
+        {isLesson ? "העלאת שיעור" : "העלאת שיר"}
+      </button>
     </div>
   );
 }

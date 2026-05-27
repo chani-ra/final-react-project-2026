@@ -1,5 +1,6 @@
 import axiosConfig from "./axiosConfig";
 
+// קבלת הקורסים שהתלמיד רשום אליהם
 export const getMyCourses = async () => {
   try {
     const response = await axiosConfig.get("/courses/enrolled");
@@ -9,6 +10,7 @@ export const getMyCourses = async () => {
   }
 };
 
+// קבלת קורסים מומלצים לפי פרופיל התלמיד
 export const getRecommendedCourses = async () => {
   try {
     const response = await axiosConfig.get("/courses/recommended");
@@ -18,6 +20,7 @@ export const getRecommendedCourses = async () => {
   }
 };
 
+// הרשמה לקורס קיים
 export const enrollInCourse = async (courseId) => {
   try {
     const response = await axiosConfig.post(`/courses/${courseId}/enroll`);
@@ -27,6 +30,7 @@ export const enrollInCourse = async (courseId) => {
   }
 };
 
+// קבלת קורס לפי מזהה
 export const getCourseById = async (courseId) => {
   try {
     const response = await axiosConfig.get(`/courses/${courseId}`);
@@ -36,6 +40,7 @@ export const getCourseById = async (courseId) => {
   }
 };
 
+// רענון קורס אישי קיים וחיפוש תכנים חדשים שמתאימים לתלמיד
 export const refreshPersonalizedCourse = async (courseId) => {
   try {
     const response = await axiosConfig.post(
@@ -45,5 +50,19 @@ export const refreshPersonalizedCourse = async (courseId) => {
     return response.data;
   } catch (error) {
     throw error.response?.data?.message || "נכשל ברענון המסלול האישי";
+  }
+};
+
+// יצירת קורס אישי נוסף לתלמיד מחובר, בלי הרשמה מחדש
+export const createPersonalizedCourse = async (coursePreferences) => {
+  try {
+    const response = await axiosConfig.post(
+      "/courses/create-personalized",
+      coursePreferences
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "נכשל ביצירת קורס אישי נוסף";
   }
 };

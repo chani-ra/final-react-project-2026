@@ -11,6 +11,7 @@ export default function MainLayout() {
 
   const [theme, setTheme] = useState("dark");
 
+  // אם אין משתמש מחובר — החזרה לדף הבית
   useEffect(() => {
     if (!user) {
       navigate("/");
@@ -19,16 +20,19 @@ export default function MainLayout() {
 
   if (!user) return null;
 
+  // התנתקות וניקוי המשתמש מה־Redux ומה־localStorage
   const handleLogout = () => {
     dispatch(logoutUser());
     navigate("/");
   };
 
+  // בניית תפריט לפי סוג המשתמש
   const getNavLinks = () => {
     const menus = {
       student: [
         { name: "דשבורד", path: "/dashboard", icon: "🏠" },
         { name: "הקורסים שלי", path: "/courses", icon: "📚" },
+        { name: "קורס חדש", path: "/create-personal-course", icon: "✨" },
         { name: "המשימות שלי", path: "/tasks", icon: "📝" },
         { name: "צ'אט בולט", path: "/chat", icon: "🤖" },
         { name: "מילון אישי", path: "/dictionary", icon: "📖" },
@@ -72,7 +76,15 @@ export default function MainLayout() {
         <div className="flex items-center gap-8">
           <div
             className="text-2xl font-black tracking-tight text-yellow-500 cursor-pointer"
-            onClick={() => navigate(user.role === "teacher" ? "/teacher/dashboard" : user.role === "admin" ? "/admin/dashboard" : "/dashboard")}
+            onClick={() =>
+              navigate(
+                user.role === "teacher"
+                  ? "/teacher/dashboard"
+                  : user.role === "admin"
+                  ? "/admin/dashboard"
+                  : "/dashboard"
+              )
+            }
           >
             English
             <span className={theme === "dark" ? "text-white" : "text-slate-900"}>

@@ -46,7 +46,11 @@ export default function TeacherCreate() {
     formData.append('topic', topic);
     formData.append('icon', selectedIcon);
     
-    // שליחת הקובץ בשם שהשרת מצפה לו (video לשיעור, audioFile לשיר)
+    // ✅ שינוי מ-language ל-lessonLanguage כדי להתאים לשרת החדש
+    formData.append('lessonLanguage', 'he'); 
+    formData.append('isPublic', false);
+    formData.append('description', '');
+    
     formData.append(contentType === 'video' ? 'video' : 'audioFile', file);
 
     try {
@@ -107,15 +111,23 @@ export default function TeacherCreate() {
           </div>
         </div>
         
+        {/* קובץ מדיה - תוקן הבאג של הלחיצה! */}
         <div>
           <label className="block text-sm font-bold text-gray-300 mb-2">קובץ מדיה</label>
           <div 
             onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-2xl p-10 text-center transition-all ${isDragging ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/25 bg-slate-900/50'}`}
+            className={`relative border-2 border-dashed rounded-2xl p-10 text-center transition-all hover:border-indigo-500 ${isDragging ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/25 bg-slate-900/50'}`}
           >
-            <input type="file" accept={contentType === 'video' ? 'video/*' : 'audio/*'} onChange={handleFileChange} className="absolute opacity-0 cursor-pointer w-full h-full inset-0" />
-            <span className="text-4xl mb-3 block">{contentType === 'video' ? '📹' : '🎧'}</span>
-            <p className="text-gray-300 font-bold text-sm">{fileName ? `✅ קובץ נבחר: ${fileName}` : 'גררי לכאן או לחצי לבחירה'}</p>
+            <input 
+              type="file" 
+              accept={contentType === 'video' ? 'video/*' : 'audio/*'} 
+              onChange={handleFileChange} 
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+            />
+            <span className="text-4xl mb-3 block relative z-0">{contentType === 'video' ? '📹' : '🎧'}</span>
+            <p className="text-gray-300 font-bold text-sm relative z-0">
+              {fileName ? `✅ קובץ נבחר: ${fileName}` : 'גררי לכאן או לחצי לבחירה'}
+            </p>
           </div>
         </div>
 

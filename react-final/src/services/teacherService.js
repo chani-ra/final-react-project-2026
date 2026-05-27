@@ -126,7 +126,6 @@ export const updateSong = async (songId, formData) => {
   }
 };
 
-// 10. מחיקת שיעור
 export const deleteLesson = async (lessonId) => {
   try {
     const response = await axiosConfig.delete(`/lessons/${lessonId}`);

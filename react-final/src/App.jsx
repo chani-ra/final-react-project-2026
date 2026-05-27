@@ -17,6 +17,7 @@ import TeacherStudents from './features/teacher/TeacherStudents';
 import TeacherCreate from './features/teacher/TeacherCreate';
 import TeacherLibrary from './features/teacher/TeacherLibrary';
 import TeacherGrading from './features/teacher/TeacherGrading';
+import LessonView from './features/teacher/LessonView';
 
 // admin components - הייבוא החדש והמעודכן
 import AdminDashboard from './features/admin/AdminDashboard';
@@ -32,7 +33,7 @@ export default function App() {
     <Router>
       <Routes>
         {/* דפי כניסה והרשמה - מחוץ ל-Navbar */}
-        <Route path="/" element={<Login />} /> 
+        <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
         {/* כל הדפים המוגנים שנמצאים בתוך המעטפת (MainLayout) */}
@@ -51,7 +52,7 @@ export default function App() {
           <Route path="/teacher/create" element={<TeacherCreate />} />
           <Route path="/teacher/library" element={<TeacherLibrary />} />
           <Route path="/teacher/grading" element={<TeacherGrading />} />
-
+          <Route path="/teacher/lesson/:lessonId" element={<LessonView />} />
           {/* נתיבים המיועדים למנהל - מעודכן לפי האפיון החדש */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />

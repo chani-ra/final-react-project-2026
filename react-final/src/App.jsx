@@ -8,6 +8,9 @@ import Home from "./components/Home";
 import Register from "./features/auth/Register";
 import Login from "./features/auth/Login";
 
+// shared components
+import MyMessages from "./features/shared/messages/MyMessages";
+
 // student components
 import StudentDashboard from "./features/student/StudentDashboard";
 import Tasks from "./features/student/Tasks";
@@ -54,6 +57,9 @@ export default function App() {
 
         {/* דפים מוגנים */}
         <Route element={<MainLayout />}>
+          {/* משותף לכל התפקידים */}
+          <Route path="/messages" element={<MyMessages />} />
+
           {/* תלמיד */}
           <Route path="/dashboard" element={<StudentDashboard />} />
           <Route path="/courses" element={<Courses />} />

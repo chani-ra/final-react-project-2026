@@ -1,92 +1,296 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
+import { getAllUsersForAdmin } from "../../services/adminService";
 
 export default function AdminUsers() {
-  const [activeTab, setActiveTab] = useState('students'); // 'students' או 'teachers'
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState("students");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [users, setUsers] = useState([]);
 
-  const [users, setUsers] = useState([
-    { id: 1, name: 'אלון לוי', email: 'alon@gmail.com', role: 'student', status: 'פעיל', date: '12/05/2026' },
-    { id: 2, name: 'רוני כהן', email: 'roni.teacher@wise.com', role: 'teacher', status: 'פעיל', date: '01/02/2026' },
-    { id: 3, name: 'מאיה אברהם', email: 'maya@gmail.com', role: 'student', status: 'מוקפא', date: '20/04/2026' },
-    { id: 4, name: 'ישראל ישראלי', email: 'israel.t@wise.com', role: 'teacher', status: 'פעיל', date: '18/05/2026' },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState({ type: "", text: "" });
 
-  const filteredUsers = users.filter(user => 
-    user.role === (activeTab === 'students' ? 'student' : 'teacher') &&
-    user.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // טעינת משתמשים מהשרת
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      setMessage({ type: "", text: "" });
+
+      const data = await getAllUsersForAdmin();
+      setUsers(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setMessage({ type: "error", text: error.toString() });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const students = useMemo(() => {
+    return users.filter((user) => user.role === "student" || user.role === "user");
+  }, [users]);
+
+  const teachers = useMemo(() => {
+    return users.filter((user) => user.role === "teacher");
+  }, [users]);
+
+  const admins = useMemo(() => {
+    return users.filter((user) => user.role === "admin");
+  }, [users]);
+
+  const activeUsers = useMemo(() => {
+    const map = {
+      students,
+      teachers,
+      admins,
+    };
+
+    const list = map[activeTab] || [];
+
+    return list.filter((user) => {
+      const search = searchQuery.toLowerCase().trim();
+
+      if (!search) return true;
+
+      return (
+        user.username?.toLowerCase().includes(search) ||
+        user.email?.toLowerCase().includes(search) ||
+        user.phone?.toLowerCase().includes(search)
+      );
+    });
+  }, [activeTab, students, teachers, admins, searchQuery]);
+
+  const tabs = [
+    {
+      id: "students",
+      label: "תלמידים",
+      icon: "🎒",
+      count: students.length,
+      color: "border-yellow-400 text-yellow-400",
+    },
+    {
+      id: "teachers",
+      label: "מורים",
+      icon: "🧑‍🏫",
+      count: teachers.length,
+      color: "border-indigo-400 text-indigo-400",
+    },
+    {
+      id: "admins",
+      label: "מנהלים",
+      icon: "🛡️",
+      count: admins.length,
+      color: "border-emerald-400 text-emerald-400",
+    },
+  ];
 
   return (
     <div className="space-y-6" dir="rtl">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">👥 ניהול משתמשי המערכת</h1>
-        <p className="text-gray-400 mt-1">ניהול והרשאות של מורים ותלמידים בהפרדה מלאה.</p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          👥 ניהול משתמשי המערכת
+        </h1>
+
+        <p className="text-gray-400 mt-1">
+          צפייה במשתמשים לפי תפקיד: תלמידים, מורים ומנהלים.
+        </p>
       </div>
 
-      {/* טאבים להפרדה */}
-      <div className="flex gap-2 border-b border-white/10 pb-px">
-        <button 
-          onClick={() => setActiveTab('students')}
-          className={`pb-4 px-4 font-bold text-sm transition-all border-b-2 ${
-            activeTab === 'students' ? 'border-yellow-500 text-yellow-500' : 'border-transparent text-gray-400 hover:text-white'
+      {message.text && (
+        <div
+          className={`p-4 rounded-2xl font-bold ${
+            message.type === "success"
+              ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
+              : "bg-red-500/10 border border-red-500/30 text-red-400"
           }`}
         >
-          🎒 תלמידים ({users.filter(u => u.role === 'student').length})
-        </button>
-        <button 
-          onClick={() => setActiveTab('teachers')}
-          className={`pb-4 px-4 font-bold text-sm transition-all border-b-2 ${
-            activeTab === 'teachers' ? 'border-indigo-500 text-indigo-500' : 'border-transparent text-gray-400 hover:text-white'
-          }`}
+          {message.text}
+        </div>
+      )}
+
+      <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatCard title="סה״כ משתמשים" value={users.length} />
+        <StatCard title="תלמידים" value={students.length} color="text-yellow-400" />
+        <StatCard title="מורים" value={teachers.length} color="text-indigo-400" />
+        <StatCard title="מנהלים" value={admins.length} color="text-emerald-400" />
+      </section>
+
+      <div className="flex gap-2 border-b border-white/10 overflow-x-auto">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`shrink-0 pb-4 px-4 font-bold text-sm transition-all border-b-2 ${
+              activeTab === tab.id
+                ? tab.color
+                : "border-transparent text-gray-400 hover:text-white"
+            }`}
+          >
+            {tab.icon} {tab.label} ({tab.count})
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-col md:flex-row justify-between gap-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="חיפוש לפי שם, מייל או טלפון..."
+          className="w-full md:max-w-md bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-yellow-500 transition-all"
+        />
+
+        <button
+          onClick={() =>
+            alert("בשלב הבא נחבר כאן מערכת הודעות למשתמשים לפי תפקיד.")
+          }
+          className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-6 py-3 rounded-xl transition-all"
         >
-          🧑‍🏫 מורים ({users.filter(u => u.role === 'teacher').length})
+          שלח הודעה לקבוצה 💬
         </button>
       </div>
 
-      {/* חיפוש */}
-      <input 
-        type="text" 
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder={`חפש ${activeTab === 'students' ? 'תלמיד/ה' : 'מורה'}...`} 
-        className="w-full max-w-md bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-yellow-500 transition-all"
-      />
+      {loading ? (
+        <div className="min-h-[40vh] flex items-center justify-center text-white font-bold text-xl">
+          <div className="animate-pulse">טוען משתמשים... 👥</div>
+        </div>
+      ) : activeUsers.length === 0 ? (
+        <div className="bg-white/5 border border-dashed border-white/10 rounded-3xl p-12 text-center">
+          <div className="text-6xl mb-4">🔍</div>
 
-      {/* טבלה מסודרת */}
-      <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden shadow-lg">
-        <table className="w-full text-right">
-          <thead>
-            <tr className="border-b border-white/10 bg-white/5 text-gray-400 text-sm font-semibold">
-              <th className="p-4">שם מלא</th>
-              <th className="p-4">אימייל</th>
-              <th className="p-4">תאריך הצטרפות</th>
-              <th className="p-4">סטטוס</th>
-              <th className="p-4 text-left">פעולות</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5 text-sm">
-            {filteredUsers.map((user) => (
-              <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
-                <td className="p-4 font-bold text-white">{user.name}</td>
-                <td className="p-4 text-gray-300 font-mono text-xs">{user.email}</td>
-                <td className="p-4 text-gray-400">{user.date}</td>
-                <td className="p-4">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                    user.status === 'פעיל' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
-                  }`}>
-                    {user.status}
-                  </span>
-                </td>
-                <td className="p-4 text-left">
-                  <button className="text-xs font-bold bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-all text-gray-300">
-                    ניהול הרשאות
-                  </button>
-                </td>
+          <h2 className="text-2xl font-black mb-2">לא נמצאו משתמשים</h2>
+
+          <p className="text-gray-400">
+            אין משתמשים מתאימים לטאב או לחיפוש שבחרת.
+          </p>
+        </div>
+      ) : (
+        <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden shadow-lg">
+          <table className="w-full text-right">
+            <thead>
+              <tr className="border-b border-white/10 bg-white/5 text-gray-400 text-sm font-semibold">
+                <th className="p-4">שם</th>
+                <th className="p-4">אימייל</th>
+                <th className="p-4">טלפון</th>
+                <th className="p-4">גיל</th>
+                <th className="p-4">תפקיד</th>
+                <th className="p-4">הצטרפות</th>
+                <th className="p-4 text-left">פעולות</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+
+            <tbody className="divide-y divide-white/5 text-sm">
+              {activeUsers.map((user) => (
+                <tr
+                  key={user._id || user.id}
+                  className="hover:bg-white/[0.03] transition-colors"
+                >
+                  <td className="p-4 font-bold text-white">
+                    {user.username || "ללא שם"}
+                  </td>
+
+                  <td className="p-4 text-gray-300 font-mono text-xs">
+                    {user.email || "לא צוין"}
+                  </td>
+
+                  <td className="p-4 text-gray-400">
+                    {user.phone || "לא צוין"}
+                  </td>
+
+                  <td className="p-4 text-gray-400">
+                    {user.age || "—"}
+                  </td>
+
+                  <td className="p-4">
+                    <RoleBadge role={user.role} />
+                  </td>
+
+                  <td className="p-4 text-gray-400">
+                    {formatDate(user.createdAt)}
+                  </td>
+
+                  <td className="p-4 text-left">
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() =>
+                          alert("בשלב הבא נחבר שליחת הודעה אישית למשתמש.")
+                        }
+                        className="text-xs font-bold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 px-3 py-1.5 rounded-lg transition-all"
+                      >
+                        הודעה
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          alert("בשלב הבא נחבר ניהול הרשאות מתקדם.")
+                        }
+                        className="text-xs font-bold bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-all text-gray-300"
+                      >
+                        הרשאות
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
+}
+
+function StatCard({ title, value, color = "text-white" }) {
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+      <div className="text-sm text-gray-400">{title}</div>
+      <div className={`text-3xl font-black mt-1 ${color}`}>{value}</div>
+    </div>
+  );
+}
+
+function RoleBadge({ role }) {
+  const config = {
+    admin: {
+      label: "מנהל",
+      className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    },
+    teacher: {
+      label: "מורה",
+      className: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+    },
+    student: {
+      label: "תלמיד",
+      className: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+    },
+    user: {
+      label: "תלמיד",
+      className: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+    },
+  };
+
+  const item = config[role] || {
+    label: role || "לא ידוע",
+    className: "bg-white/10 text-gray-400 border-white/10",
+  };
+
+  return (
+    <span
+      className={`px-3 py-1 rounded-full text-xs font-bold border ${item.className}`}
+    >
+      {item.label}
+    </span>
+  );
+}
+
+function formatDate(date) {
+  if (!date) return "לא ידוע";
+
+  return new Date(date).toLocaleDateString("he-IL", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
 }

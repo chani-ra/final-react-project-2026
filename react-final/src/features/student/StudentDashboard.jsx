@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getWeeklySong } from "../../services/songService";
 import CustomAudioPlayer from "../../components/CustomAudioPlayer";
+import AICoachCard from "./components/AICoachCard";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
@@ -39,10 +40,39 @@ export default function StudentDashboard() {
   const name = userData.username || userData.name || "תלמידה";
   const level = userData.englishLevel || userData.level || "beginner";
   const interests = userData.favoriteHobbies || userData.interests || [];
+  const expectations = userData.expectations || [];
 
   // משימות קצרות לפי תחביבים ורמה
   const getPersonalizedTasks = () => {
     const tasks = [];
+
+    if (expectations.includes("vocabulary")) {
+      tasks.push({
+        title: "📚 חיזוק אוצר מילים",
+        desc: "בחרי 5 מילים חדשות מתוך שיעור או שיר וכתבי איתן משפט אחד.",
+      });
+    }
+
+    if (expectations.includes("grammar")) {
+      tasks.push({
+        title: "🧠 דקדוק קטן ליום",
+        desc: "בחרי משפט אחד באנגלית וסמני בו את הפועל המרכזי.",
+      });
+    }
+
+    if (expectations.includes("confidence")) {
+      tasks.push({
+        title: "💪 ביטחון באנגלית",
+        desc: "אמרי בקול משפט אחד באנגלית שלוש פעמים, בכל פעם קצת יותר טבעי.",
+      });
+    }
+
+    if (expectations.includes("fluent_speaking")) {
+      tasks.push({
+        title: "🗣️ תרגול דיבור",
+        desc: "אמרי 3 משפטים קצרים באנגלית על נושא שמעניין אותך.",
+      });
+    }
 
     if (interests.includes("art_music")) {
       tasks.push({
@@ -80,7 +110,7 @@ export default function StudentDashboard() {
           : "תרגלי 5 מילים חדשות שמתאימות ליום־יום.",
     });
 
-    return tasks;
+    return tasks.slice(0, 4);
   };
 
   const myTasks = getPersonalizedTasks();
@@ -95,6 +125,23 @@ export default function StudentDashboard() {
             <p className="text-gray-400 mt-2">
               איזה כיף לראות אותך. הנה הלמידה האישית שלך להיום.
             </p>
+
+            <div className="flex flex-wrap gap-2 mt-4">
+              {expectations.length > 0 ? (
+                expectations.map((expectation) => (
+                  <span
+                    key={expectation}
+                    className="bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 px-3 py-1 rounded-full text-sm font-bold"
+                  >
+                    {getExpectationLabel(expectation)}
+                  </span>
+                ))
+              ) : (
+                <span className="text-gray-500 text-sm">
+                  עדיין לא נבחרו מטרות למידה
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="bg-yellow-400 text-slate-950 px-6 py-4 rounded-2xl font-black shadow-lg h-fit">
@@ -134,12 +181,23 @@ export default function StudentDashboard() {
                 </div>
               </div>
 
-              <button
-                onClick={() => navigate("/courses")}
-                className="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black px-6 py-4 rounded-2xl transition-all h-fit"
-              >
-                פתחי את הקורסים שלי
-              </button>
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate("/courses")}
+                  className="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black px-6 py-4 rounded-2xl transition-all h-fit"
+                >
+                  פתחי את הקורסים שלי
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigate("/create-personal-course")}
+                  className="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-3 rounded-2xl border border-white/10 transition-all"
+                >
+                  צור קורס אישי נוסף
+                </button>
+              </div>
             </div>
           </section>
 
@@ -147,12 +205,14 @@ export default function StudentDashboard() {
             <div className="flex justify-between items-center gap-4 mb-5">
               <div>
                 <h2 className="text-2xl font-black">המשימות שלי להיום 📝</h2>
+
                 <p className="text-gray-400 text-sm mt-1">
                   משימות קצרות כדי להתקדם בלי עומס.
                 </p>
               </div>
 
               <button
+                type="button"
                 onClick={() => navigate("/tasks")}
                 className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl"
               >
@@ -242,20 +302,7 @@ export default function StudentDashboard() {
             )}
           </section>
 
-          <section className="bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-3xl text-slate-950 shadow-xl">
-            <h2 className="text-2xl font-black mb-3">🤖 המאמן האישי</h2>
-
-            <p className="text-sm font-semibold leading-relaxed mb-5">
-              בקרוב: המאמן ינתח את ההתקדמות שלך וייתן לך משימה אישית בכל יום.
-            </p>
-
-            <button
-              onClick={() => navigate("/chat")}
-              className="bg-slate-950 text-white w-full py-3 rounded-xl font-black hover:bg-slate-800 transition-all"
-            >
-              צ׳אט עם AI
-            </button>
-          </section>
+          <AICoachCard user={userData} />
 
           <section className="bg-white/5 p-6 rounded-3xl border border-white/10 text-center">
             <h3 className="font-black mb-2">צריכה עזרה?</h3>
@@ -265,6 +312,7 @@ export default function StudentDashboard() {
             </p>
 
             <button
+              type="button"
               onClick={() => navigate("/chat")}
               className="bg-indigo-600 w-full py-3 rounded-xl font-bold hover:bg-indigo-500 transition-all"
             >
@@ -299,4 +347,15 @@ function getHobbyLabel(hobby) {
   };
 
   return labels[hobby] || hobby;
+}
+
+function getExpectationLabel(expectation) {
+  const labels = {
+    grammar: "דקדוק",
+    fluent_speaking: "דיבור שוטף",
+    confidence: "ביטחון באנגלית",
+    vocabulary: "אוצר מילים",
+  };
+
+  return labels[expectation] || expectation;
 }

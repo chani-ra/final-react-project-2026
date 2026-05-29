@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { getAllUsersForAdmin } from "../../services/adminService";
+import AppConfirmModal from "../../components/AppConfirmModal";
 
 export default function AdminUsers() {
   const [activeTab, setActiveTab] = useState("students");
@@ -8,6 +9,13 @@ export default function AdminUsers() {
 
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: "", text: "" });
+
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: "",
+    text: "",
+    type: "info",
+  });
 
   // טעינת משתמשים מהשרת
   const loadUsers = async () => {
@@ -48,12 +56,11 @@ export default function AdminUsers() {
     };
 
     const list = map[activeTab] || [];
+    const search = searchQuery.toLowerCase().trim();
+
+    if (!search) return list;
 
     return list.filter((user) => {
-      const search = searchQuery.toLowerCase().trim();
-
-      if (!search) return true;
-
       return (
         user.username?.toLowerCase().includes(search) ||
         user.email?.toLowerCase().includes(search) ||
@@ -85,6 +92,25 @@ export default function AdminUsers() {
       color: "border-emerald-400 text-emerald-400",
     },
   ];
+
+  // פתיחת הודעת מידע יפה במקום alert
+  const openInfoModal = ({ title, text, type = "info" }) => {
+    setModal({
+      isOpen: true,
+      title,
+      text,
+      type,
+    });
+  };
+
+  const closeModal = () => {
+    setModal({
+      isOpen: false,
+      title: "",
+      text: "",
+      type: "info",
+    });
+  };
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -121,6 +147,7 @@ export default function AdminUsers() {
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            type="button"
             onClick={() => setActiveTab(tab.id)}
             className={`shrink-0 pb-4 px-4 font-bold text-sm transition-all border-b-2 ${
               activeTab === tab.id
@@ -143,8 +170,13 @@ export default function AdminUsers() {
         />
 
         <button
+          type="button"
           onClick={() =>
-            alert("בשלב הבא נחבר כאן מערכת הודעות למשתמשים לפי תפקיד.")
+            openInfoModal({
+              title: "שליחת הודעה לקבוצה",
+              text: "שליחת הודעות לקבוצות כבר קיימת במסך 'הודעות ופידבקים'. מכאן בהמשך נחבר קיצור ישיר לפי הטאב הנבחר.",
+              type: "info",
+            })
           }
           className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-6 py-3 rounded-xl transition-all"
         >
@@ -214,8 +246,13 @@ export default function AdminUsers() {
                   <td className="p-4 text-left">
                     <div className="flex justify-end gap-2">
                       <button
+                        type="button"
                         onClick={() =>
-                          alert("בשלב הבא נחבר שליחת הודעה אישית למשתמש.")
+                          openInfoModal({
+                            title: "שליחת הודעה אישית",
+                            text: `בשלב הבא נחבר מכאן שליחת הודעה אישית ישירות אל ${user.username || user.email}. כרגע אפשר לשלוח הודעה אישית דרך מסך 'הודעות ופידבקים' בבחירת משתמש ספציפי.`,
+                            type: "info",
+                          })
                         }
                         className="text-xs font-bold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 px-3 py-1.5 rounded-lg transition-all"
                       >
@@ -223,8 +260,13 @@ export default function AdminUsers() {
                       </button>
 
                       <button
+                        type="button"
                         onClick={() =>
-                          alert("בשלב הבא נחבר ניהול הרשאות מתקדם.")
+                          openInfoModal({
+                            title: "ניהול הרשאות",
+                            text: "ניהול הרשאות מתקדם יתווסף בהמשך: שינוי תפקיד, חסימת משתמש, והפעלה מחדש.",
+                            type: "warning",
+                          })
                         }
                         className="text-xs font-bold bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-all text-gray-300"
                       >
@@ -238,6 +280,17 @@ export default function AdminUsers() {
           </table>
         </div>
       )}
+
+      <AppConfirmModal
+        isOpen={modal.isOpen}
+        title={modal.title}
+        text={modal.text}
+        type={modal.type}
+        confirmText="הבנתי"
+        cancelText="סגור"
+        onConfirm={closeModal}
+        onCancel={closeModal}
+      />
     </div>
   );
 }

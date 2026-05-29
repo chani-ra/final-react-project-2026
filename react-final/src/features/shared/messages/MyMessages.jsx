@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { getMyMessages, markMessageAsRead } from "../../../services/messageService";
+import {
+  getMyMessages,
+  markMessageAsRead,
+} from "../../../services/messageService";
 
 export default function MyMessages() {
   const [messages, setMessages] = useState([]);
@@ -17,10 +20,12 @@ export default function MyMessages() {
       setMessageState({ type: "", text: "" });
 
       const data = await getMyMessages();
-      setMessages(data);
+      const safeMessages = Array.isArray(data) ? data : [];
 
-      if (data.length > 0) {
-        setActiveMessage(data[0]);
+      setMessages(safeMessages);
+
+      if (safeMessages.length > 0) {
+        setActiveMessage((prev) => prev || safeMessages[0]);
       }
     } catch (error) {
       setMessageState({ type: "error", text: error.toString() });
@@ -60,19 +65,24 @@ export default function MyMessages() {
 
       await markMessageAsRead(message._id);
 
+      const readAt = new Date().toISOString();
+
       setMessages((prev) =>
         prev.map((item) =>
           item._id === message._id
-            ? { ...item, isRead: true, readAt: new Date().toISOString() }
+            ? { ...item, isRead: true, readAt }
             : item
         )
       );
 
       setActiveMessage((prev) =>
         prev && prev._id === message._id
-          ? { ...prev, isRead: true, readAt: new Date().toISOString() }
+          ? { ...prev, isRead: true, readAt }
           : prev
       );
+
+      // עדכון מיידי לפעמון בנבבר
+      window.dispatchEvent(new Event("messages-updated"));
     } catch (error) {
       setMessageState({ type: "error", text: error.toString() });
     } finally {
@@ -289,9 +299,7 @@ function EmptyMessages() {
 
       <h2 className="text-2xl font-black mb-2">אין הודעות עדיין</h2>
 
-      <p className="text-gray-400">
-        כשהמנהל ישלח הודעה, היא תופיע כאן.
-      </p>
+      <p className="text-gray-400">כשהמנהל ישלח הודעה, היא תופיע כאן.</p>
     </div>
   );
 }

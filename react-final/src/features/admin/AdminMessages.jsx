@@ -4,6 +4,7 @@ import {
   getAdminSentMessages,
   sendAdminMessage,
 } from "../../services/adminService";
+import AppConfirmModal from "../../components/AppConfirmModal";
 
 export default function AdminMessages() {
   const [users, setUsers] = useState([]);
@@ -20,6 +21,12 @@ export default function AdminMessages() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    text: "",
+  });
 
   // טעינת משתמשים והיסטוריית הודעות
   const loadData = async () => {
@@ -48,7 +55,9 @@ export default function AdminMessages() {
   const singleUserOptions = useMemo(() => {
     return users.map((user) => ({
       id: user._id || user.id,
-      label: `${user.username || "ללא שם"} - ${user.email || "ללא מייל"} (${getRoleLabel(user.role)})`,
+      label: `${user.username || "ללא שם"} - ${
+        user.email || "ללא מייל"
+      } (${getRoleLabel(user.role)})`,
     }));
   }, [users]);
 
@@ -63,7 +72,9 @@ export default function AdminMessages() {
     if (form.targetType === "all") return users.length;
 
     if (form.targetType === "students") {
-      return users.filter((user) => user.role === "student" || user.role === "user").length;
+      return users.filter(
+        (user) => user.role === "student" || user.role === "user"
+      ).length;
     }
 
     if (form.targetType === "teachers") {
@@ -96,7 +107,8 @@ export default function AdminMessages() {
     return "";
   };
 
-  const handleSendMessage = async () => {
+  // פתיחת חלון אישור יפה לפני שליחה
+  const openSendConfirmModal = () => {
     const validationError = validateForm();
 
     if (validationError) {
@@ -104,19 +116,32 @@ export default function AdminMessages() {
       return;
     }
 
-    const confirmSend = window.confirm(
-      `האם לשלוח את ההודעה ל-${getTargetCount()} נמענים?`
-    );
+    setConfirmModal({
+      isOpen: true,
+      title: "אישור שליחת הודעה",
+      text: `האם לשלוח את ההודעה ל-${getTargetCount()} נמענים?`,
+    });
+  };
 
-    if (!confirmSend) return;
+  const closeConfirmModal = () => {
+    if (sending) return;
 
+    setConfirmModal({
+      isOpen: false,
+      title: "",
+      text: "",
+    });
+  };
+
+  // שליחת הודעה אחרי אישור במודל
+  const handleSendMessage = async () => {
     try {
       setSending(true);
       setMessage({ type: "", text: "" });
 
       const payload = {
-        title: form.title,
-        body: form.body,
+        title: form.title.trim(),
+        body: form.body.trim(),
         targetType: form.targetType,
         targetUser: form.targetType === "single" ? form.targetUser : null,
         priority: form.priority,
@@ -138,6 +163,12 @@ export default function AdminMessages() {
         priority: "normal",
       });
 
+      setConfirmModal({
+        isOpen: false,
+        title: "",
+        text: "",
+      });
+
       await loadData();
     } catch (error) {
       setMessage({ type: "error", text: error.toString() });
@@ -149,10 +180,13 @@ export default function AdminMessages() {
   return (
     <div className="space-y-6 max-w-6xl" dir="rtl">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">💬 הודעות ופידבקים</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          💬 הודעות ופידבקים
+        </h1>
 
         <p className="text-gray-400 mt-1">
-          שליחת הודעות מערכת לכל המשתמשים, לתלמידים, למורים, למנהלים או למשתמש בודד.
+          שליחת הודעות מערכת לכל המשתמשים, לתלמידים, למורים, למנהלים או
+          למשתמש בודד.
         </p>
       </div>
 
@@ -175,7 +209,9 @@ export default function AdminMessages() {
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <section className="xl:col-span-2 bg-white/5 border border-white/10 p-8 rounded-3xl space-y-5">
-            <h2 className="text-2xl font-black text-white">שליחת הודעה חדשה</h2>
+            <h2 className="text-2xl font-black text-white">
+              שליחת הודעה חדשה
+            </h2>
 
             <div>
               <label className="block text-sm font-bold text-gray-300 mb-2">
@@ -269,7 +305,8 @@ export default function AdminMessages() {
             </div>
 
             <button
-              onClick={handleSendMessage}
+              type="button"
+              onClick={openSendConfirmModal}
               disabled={sending}
               className="bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-black px-8 py-4 rounded-xl shadow-lg hover:scale-[1.01] transition-transform w-full disabled:opacity-60"
             >
@@ -282,14 +319,21 @@ export default function AdminMessages() {
 
             <div className="space-y-3">
               <MiniStat label="כל המשתמשים" value={users.length} />
+
               <MiniStat
                 label="תלמידים"
-                value={users.filter((user) => user.role === "student" || user.role === "user").length}
+                value={
+                  users.filter(
+                    (user) => user.role === "student" || user.role === "user"
+                  ).length
+                }
               />
+
               <MiniStat
                 label="מורים"
                 value={users.filter((user) => user.role === "teacher").length}
               />
+
               <MiniStat
                 label="מנהלים"
                 value={users.filter((user) => user.role === "admin").length}
@@ -300,7 +344,9 @@ export default function AdminMessages() {
       )}
 
       <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-        <h2 className="text-2xl font-black mb-5">📨 הודעות שנשלחו לאחרונה</h2>
+        <h2 className="text-2xl font-black mb-5">
+          📨 הודעות שנשלחו לאחרונה
+        </h2>
 
         {sentMessages.length === 0 ? (
           <p className="text-gray-400">עדיין לא נשלחו הודעות.</p>
@@ -331,6 +377,18 @@ export default function AdminMessages() {
           </div>
         )}
       </section>
+
+      <AppConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        text={confirmModal.text}
+        type="warning"
+        confirmText="כן, שלח הודעה"
+        cancelText="ביטול"
+        isLoading={sending}
+        onConfirm={handleSendMessage}
+        onCancel={closeConfirmModal}
+      />
     </div>
   );
 }

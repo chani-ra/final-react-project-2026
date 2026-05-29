@@ -5,6 +5,7 @@ import {
   getMyTasks,
   submitTaskForReview,
 } from "../../services/taskService";
+import SmartGuideBackButton from "../../components/ui/SmartGuideBackButton";
 
 export default function Tasks() {
   const [activeTab, setActiveTab] = useState("pending");
@@ -14,7 +15,6 @@ export default function Tasks() {
   const [actionLoadingId, setActionLoadingId] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  // טעינת המשימות מהשרת
   const loadTasks = async () => {
     try {
       setLoading(true);
@@ -37,6 +37,7 @@ export default function Tasks() {
     const pending = tasks.filter((task) => task.status === "pending").length;
     const review = tasks.filter((task) => task.status === "review").length;
     const completed = tasks.filter((task) => task.status === "completed").length;
+
     const availableXP = tasks
       .filter((task) => task.status === "pending")
       .reduce((acc, task) => acc + (task.rewardXP || 0), 0);
@@ -59,7 +60,6 @@ export default function Tasks() {
     return Math.round((stats.completed / tasks.length) * 100);
   }, [tasks.length, stats.completed]);
 
-  // סימון משימת Coach או משימה אישית כבוצעה
   const handleCompleteTask = async (taskId) => {
     try {
       setActionLoadingId(taskId);
@@ -81,7 +81,6 @@ export default function Tasks() {
     }
   };
 
-  // שליחת משימת מורה לבדיקה
   const handleSubmitForReview = async (taskId) => {
     try {
       setActionLoadingId(taskId);
@@ -103,7 +102,6 @@ export default function Tasks() {
     }
   };
 
-  // מחיקת משימה אישית
   const handleDeleteTask = async (taskId) => {
     try {
       setActionLoadingId(taskId);
@@ -125,6 +123,8 @@ export default function Tasks() {
 
   return (
     <div className="space-y-6" dir="rtl">
+      <SmartGuideBackButton />
+
       <section className="bg-white/5 p-6 rounded-3xl border border-white/10">
         <div className="flex flex-col xl:flex-row justify-between gap-6">
           <div>
@@ -140,10 +140,29 @@ export default function Tasks() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 min-w-[360px]">
-            <StatBox label="לביצוע" value={stats.pending} color="text-yellow-400" />
-            <StatBox label="בבדיקה" value={stats.review} color="text-indigo-400" />
-            <StatBox label="הושלמו" value={stats.completed} color="text-emerald-400" />
-            <StatBox label="XP זמין" value={stats.availableXP} color="text-orange-400" />
+            <StatBox
+              label="לביצוע"
+              value={stats.pending}
+              color="text-yellow-400"
+            />
+
+            <StatBox
+              label="בבדיקה"
+              value={stats.review}
+              color="text-indigo-400"
+            />
+
+            <StatBox
+              label="הושלמו"
+              value={stats.completed}
+              color="text-emerald-400"
+            />
+
+            <StatBox
+              label="XP זמין"
+              value={stats.availableXP}
+              color="text-orange-400"
+            />
           </div>
         </div>
 
@@ -334,11 +353,15 @@ function TaskCard({
         {task.status === "completed" && (
           <div className="text-center md:text-left">
             <span className="text-xs text-gray-400 block mb-1">
-              {task.grade !== null && task.grade !== undefined ? "ציון סופי" : "סטטוס"}
+              {task.grade !== null && task.grade !== undefined
+                ? "ציון סופי"
+                : "סטטוס"}
             </span>
 
             <span className="text-3xl font-black text-emerald-400">
-              {task.grade !== null && task.grade !== undefined ? task.grade : "✓"}
+              {task.grade !== null && task.grade !== undefined
+                ? task.grade
+                : "✓"}
             </span>
           </div>
         )}

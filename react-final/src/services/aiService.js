@@ -28,6 +28,19 @@ export const translateText = async ({ text, targetLang = "Hebrew" }) => {
   }
 };
 
+// עוזר מילון: תיקון כתיב, תרגום, הסבר ודוגמה
+export const getDictionaryHelper = async (text) => {
+  try {
+    const response = await axiosConfig.post("/ai/dictionary-helper", {
+      text,
+    });
+
+    return response.data.data;
+  } catch (error) {
+    throw error.response?.data?.message || "נכשל בעיבוד המילה בעזרת AI";
+  }
+};
+
 // תיקון דקדוק בעזרת AI
 export const correctGrammar = async (text) => {
   try {
@@ -59,13 +72,14 @@ export const generateExerciseWithAI = async (exerciseData) => {
 export const generateQuizWithAI = async (quizData) => {
   try {
     const response = await axiosConfig.post("/ai/generate-quiz", quizData);
+
     return response.data.questions || [];
   } catch (error) {
     throw error.response?.data?.message || "נכשל ביצירת בוחן בעזרת AI";
   }
 };
 
-// בדיקת חיבור באנגלית
+// בדיקת חיבור / פסקה באנגלית
 export const checkEssayWithAI = async ({ text, studentLevel }) => {
   try {
     const response = await axiosConfig.post("/ai/check-essay", {
@@ -75,7 +89,7 @@ export const checkEssayWithAI = async ({ text, studentLevel }) => {
 
     return response.data.data;
   } catch (error) {
-    throw error.response?.data?.message || "נכשל בבדיקת החיבור";
+    throw error.response?.data?.message || "נכשל בבדיקת הכתיבה";
   }
 };
 
@@ -92,19 +106,5 @@ export const getStudyTips = async ({ level, focusArea }) => {
     return response.data.tips || [];
   } catch (error) {
     throw error.response?.data?.message || "נכשל בטעינת טיפים";
-  }
-};
-
-
-// עוזר מילון: תיקון כתיב, תרגום, הסבר ודוגמה
-export const getDictionaryHelper = async (text) => {
-  try {
-    const response = await axiosConfig.post("/ai/dictionary-helper", {
-      text,
-    });
-
-    return response.data.data;
-  } catch (error) {
-    throw error.response?.data?.message || "נכשל בעיבוד המילה בעזרת AI";
   }
 };

@@ -6,6 +6,7 @@ import {
   getMyDictionaryWords,
   toggleDictionaryWordMastered,
 } from "../../services/dictionaryService";
+import SmartGuideBackButton from "../../components/ui/SmartGuideBackButton";
 
 export default function Dictionary() {
   const [words, setWords] = useState([]);
@@ -207,6 +208,8 @@ export default function Dictionary() {
 
   return (
     <div className="space-y-8" dir="rtl">
+      <SmartGuideBackButton />
+
       <section className="bg-white/5 p-8 rounded-3xl border border-white/10">
         <div className="flex flex-col lg:flex-row justify-between gap-6">
           <div>
@@ -222,11 +225,13 @@ export default function Dictionary() {
 
           <div className="grid grid-cols-3 gap-3 min-w-[320px]">
             <StatBox label="סה״כ" value={stats.total} />
+
             <StatBox
               label="יודעת"
               value={stats.mastered}
               color="text-emerald-400"
             />
+
             <StatBox
               label="בתרגול"
               value={stats.practicing}
@@ -271,7 +276,9 @@ export default function Dictionary() {
               disabled={translating || !form.word.trim()}
               className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-gray-400 text-white font-black py-3 rounded-xl transition-all"
             >
-              {translating ? "בודק ומתרגם בעזרת AI..." : "בדוק ותרגם בעזרת AI ✨"}
+              {translating
+                ? "בודק ומתרגם בעזרת AI..."
+                : "בדוק ותרגם בעזרת AI ✨"}
             </button>
 
             <TextInput

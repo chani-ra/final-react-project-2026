@@ -53,6 +53,7 @@ export default function MainLayout() {
         { name: "המשימות שלי", path: "/tasks", icon: "📝" },
         { name: "צ'אט בולט", path: "/chat", icon: "🤖" },
         { name: "מילון אישי", path: "/dictionary", icon: "📖" },
+        { name: "מאמן כתיבה", path: "/writing", icon: "✍️" },
       ],
 
       teacher: [
@@ -90,8 +91,7 @@ export default function MainLayout() {
 
   const brandTextColor = theme === "dark" ? "text-white" : "text-slate-900";
 
-  const dividerColor =
-    theme === "dark" ? "bg-white/10" : "bg-stone-200";
+  const dividerColor = theme === "dark" ? "bg-white/10" : "bg-stone-200";
 
   const userDisplayName = user.username || user.name || "משתמש";
 

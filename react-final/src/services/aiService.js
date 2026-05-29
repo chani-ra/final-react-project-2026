@@ -94,3 +94,17 @@ export const getStudyTips = async ({ level, focusArea }) => {
     throw error.response?.data?.message || "נכשל בטעינת טיפים";
   }
 };
+
+
+// עוזר מילון: תיקון כתיב, תרגום, הסבר ודוגמה
+export const getDictionaryHelper = async (text) => {
+  try {
+    const response = await axiosConfig.post("/ai/dictionary-helper", {
+      text,
+    });
+
+    return response.data.data;
+  } catch (error) {
+    throw error.response?.data?.message || "נכשל בעיבוד המילה בעזרת AI";
+  }
+};

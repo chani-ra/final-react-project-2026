@@ -3,6 +3,7 @@ import {
   generateCoachPlan,
   getCoachHistory,
 } from "../../../services/aiCoachService";
+import { createManyTasks } from "../../../services/taskService";
 
 export default function AICoachCard({ user }) {
   const [note, setNote] = useState("");
@@ -13,6 +14,7 @@ export default function AICoachCard({ user }) {
 
   const [loadingPlan, setLoadingPlan] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [savingTasks, setSavingTasks] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const level = user?.englishLevel || user?.level || "beginner";
@@ -20,7 +22,7 @@ export default function AICoachCard({ user }) {
   const expectations = user?.expectations || [];
   const username = user?.username || user?.name || "תלמידה";
 
-  // תוכנית גיבוי חכמה במקרה שה-AI לא מחזיר תוכנית
+  // תוכנית גיבוי במקרה שה-AI לא זמין
   const fallbackPlan = useMemo(() => {
     return buildFallbackPlan({
       level,
@@ -44,9 +46,10 @@ export default function AICoachCard({ user }) {
       ? Math.round((completedSteps.length / steps.length) * 100)
       : 0;
 
-  const isPlanCompleted = steps.length > 0 && completedSteps.length === steps.length;
+  const isPlanCompleted =
+    steps.length > 0 && completedSteps.length === steps.length;
 
-  // טעינת היסטוריית תוכניות AI אחרונות
+  // טעינת היסטוריית תוכניות מהשרת
   const loadHistory = async () => {
     try {
       setLoadingHistory(true);
@@ -70,7 +73,7 @@ export default function AICoachCard({ user }) {
     loadHistory();
   }, []);
 
-  // טעינת התקדמות שמורה לתוכנית הנוכחית
+  // טעינת התקדמות מקומית לתוכנית הנוכחית
   useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey);
@@ -85,7 +88,7 @@ export default function AICoachCard({ user }) {
     localStorage.setItem(storageKey, JSON.stringify(completedSteps));
   }, [completedSteps, storageKey]);
 
-  // יצירת תוכנית לימוד אישית בעזרת AI
+  // יצירת תוכנית לימוד בעזרת AI
   const handleGeneratePlan = async () => {
     if (!note.trim()) {
       setMessage({
@@ -127,16 +130,63 @@ export default function AICoachCard({ user }) {
     }
   };
 
-  // התחלת מצב לימוד פעיל
+  // התחלת מצב לימוד פעיל בתוך הכרטיס
   const startStudyMode = () => {
     setIsStudyMode(true);
+
     setMessage({
       type: "success",
       text: "מעולה! התחילי לפי השלבים וסמני וי על כל משימה שביצעת.",
     });
   };
 
-  // סימון או ביטול של שלב שבוצע
+  // העברת שלבי התוכנית למסך המשימות
+  const handleSendPlanToTasks = async () => {
+    const currentSteps = planToShow?.steps || [];
+
+    if (currentSteps.length === 0) {
+      setMessage({
+        type: "error",
+        text: "אין שלבים בתוכנית שאפשר להעביר למשימות.",
+      });
+      return;
+    }
+
+    try {
+      setSavingTasks(true);
+      setMessage({ type: "", text: "" });
+
+      const tasksToCreate = currentSteps.map((step, index) => ({
+        title: `משימת Coach ${index + 1}`,
+        description: step,
+        type: "coach_task",
+        source: "ai_coach",
+        difficulty: "Easy",
+        estimatedTime: "10 דקות",
+        rewardXP: 50,
+        coachPlanFocus: planToShow.focus || "תוכנית אישית מהמאמן",
+      }));
+
+      await createManyTasks({
+        tasks: tasksToCreate,
+        coachPlanFocus: planToShow.focus || "תוכנית אישית מהמאמן",
+      });
+
+      setMessage({
+        type: "success",
+        text: "המשימות נוספו בהצלחה למסך המשימות שלך.",
+      });
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error.toString(),
+      });
+    } finally {
+      setSavingTasks(false);
+    }
+  };
+
+  // סימון / ביטול שלב שבוצע
   const toggleStep = (index) => {
     setCompletedSteps((prev) => {
       const exists = prev.includes(index);
@@ -152,6 +202,7 @@ export default function AICoachCard({ user }) {
   // איפוס התקדמות בתוכנית הנוכחית
   const resetProgress = () => {
     setCompletedSteps([]);
+
     setMessage({
       type: "success",
       text: "ההתקדמות אופסה. אפשר להתחיל מחדש.",
@@ -162,6 +213,7 @@ export default function AICoachCard({ user }) {
   const selectHistoryPlan = (item) => {
     setCurrentPlan(item.plan);
     setIsStudyMode(false);
+
     setMessage({
       type: "success",
       text: "טענתי לך תוכנית קודמת מההיסטוריה.",
@@ -246,7 +298,9 @@ export default function AICoachCard({ user }) {
           {!isStudyMode ? (
             <PlanPreview
               plan={planToShow}
+              savingTasks={savingTasks}
               onStart={startStudyMode}
+              onSendToTasks={handleSendPlanToTasks}
             />
           ) : (
             <StudyChecklist
@@ -254,8 +308,10 @@ export default function AICoachCard({ user }) {
               completedSteps={completedSteps}
               progressPercent={progressPercent}
               isPlanCompleted={isPlanCompleted}
+              savingTasks={savingTasks}
               onToggleStep={toggleStep}
               onReset={resetProgress}
+              onSendToTasks={handleSendPlanToTasks}
             />
           )}
 
@@ -337,7 +393,7 @@ export default function AICoachCard({ user }) {
   );
 }
 
-function PlanPreview({ plan, onStart }) {
+function PlanPreview({ plan, savingTasks, onStart, onSendToTasks }) {
   return (
     <div className="bg-white/30 rounded-2xl p-4">
       <div className="text-sm font-black mb-2">סדר הלימוד שהמאמן בנה:</div>
@@ -358,6 +414,15 @@ function PlanPreview({ plan, onStart }) {
       >
         התחילי ללמוד עכשיו 🚀
       </button>
+
+      <button
+        type="button"
+        onClick={onSendToTasks}
+        disabled={savingTasks}
+        className="mt-3 w-full bg-white/30 hover:bg-white/40 text-slate-950 py-3 rounded-xl font-black transition-all disabled:opacity-60"
+      >
+        {savingTasks ? "מוסיף למשימות..." : "העבר למשימות שלי 📝"}
+      </button>
     </div>
   );
 }
@@ -367,8 +432,10 @@ function StudyChecklist({
   completedSteps,
   progressPercent,
   isPlanCompleted,
+  savingTasks,
   onToggleStep,
   onReset,
+  onSendToTasks,
 }) {
   return (
     <div className="bg-white/30 rounded-2xl p-4">
@@ -427,7 +494,9 @@ function StudyChecklist({
       {isPlanCompleted && (
         <div className="mt-4 bg-emerald-700 text-white rounded-2xl p-4 text-center">
           <div className="text-2xl mb-1">🏆</div>
+
           <div className="font-black">כל הכבוד! סיימת את סדר הלימוד.</div>
+
           <div className="text-sm opacity-90 mt-1">
             עכשיו אפשר לבקש מהמאמן תוכנית חדשה.
           </div>
@@ -436,8 +505,17 @@ function StudyChecklist({
 
       <button
         type="button"
+        onClick={onSendToTasks}
+        disabled={savingTasks}
+        className="mt-4 w-full bg-slate-950 text-white hover:bg-slate-800 py-3 rounded-xl font-black transition-all disabled:opacity-60"
+      >
+        {savingTasks ? "מוסיף למשימות..." : "העבר למשימות שלי 📝"}
+      </button>
+
+      <button
+        type="button"
         onClick={onReset}
-        className="mt-4 w-full bg-white/30 hover:bg-white/40 text-slate-950 py-3 rounded-xl font-black transition-all"
+        className="mt-3 w-full bg-white/30 hover:bg-white/40 text-slate-950 py-3 rounded-xl font-black transition-all"
       >
         אפס התקדמות
       </button>
@@ -445,7 +523,6 @@ function StudyChecklist({
   );
 }
 
-// תוכנית גיבוי חכמה אם ה-AI לא זמין
 function buildFallbackPlan({ level, hobbies, expectations, username }) {
   if (expectations.includes("vocabulary")) {
     return {

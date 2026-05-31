@@ -108,3 +108,24 @@ export const getStudyTips = async ({ level, focusArea }) => {
     throw error.response?.data?.message || "נכשל בטעינת טיפים";
   }
 };
+
+// שדרוג מפת יכולות בעזרת AI
+export const generateBrainMapWithAI = async ({
+  level,
+  stats,
+  localSkills,
+  latestConversation,
+}) => {
+  try {
+    const response = await axiosConfig.post("/ai/brain-map", {
+      level,
+      stats,
+      localSkills,
+      latestConversation,
+    });
+
+    return response.data.brainMap;
+  } catch (error) {
+    throw error.response?.data?.message || "נכשל ביצירת מפת יכולות חכמה";
+  }
+};

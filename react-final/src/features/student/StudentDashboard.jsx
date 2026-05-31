@@ -6,6 +6,7 @@ import { getWeeklySong } from "../../services/songService";
 import CustomAudioPlayer from "../../components/CustomAudioPlayer";
 import AICoachCard from "./components/AICoachCard";
 import SmartLearningPath from "./components/SmartLearningPath";
+import StudentBrainMap from "./components/StudentBrainMap";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
@@ -83,6 +84,8 @@ export default function StudentDashboard() {
           />
 
           <SmartLearningPath user={userData} />
+
+          <StudentBrainMap user={userData} />
 
           <DailyTasksCard
             tasks={dailyTasks}

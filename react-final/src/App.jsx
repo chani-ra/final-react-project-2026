@@ -19,6 +19,7 @@ import Courses from "./features/student/Courses";
 import CourseDetails from "./features/student/CourseDetails";
 import CreatePersonalCourse from "./features/student/CreatePersonalCourse";
 import ExerciseView from "./features/student/ExerciseView";
+import QuizView from "./features/student/QuizView";
 import Dictionary from "./features/student/Dictionary";
 import WritingTrainer from "./features/student/WritingTrainer";
 
@@ -30,6 +31,7 @@ import TeacherExerciseBuilder from "./features/teacher/TeacherExerciseBuilder";
 import TeacherLibrary from "./features/teacher/TeacherLibrary";
 import TeacherGrading from "./features/teacher/TeacherGrading";
 import LessonView from "./features/teacher/LessonView";
+import TeacherQuizBuilder from "./features/teacher/TeacherQuizBuilder";
 
 // admin components
 import AdminDashboard from "./features/admin/AdminDashboard";
@@ -67,7 +69,7 @@ export default function App() {
           <Route path="/course/:courseId" element={<CourseDetails />} />
           <Route path="/create-personal-course" element={<CreatePersonalCourse />} />
           <Route path="/exercise/:exerciseId" element={<ExerciseView />} />
-          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/quiz/:quizId" element={<QuizView />} />          <Route path="/tasks" element={<Tasks />} />
           <Route path="/writing" element={<WritingTrainer />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/dictionary" element={<Dictionary />} />
@@ -80,6 +82,7 @@ export default function App() {
           <Route path="/teacher/library" element={<TeacherLibrary />} />
           <Route path="/teacher/grading" element={<TeacherGrading />} />
           <Route path="/teacher/lesson/:lessonId" element={<LessonView />} />
+          <Route path="/teacher/quizzes/create" element={<TeacherQuizBuilder />} />
 
           {/* מנהל */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />

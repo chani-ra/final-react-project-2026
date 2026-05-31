@@ -138,7 +138,9 @@ export default function CourseContentTabs({
 
         {activeTab === "quizzes" && (
           <QuizzesTab
+            course={course}
             quizzes={quizzes}
+            navigate={navigate}
             actionLoadingKey={actionLoadingKey}
             isItemCompleted={safeIsItemCompleted}
             onToggleCourseItem={safeToggle}
@@ -149,7 +151,6 @@ export default function CourseContentTabs({
   );
 }
 
-// תצוגת שיעורים בתוך הקורס
 function LessonsTab({
   lessons,
   getLevelLabel,
@@ -266,7 +267,6 @@ function LessonsTab({
   );
 }
 
-// תצוגת שירים בתוך הקורס
 function SongsTab({
   songs,
   activeSong,
@@ -406,7 +406,6 @@ function SongsTab({
   );
 }
 
-// תצוגת תרגילים בתוך הקורס
 function ExercisesTab({
   exercises,
   navigate,
@@ -503,9 +502,10 @@ function ExercisesTab({
   );
 }
 
-// תצוגת בחנים בתוך הקורס
 function QuizzesTab({
+  course,
   quizzes,
+  navigate,
   actionLoadingKey,
   isItemCompleted,
   onToggleCourseItem,
@@ -522,8 +522,8 @@ function QuizzesTab({
         <h2 className="text-2xl font-black">🧠 בחנים</h2>
 
         <p className="text-gray-400 text-sm mt-1">
-          בדקי הבנה והתקדמות לפי החומר במסלול. כרגע אפשר לסמן בוחן כבוצע
-          ידנית.
+          בדקי הבנה והתקדמות לפי החומר במסלול. בסיום הבוחן תקבלי ציון, תשובות
+          נכונות והסברים.
         </p>
       </div>
 
@@ -566,27 +566,42 @@ function QuizzesTab({
                 ציון מעבר: {quiz.passingScore || 70}%
               </p>
 
+              {quiz.duration && (
+                <p className="text-gray-500 text-xs mt-1">
+                  משך משוער: {quiz.duration} דקות
+                </p>
+              )}
+
               <div className="mt-5 grid grid-cols-1 gap-3">
                 <button
                   type="button"
+                  onClick={() =>
+                    navigate(`/quiz/${quiz._id}?courseId=${course._id}`)
+                  }
                   className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all"
                 >
                   התחל בוחן
                 </button>
 
-                <ProgressToggleButton
-                  completed={completed}
-                  isLoading={isLoading}
-                  completedLabel="הבוחן בוצע ✓"
-                  pendingLabel="סמני בוחן כבוצע"
-                  onClick={() =>
-                    onToggleCourseItem({
-                      itemType: "quiz",
-                      itemId: quiz._id,
-                      completed: !completed,
-                    })
-                  }
-                />
+                {completed ? (
+                  <div className="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 rounded-xl py-3 text-center font-black">
+                    הבוחן הושלם ✓
+                  </div>
+                ) : (
+                  <ProgressToggleButton
+                    completed={completed}
+                    isLoading={isLoading}
+                    completedLabel="הבוחן בוצע ✓"
+                    pendingLabel="סמני בוחן כבוצע"
+                    onClick={() =>
+                      onToggleCourseItem({
+                        itemType: "quiz",
+                        itemId: quiz._id,
+                        completed: !completed,
+                      })
+                    }
+                  />
+                )}
               </div>
             </div>
           );
@@ -623,7 +638,6 @@ function ProgressToggleButton({
   );
 }
 
-// מצב ריק לטאב ללא תוכן
 function EmptyContent({ icon, text }) {
   return (
     <div className="text-center py-16 bg-slate-950/50 border border-dashed border-white/10 rounded-3xl">

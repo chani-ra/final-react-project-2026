@@ -68,14 +68,37 @@ export const generateExerciseWithAI = async (exerciseData) => {
   }
 };
 
-// יצירת בוחן בעזרת AI
-export const generateQuizWithAI = async (quizData) => {
+// יצירת בוחן אמריקאי בעזרת AI
+export const generateQuizWithAI = async ({
+  topic,
+  difficulty = "intermediate",
+  questionCount = 5,
+}) => {
   try {
-    const response = await axiosConfig.post("/ai/generate-quiz", quizData);
+    const response = await axiosConfig.post("/ai/generate-quiz", {
+      topic,
+      difficulty,
+      questionCount,
+    });
 
     return response.data.questions || [];
   } catch (error) {
     throw error.response?.data?.message || "נכשל ביצירת בוחן בעזרת AI";
+  }
+};
+
+// שמירת תוצאת בוחן אצל התלמידה המחוברת
+export const saveQuizResult = async ({ topic, score, totalQuestions }) => {
+  try {
+    const response = await axiosConfig.post("/ai/quiz-result", {
+      topic,
+      score,
+      totalQuestions,
+    });
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "נכשל בשמירת תוצאת הבוחן";
   }
 };
 

@@ -4,6 +4,7 @@ import { getMyTasks } from "../../../services/taskService";
 import { getMyDictionaryWords } from "../../../services/dictionaryService";
 import { getMyChatConversations } from "../../../services/chatService";
 import { getMyCoursesProgressSummary } from "../../../services/courseProgressService";
+import { getUserQuizResults } from "../../../services/quizService";
 import { generateBrainMapWithAI } from "../../../services/aiService";
 
 export default function StudentBrainMap({ user }) {
@@ -13,6 +14,7 @@ export default function StudentBrainMap({ user }) {
   const [dictionaryWords, setDictionaryWords] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [courseSummary, setCourseSummary] = useState(null);
+  const [quizResults, setQuizResults] = useState([]);
 
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -27,13 +29,19 @@ export default function StudentBrainMap({ user }) {
       setLoading(true);
       setMessage({ type: "", text: "" });
 
-      const [tasksData, wordsData, conversationsData, coursesProgressData] =
-        await Promise.all([
-          getMyTasks(),
-          getMyDictionaryWords(),
-          getMyChatConversations(),
-          getMyCoursesProgressSummary(),
-        ]);
+      const [
+        tasksData,
+        wordsData,
+        conversationsData,
+        coursesProgressData,
+        quizResultsData,
+      ] = await Promise.all([
+        getMyTasks(),
+        getMyDictionaryWords(),
+        getMyChatConversations(),
+        getMyCoursesProgressSummary(),
+        getUserQuizResults(),
+      ]);
 
       setTasks(Array.isArray(tasksData) ? tasksData : []);
       setDictionaryWords(Array.isArray(wordsData) ? wordsData : []);
@@ -41,6 +49,12 @@ export default function StudentBrainMap({ user }) {
         Array.isArray(conversationsData) ? conversationsData : []
       );
       setCourseSummary(coursesProgressData || null);
+
+      setQuizResults(
+        Array.isArray(quizResultsData?.quizResults)
+          ? quizResultsData.quizResults
+          : []
+      );
     } catch (error) {
       setMessage({
         type: "error",
@@ -62,8 +76,9 @@ export default function StudentBrainMap({ user }) {
       dictionaryWords,
       conversations,
       courseSummary,
+      quizResults,
     });
-  }, [level, tasks, dictionaryWords, conversations, courseSummary]);
+  }, [level, tasks, dictionaryWords, conversations, courseSummary, quizResults]);
 
   const currentMap = aiMap || localBrainMap;
 
@@ -187,7 +202,7 @@ export default function StudentBrainMap({ user }) {
           <div className="bg-indigo-500/10 border border-indigo-400/20 rounded-3xl p-4">
             <p className="text-sm text-indigo-200 leading-relaxed">
               זו מפת למידה משוערת לפי הפעילות שלך באתר: קורסים, משימות, מילון,
-              שיחות וכתיבה. ככל שתשתמשי יותר במערכת — המפה תהיה מדויקת יותר.
+              שיחות, כתיבה ובחנים. ככל שתשתמשי יותר במערכת — המפה תהיה מדויקת יותר.
             </p>
           </div>
 
@@ -267,7 +282,7 @@ export default function StudentBrainMap({ user }) {
 
 function CourseProgressInsight({ stats }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
       <MiniStat
         label="ממוצע קורסים"
         value={`${stats.averageCourseProgress || 0}%`}
@@ -290,6 +305,12 @@ function CourseProgressInsight({ stats }) {
         label="שיעורים שבוצעו"
         value={stats.completedLessons || 0}
         color="text-purple-300"
+      />
+
+      <MiniStat
+        label="ממוצע בחנים"
+        value={`${stats.averageQuizScore || 0}%`}
+        color="text-pink-300"
       />
     </div>
   );
@@ -438,6 +459,7 @@ function buildLocalBrainMap({
   dictionaryWords,
   conversations,
   courseSummary,
+  quizResults,
 }) {
   const totalWords = dictionaryWords.length;
   const masteredWords = dictionaryWords.filter((word) => word.mastered).length;
@@ -452,6 +474,7 @@ function buildLocalBrainMap({
     conversations?.[0]?.lastMessage?.text?.toLowerCase() || "";
 
   const courseStats = extractCourseStats(courseSummary);
+  const quizStats = extractQuizStats(quizResults);
 
   const grammarSignal =
     latestConversationText.includes("grammar") ||
@@ -467,6 +490,9 @@ function buildLocalBrainMap({
 
   const courseProgressScore = courseStats.averageCourseProgress || 35;
 
+  const quizScore =
+    quizStats.totalQuizResults > 0 ? quizStats.averageQuizScore : 45;
+
   const conversationScore = Math.min(90, 30 + conversationsCount * 10);
 
   const listeningScore = clampScore(
@@ -479,7 +505,9 @@ function buildLocalBrainMap({
 
   const grammarScore = clampScore(
     Math.round(
-      grammarSignal
+      quizStats.totalQuizResults > 0
+        ? (quizScore + taskCompletionScore + courseProgressScore) / 3
+        : grammarSignal
         ? (conversationScore + taskCompletionScore + courseProgressScore) / 3
         : (taskCompletionScore + courseProgressScore) / 2
     )
@@ -489,8 +517,9 @@ function buildLocalBrainMap({
     Math.round(
       (taskCompletionScore +
         grammarScore +
-        Math.min(85, 35 + courseStats.completedExercises * 10)) /
-        3
+        Math.min(85, 35 + courseStats.completedExercises * 10) +
+        quizScore) /
+        4
     )
   );
 
@@ -501,8 +530,9 @@ function buildLocalBrainMap({
       (conversationScore +
         taskCompletionScore +
         vocabularyScore +
-        courseProgressScore) /
-        4
+        courseProgressScore +
+        quizScore) /
+        5
     )
   );
 
@@ -521,9 +551,12 @@ function buildLocalBrainMap({
       key: "grammar",
       label: "דקדוק",
       score: grammarScore,
-      reason: grammarSignal
-        ? "בשיחות האחרונות עלה נושא דקדוקי, והציון משלב גם משימות והתקדמות קורסים."
-        : "הציון מבוסס על משימות, התקדמות בקורסים ופעילות כללית.",
+      reason:
+        quizStats.totalQuizResults > 0
+          ? `הציון משלב גם ${quizStats.totalQuizResults} תוצאות בחנים, עם ממוצע ${quizStats.averageQuizScore}%.`
+          : grammarSignal
+          ? "בשיחות האחרונות עלה נושא דקדוקי, והציון משלב גם משימות והתקדמות קורסים."
+          : "הציון מבוסס על משימות, התקדמות בקורסים ופעילות כללית.",
       path: "/chat",
     },
     {
@@ -531,8 +564,8 @@ function buildLocalBrainMap({
       label: "כתיבה",
       score: writingScore,
       reason:
-        courseStats.completedExercises > 0
-          ? `הציון משלב משימות ו-${courseStats.completedExercises} תרגילים שבוצעו בקורסים.`
+        courseStats.completedExercises > 0 || quizStats.totalQuizResults > 0
+          ? `הציון משלב משימות, ${courseStats.completedExercises} תרגילים ו-${quizStats.totalQuizResults} בחנים.`
           : "הציון מבוסס כרגע על משימות ודקדוק. בהמשך יתחבר גם להיסטוריית מאמן הכתיבה.",
       path: "/writing",
     },
@@ -561,7 +594,9 @@ function buildLocalBrainMap({
       label: "ביטחון",
       score: confidenceScore,
       reason:
-        "הציון משלב ביצוע משימות, התקדמות בקורסים, מילון ושימוש בצ׳אט.",
+        quizStats.totalQuizResults > 0
+          ? `הציון משלב ביצוע משימות, התקדמות בקורסים, מילון, צ׳אט ותוצאות בחנים. ממוצע הבחנים שלך הוא ${quizStats.averageQuizScore}%.`
+          : "הציון משלב ביצוע משימות, התקדמות בקורסים, מילון ושימוש בצ׳אט.",
       path: "/chat",
     },
   ];
@@ -575,7 +610,7 @@ function buildLocalBrainMap({
   return {
     title: "מפת למידה משוערת לפי פעילות אמיתית",
     summary:
-      "המפה משלבת נתונים מהמילון, משימות, שיחות עם בולט והתקדמות בקורסים. היא אינה מבחן רמה רשמי, אלא תמונת מצב חכמה של הלמידה שלך.",
+      "המפה משלבת נתונים מהמילון, משימות, שיחות עם בולט, התקדמות בקורסים ותוצאות בחנים. היא אינה מבחן רמה רשמי, אלא תמונת מצב חכמה של הלמידה שלך.",
     recommendation: getRecommendationByWeakestSkill(weakest?.key),
     skills,
     averageScore,
@@ -587,6 +622,7 @@ function buildLocalBrainMap({
       conversationsCount,
       level,
       ...courseStats,
+      ...quizStats,
     },
   };
 }
@@ -624,6 +660,36 @@ function extractCourseStats(courseSummary) {
     completedSongs,
     completedExercises,
     completedQuizzes,
+  };
+}
+
+function extractQuizStats(quizResults = []) {
+  const safeResults = Array.isArray(quizResults) ? quizResults : [];
+
+  const totalQuizResults = safeResults.length;
+
+  const passedQuizzes = safeResults.filter((result) => result.passed).length;
+
+  const averageQuizScore =
+    totalQuizResults > 0
+      ? Math.round(
+          safeResults.reduce(
+            (sum, result) => sum + (Number(result.percentage) || 0),
+            0
+          ) / totalQuizResults
+        )
+      : 0;
+
+  const latestQuizScore =
+    totalQuizResults > 0
+      ? Number(safeResults[0]?.percentage) || averageQuizScore
+      : 0;
+
+  return {
+    totalQuizResults,
+    passedQuizzes,
+    averageQuizScore,
+    latestQuizScore,
   };
 }
 

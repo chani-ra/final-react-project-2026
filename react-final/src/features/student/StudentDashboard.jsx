@@ -3,10 +3,10 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 import { getWeeklySong } from "../../services/songService";
-import CustomAudioPlayer from "../../components/CustomAudioPlayer";
-import AICoachCard from "./components/AICoachCard";
-import SmartLearningPath from "./components/SmartLearningPath";
-import StudentBrainMap from "./components/StudentBrainMap";
+import LearningMountainJourney from "./components/LearningMountainJourney";
+
+const BRAND_RED = "#B8322A";
+const BRAND_BLUE = "#0F4C75";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
@@ -18,7 +18,6 @@ export default function StudentDashboard() {
   const [weeklySongLoading, setWeeklySongLoading] = useState(true);
   const [weeklySongError, setWeeklySongError] = useState("");
 
-  // טעינת שיר השבוע שנבחר על ידי המנהל
   const loadWeeklySong = async () => {
     try {
       setWeeklySongLoading(true);
@@ -40,24 +39,14 @@ export default function StudentDashboard() {
   const profile = useMemo(() => {
     const name = userData?.username || userData?.name || "תלמידה";
     const level = userData?.englishLevel || userData?.level || "beginner";
-    const interests = userData?.favoriteHobbies || userData?.interests || [];
     const expectations = userData?.expectations || [];
 
     return {
       name,
       level,
-      interests,
       expectations,
     };
   }, [userData]);
-
-  const dailyTasks = useMemo(() => {
-    return buildPersonalizedTasks({
-      level: profile.level,
-      interests: profile.interests,
-      expectations: profile.expectations,
-    });
-  }, [profile.level, profile.interests, profile.expectations]);
 
   if (!userData) {
     return (
@@ -69,129 +58,82 @@ export default function StudentDashboard() {
 
   return (
     <div className="space-y-8" dir="rtl">
-      <DashboardHeader
+      <DashboardTopBar
         name={profile.name}
         level={profile.level}
         expectations={profile.expectations}
+        onGoToCourses={() => navigate("/courses")}
       />
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <main className="xl:col-span-2 space-y-8">
-          <PersonalCourseCard
-            interests={profile.interests}
-            onGoToCourses={() => navigate("/courses")}
-            onCreateCourse={() => navigate("/create-personal-course")}
-          />
+      <LearningMountainJourney
+        user={userData}
+        weeklySong={weeklySong}
+        weeklySongLoading={weeklySongLoading}
+        weeklySongError={weeklySongError}
+      />
 
-          <SmartLearningPath user={userData} />
-
-          <StudentBrainMap user={userData} />
-
-          <DailyTasksCard
-            tasks={dailyTasks}
-            onGoToTasks={() => navigate("/tasks")}
-          />
-        </main>
-
-        <aside className="space-y-8">
-          <WeeklySongCard
-            weeklySong={weeklySong}
-            loading={weeklySongLoading}
-            error={weeklySongError}
-          />
-
-          <AICoachCard user={userData} />
-
-          <HelpCard onOpenChat={() => navigate("/chat")} />
-        </aside>
-      </div>
+      <QuickAccessStrip navigate={navigate} />
     </div>
   );
 }
 
-function DashboardHeader({ name, level, expectations }) {
+function DashboardTopBar({ name, level, expectations, onGoToCourses }) {
   return (
-    <header className="bg-white/5 p-7 rounded-3xl border border-white/10">
-      <div className="flex flex-col lg:flex-row justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-black text-white">היי {name}! 👋</h1>
+    <section className="relative overflow-hidden rounded-[2rem] bg-[#58BDEB] border border-white/45 shadow-[0_24px_80px_rgba(12,74,110,0.20)] p-6 md:p-8 text-white">
+      <HeaderLines />
 
-          <p className="text-gray-400 mt-2">
-            איזה כיף לראות אותך. הנה הלמידה האישית שלך להיום.
+      <div className="relative flex flex-col lg:flex-row justify-between gap-6">
+        <div>
+          <div className="inline-flex items-center bg-white text-[#0F4C75] border-[3px] border-[#B8322A] px-4 py-2 rounded-full text-sm font-black mb-4 shadow-sm">
+            מסע הלמידה האישי שלך
+          </div>
+
+          <h1 className="text-4xl md:text-5xl font-black leading-tight drop-shadow-sm">
+            היי {name}, מוכנה לטפס עוד שלב?
+          </h1>
+
+          <p className="text-white/88 mt-3 max-w-2xl leading-relaxed">
+            כל כלי באתר נמצא בתחנה אחרת במסע: מדריך חכם, מפת למידה, מאמן אישי,
+            שיר שבועי, כתיבה ועוד.
           </p>
 
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap gap-2 mt-5">
             {expectations.length > 0 ? (
               expectations.map((expectation) => (
                 <span
                   key={expectation}
-                  className="bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 px-3 py-1 rounded-full text-sm font-bold"
+                  className="bg-white text-[#0F4C75] border-[2px] border-[#B8322A] px-3 py-1 rounded-full text-sm font-black shadow-sm"
                 >
                   {getExpectationLabel(expectation)}
                 </span>
               ))
             ) : (
-              <span className="text-gray-500 text-sm">
+              <span className="bg-white text-[#0F4C75] border-[2px] border-[#B8322A] px-3 py-1 rounded-full text-sm font-black shadow-sm">
                 עדיין לא נבחרו מטרות למידה
               </span>
             )}
           </div>
         </div>
 
-        <div className="bg-yellow-400 text-slate-950 px-6 py-4 rounded-2xl font-black shadow-lg h-fit">
-          רמה: {getLevelLabel(level)}
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function PersonalCourseCard({ interests, onGoToCourses, onCreateCourse }) {
-  return (
-    <section className="bg-gradient-to-br from-indigo-500/20 to-purple-500/10 p-7 rounded-3xl border border-indigo-400/20">
-      <div className="flex flex-col md:flex-row justify-between gap-5">
-        <div>
-          <h2 className="text-2xl font-black text-yellow-400 mb-2">
-            ✨ המסלול האישי שלך
-          </h2>
-
-          <p className="text-gray-300 leading-relaxed">
-            המערכת בונה עבורך למידה לפי הרמה, התחביבים והמטרות שבחרת.
-          </p>
-
-          <div className="flex flex-wrap gap-2 mt-4">
-            {interests.length > 0 ? (
-              interests.map((interest) => (
-                <span
-                  key={interest}
-                  className="bg-white/10 border border-white/10 px-3 py-1 rounded-full text-sm text-gray-200"
-                >
-                  {getHobbyLabel(interest)}
-                </span>
-              ))
-            ) : (
-              <span className="text-gray-400 text-sm">
-                לא נבחרו תחביבים עדיין
-              </span>
-            )}
+        <div className="relative bg-white/24 border-[3px] border-[#B8322A] outline outline-[2px] outline-[#0F4C75]/45 rounded-3xl p-5 min-w-[245px] h-fit shadow-[0_18px_45px_rgba(15,76,117,0.24)] backdrop-blur-xl">
+          <div className="absolute -top-3 left-5 bg-[#B8322A] text-white text-xs font-black px-3 py-1 rounded-full shadow">
+            COURSE
           </div>
-        </div>
 
-        <div className="flex flex-col gap-3">
+          <div className="text-white/75 text-sm font-bold">הרמה שלך</div>
+
+          <div className="text-3xl font-black mt-1">{getLevelLabel(level)}</div>
+
+          <div className="mt-4 h-2 bg-white/25 rounded-full overflow-hidden">
+            <div className="h-full bg-[#B8322A] rounded-full w-[42%]" />
+          </div>
+
           <button
             type="button"
             onClick={onGoToCourses}
-            className="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black px-6 py-4 rounded-2xl transition-all h-fit"
+            className="mt-5 w-full bg-white text-[#0F4C75] hover:bg-sky-50 font-black py-3 rounded-2xl transition-all border border-white shadow-sm"
           >
-            פתחי את הקורסים שלי
-          </button>
-
-          <button
-            type="button"
-            onClick={onCreateCourse}
-            className="bg-white/10 hover:bg-white/20 text-white font-bold px-6 py-3 rounded-2xl border border-white/10 transition-all"
-          >
-            צרי קורס אישי נוסף
+            מעבר לקורסים שלי
           </button>
         </div>
       </div>
@@ -199,210 +141,94 @@ function PersonalCourseCard({ interests, onGoToCourses, onCreateCourse }) {
   );
 }
 
-function DailyTasksCard({ tasks, onGoToTasks }) {
+function HeaderLines() {
   return (
-    <section className="bg-white/5 p-7 rounded-3xl border border-white/10">
-      <div className="flex justify-between items-center gap-4 mb-5">
+    <svg
+      className="absolute inset-0 w-full h-full opacity-25"
+      viewBox="0 0 1200 260"
+      preserveAspectRatio="none"
+    >
+      <g
+        fill="none"
+        stroke="white"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M30 190 C160 130 240 165 360 110 C480 55 570 95 700 55 C840 12 930 70 1070 30 C1130 14 1170 18 1210 4" />
+        <path d="M0 230 C130 175 250 200 380 145 C510 92 620 120 760 88 C890 58 970 95 1100 65 C1160 52 1190 56 1220 42" />
+        <path d="M90 75 H150 L185 40 L225 75 H310" />
+        <path d="M930 92 H980 L1015 58 L1050 92 H1125" />
+      </g>
+    </svg>
+  );
+}
+
+function QuickAccessStrip({ navigate }) {
+  const links = [
+    {
+      label: "קורסים",
+      path: "/courses",
+      icon: <CourseIcon />,
+    },
+    {
+      label: "משימות",
+      path: "/tasks",
+      icon: <TasksIcon />,
+    },
+    {
+      label: "מילון",
+      path: "/dictionary",
+      icon: <DictionaryIcon />,
+    },
+    {
+      label: "בולט",
+      path: "/chat",
+      icon: <BotMiniIcon />,
+    },
+    {
+      label: "כתיבה",
+      path: "/writing",
+      icon: <WritingIcon />,
+    },
+  ];
+
+  return (
+    <section className="bg-white/26 border-[3px] border-[#B8322A] outline outline-[2px] outline-[#0F4C75]/35 rounded-[2rem] shadow-[0_18px_55px_rgba(15,76,117,0.22)] p-5 backdrop-blur-xl">
+      <div className="flex flex-col md:flex-row justify-between gap-4 mb-5">
         <div>
-          <h2 className="text-2xl font-black text-white">
-            משימות קצרות להיום 📝
+          <div className="inline-flex items-center bg-white text-[#0F4C75] border-[3px] border-[#B8322A] px-4 py-2 rounded-full text-sm font-black mb-3 shadow-sm">
+            מעבר מהיר
+          </div>
+
+          <h2 className="text-2xl font-black text-white drop-shadow-sm">
+            קיצורי דרך
           </h2>
 
-          <p className="text-gray-400 text-sm mt-1">
-            הצעות קצרות כדי להתקדם בלי עומס.
+          <p className="text-white/78 text-sm mt-1">
+            מעבר מהיר לכלים המרכזיים באתר.
           </p>
         </div>
-
-        <button
-          type="button"
-          onClick={onGoToTasks}
-          className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl"
-        >
-          כל המשימות
-        </button>
       </div>
 
-      <div className="grid gap-4">
-        {tasks.map((task, index) => (
-          <div
-            key={`${task.title}-${index}`}
-            className="bg-slate-950/60 border border-white/10 p-4 rounded-2xl flex items-start gap-4"
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {links.map((link) => (
+          <button
+            key={link.path}
+            type="button"
+            onClick={() => navigate(link.path)}
+            className="group bg-white/94 hover:bg-white border border-white rounded-3xl p-4 shadow-sm hover:shadow-[0_14px_34px_rgba(15,76,117,0.22)] transition-all text-center hover:-translate-y-1"
           >
-            <div className="text-2xl">{task.icon}</div>
-
-            <div>
-              <h4 className="font-black text-yellow-400">{task.title}</h4>
-
-              <p className="text-sm text-gray-300 mt-1">{task.description}</p>
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-[#0F4C75] border-[3px] border-[#B8322A] text-white flex items-center justify-center transition-all group-hover:scale-105">
+              {link.icon}
             </div>
-          </div>
+
+            <div className="font-black text-[#0F4C75] mt-3">{link.label}</div>
+          </button>
         ))}
       </div>
     </section>
   );
-}
-
-function WeeklySongCard({ weeklySong, loading, error }) {
-  return (
-    <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-      <div className="flex justify-between items-start gap-4 mb-5">
-        <div>
-          <h2 className="text-2xl font-black text-white">🌟 שיר השבוע</h2>
-
-          <p className="text-gray-400 text-sm mt-1">
-            בחירה מיוחדת של מנהל האתר לתרגול האזנה.
-          </p>
-        </div>
-
-        <div className="bg-yellow-400 text-slate-950 px-3 py-1 rounded-full text-xs font-black">
-          Weekly
-        </div>
-      </div>
-
-      {loading ? (
-        <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-6 text-center text-gray-400">
-          טוען את שיר השבוע...
-        </div>
-      ) : error ? (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-300 rounded-2xl p-4 text-sm font-bold">
-          {error}
-        </div>
-      ) : !weeklySong ? (
-        <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-6 text-center">
-          <div className="text-4xl mb-3">🎵</div>
-
-          <p className="text-gray-400 text-sm">עדיין לא נבחר שיר שבועי.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-5">
-            <div className="text-4xl mb-3">🎵</div>
-
-            <h3 className="text-xl font-black text-white">
-              {weeklySong.title || weeklySong.theme || "שיר לימודי"}
-            </h3>
-
-            <p className="text-gray-400 text-sm mt-2">
-              נושא: {weeklySong.theme || "לא צוין"} · רמה:{" "}
-              {getLevelLabel(weeklySong.level)}
-            </p>
-
-            <p className="text-gray-500 text-sm mt-1">
-              מורה: {weeklySong.uploadedBy?.username || "לא ידוע"}
-            </p>
-          </div>
-
-          <CustomAudioPlayer
-            src={`http://localhost:3000/songs/song/${weeklySong._id}/stream`}
-            title={weeklySong.title || weeklySong.theme || "שיר השבוע"}
-            subtitle={`תרגול האזנה · ${getLevelLabel(weeklySong.level)}`}
-            allowDownload={false}
-          />
-        </div>
-      )}
-    </section>
-  );
-}
-
-function HelpCard({ onOpenChat }) {
-  return (
-    <section className="bg-white/5 p-6 rounded-3xl border border-white/10 text-center">
-      <h3 className="font-black mb-2 text-white">צריכה עזרה?</h3>
-
-      <p className="text-sm text-gray-400 mb-4">
-        אפשר לפנות לבולט ולתרגל איתו שיחה, מילים או דקדוק.
-      </p>
-
-      <button
-        type="button"
-        onClick={onOpenChat}
-        className="bg-indigo-600 w-full py-3 rounded-xl font-bold hover:bg-indigo-500 transition-all"
-      >
-        פתחי צ׳אט 🤖
-      </button>
-    </section>
-  );
-}
-
-function buildPersonalizedTasks({ level, interests, expectations }) {
-  const tasks = [];
-
-  if (expectations.includes("vocabulary")) {
-    tasks.push({
-      icon: "📚",
-      title: "חיזוק אוצר מילים",
-      description:
-        "בחרי 5 מילים חדשות מתוך שיעור, שיר או מילון אישי וכתבי משפט אחד.",
-    });
-  }
-
-  if (expectations.includes("grammar")) {
-    tasks.push({
-      icon: "🧠",
-      title: "דקדוק קטן ליום",
-      description: "בחרי משפט אחד באנגלית וסמני בו את הפועל המרכזי.",
-    });
-  }
-
-  if (expectations.includes("confidence")) {
-    tasks.push({
-      icon: "💪",
-      title: "ביטחון באנגלית",
-      description:
-        "אמרי בקול משפט אחד באנגלית שלוש פעמים, בכל פעם קצת יותר טבעי.",
-    });
-  }
-
-  if (expectations.includes("fluent_speaking")) {
-    tasks.push({
-      icon: "🗣️",
-      title: "תרגול דיבור",
-      description: "אמרי 3 משפטים קצרים באנגלית על נושא שמעניין אותך.",
-    });
-  }
-
-  if (interests.includes("art_music")) {
-    tasks.push({
-      icon: "🎶",
-      title: "למידה דרך שיר",
-      description: "האזיני לשיר קצר וכתבי 3 מילים חדשות שלמדת.",
-    });
-  }
-
-  if (interests.includes("sports")) {
-    tasks.push({
-      icon: "⚽",
-      title: "English Sport Words",
-      description: "כתבי 5 מילים באנגלית שקשורות לספורט.",
-    });
-  }
-
-  if (interests.includes("movies")) {
-    tasks.push({
-      icon: "🎬",
-      title: "תיאור קטע קצר",
-      description: "כתבי 2 משפטים באנגלית שמתארים קטע מסרטון או שיעור.",
-    });
-  }
-
-  if (interests.includes("books")) {
-    tasks.push({
-      icon: "📖",
-      title: "Reading Practice",
-      description: "קראי פסקה קצרה וכתבי משפט אחד על מה שהבנת.",
-    });
-  }
-
-  tasks.push({
-    icon: level === "advanced" ? "✍️" : "✨",
-    title: level === "advanced" ? "כתיבה יצירתית" : "אוצר מילים יומי",
-    description:
-      level === "advanced"
-        ? "כתבי פסקה קצרה באנגלית בנושא שמעניין אותך."
-        : "תרגלי 5 מילים חדשות שמתאימות ליום־יום.",
-  });
-
-  return tasks.slice(0, 4);
 }
 
 function getLevelLabel(level) {
@@ -418,17 +244,6 @@ function getLevelLabel(level) {
   return labels[level] || level || "לא צוין";
 }
 
-function getHobbyLabel(hobby) {
-  const labels = {
-    art_music: "אמנות ומוזיקה",
-    sports: "ספורט",
-    movies: "סרטים וסרטונים",
-    books: "ספרים וקריאה",
-  };
-
-  return labels[hobby] || hobby;
-}
-
 function getExpectationLabel(expectation) {
   const labels = {
     grammar: "דקדוק",
@@ -438,4 +253,73 @@ function getExpectationLabel(expectation) {
   };
 
   return labels[expectation] || expectation;
+}
+
+function MiniIconBase({ children }) {
+  return (
+    <svg viewBox="0 0 48 48" className="w-7 h-7" fill="none">
+      <g
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {children}
+      </g>
+    </svg>
+  );
+}
+
+function CourseIcon() {
+  return (
+    <MiniIconBase>
+      <path d="M10 13H31C35 13 38 16 38 20V38H15C12 38 10 36 10 33V13Z" />
+      <path d="M15 18H31" />
+      <path d="M15 25H28" />
+    </MiniIconBase>
+  );
+}
+
+function TasksIcon() {
+  return (
+    <MiniIconBase>
+      <rect x="11" y="9" width="26" height="31" rx="4" />
+      <path d="M18 18H30" />
+      <path d="M18 25H30" />
+      <path d="M18 32H26" />
+    </MiniIconBase>
+  );
+}
+
+function DictionaryIcon() {
+  return (
+    <MiniIconBase>
+      <path d="M12 10H31C34 10 36 12 36 15V38H16C14 38 12 36 12 34V10Z" />
+      <path d="M18 17H30" />
+      <path d="M18 24H28" />
+      <path d="M36 15H16C14 15 12 13 12 10" />
+    </MiniIconBase>
+  );
+}
+
+function BotMiniIcon() {
+  return (
+    <MiniIconBase>
+      <rect x="11" y="17" width="26" height="21" rx="6" />
+      <path d="M24 17V9" />
+      <circle cx="19" cy="27" r="1.5" fill="currentColor" />
+      <circle cx="29" cy="27" r="1.5" fill="currentColor" />
+      <path d="M19 33H29" />
+    </MiniIconBase>
+  );
+}
+
+function WritingIcon() {
+  return (
+    <MiniIconBase>
+      <path d="M11 37L15 26L32 9L39 16L22 33L11 37Z" />
+      <path d="M28 13L35 20" />
+      <path d="M15 26L22 33" />
+    </MiniIconBase>
+  );
 }

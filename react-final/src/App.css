@@ -1,184 +1,131 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  &:hover {
-    border-color: var(--accent-border);
+/* ============ Base Styles ============ */
+@layer base {
+  html {
+    scroll-behavior: smooth;
   }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+  
+
+  body {
+    background: linear-gradient(135deg, #A8D8FF 0%, #E0F4FF 50%, #B5DCFF 100%);
+    @apply text-gray-800 font-sans;
   }
 }
 
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
+/* ============ Component Classes ============ */
+@layer components {
+  /* Cards - Mondly Style with Colored Borders */
+  .card-base {
+    @apply relative bg-white rounded-2xl p-6 transition-all duration-300 shadow-md hover:shadow-lg;
   }
 
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
+  .card-red {
+    @apply card-base border-4 border-red-500;
   }
 
-  .framework,
-  .vite {
-    position: absolute;
+  .card-blue {
+    @apply card-base border-4 border-blue-600;
   }
 
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
+  .card-yellow {
+    @apply card-base border-4 border-yellow-500;
   }
 
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
-}
-
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
+  .card-elevated {
+    @apply card-base shadow-lg hover:shadow-xl;
   }
 
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
+  .card-flat {
+    @apply card-base shadow-none border-2 border-gray-200;
   }
 
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
+  /* Buttons - Mondly Style */
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 active:scale-95;
+  }
+
+  .btn-accent {
+    @apply px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-red-100 border-2 border-red-500 rounded-full text-sm font-semibold text-red-700;
+  }
+
+  .badge-success {
+    @apply bg-emerald-100 border-2 border-emerald-500 text-emerald-700;
+  }
+
+  .badge-warning {
+    @apply bg-yellow-100 border-2 border-yellow-500 text-yellow-700;
+  }
+
+  .badge-error {
+    @apply bg-red-100 border-2 border-red-500 text-red-700;
+  }
+
+  /* Progress Bar */
+  .progress-bar {
+    @apply h-3 bg-gray-300 rounded-full overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full bg-gradient-to-r from-red-500 to-yellow-500 rounded-full transition-all duration-500;
+  }
+
+  /* Section Container */
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 }
 
-#docs {
-  border-right: 1px solid var(--border);
+/* ============ Animations ============ */
+@layer utilities {
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+  }
 
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
+  .animate-float-slow {
+    animation: float 4s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glowPulse 2s ease-in-out infinite;
   }
 }
 
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
   }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
+  50% {
+    background-position: 100% 50%;
   }
 }
 
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
+/* ============ Smooth Scrollbar ============ */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-.ticks {
-  position: relative;
-  width: 100%;
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
 
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
+::-webkit-scrollbar-thumb {
+  background: rgba(251, 191, 36, 0.4);
+  border-radius: 4px;
+}
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(251, 191, 36, 0.7);
 }

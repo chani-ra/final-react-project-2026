@@ -50,7 +50,6 @@ export default function MainLayout() {
         { name: "הכיתות שלי", path: "/teacher/students" },
         { name: "העלאת תוכן", path: "/teacher/create" },
         { name: "יצירת תרגיל", path: "/teacher/exercises/create" },
-        { name: "יצירת בוחן", path: "/teacher/quizzes/create" },
         { name: "הספרייה שלי", path: "/teacher/library" },
         { name: "הודעות", path: "/messages" },
         { name: "בדיקת משימות", path: "/teacher/grading" },
@@ -69,234 +68,231 @@ export default function MainLayout() {
     return menus[user?.role] || menus.student;
   };
 
-  const userDisplayName = user.username || user.name || "משתמש";
+  const navLinks = getNavLinks();
+  const userDisplayName = user.username || user.name || "לא מחובר";
 
   return (
     <div
-      className="min-h-screen text-slate-900 relative overflow-x-hidden bg-[#55B7EC]"
+      className="relative min-h-screen overflow-x-hidden bg-[#4fb4ec] text-white"
       dir="rtl"
     >
-      <SkyIllustrationBackground />
+      <MondlySkyBackground />
 
-      <div className="relative z-10">
-        <nav className="sticky top-0 z-50 px-4 md:px-6 py-3">
-          <div className="max-w-7xl mx-auto min-h-[78px] bg-[#5BBFED]/55 backdrop-blur-2xl border border-white/45 shadow-[0_18px_50px_rgba(7,89,133,0.20)] rounded-[1.8rem] px-5 py-3 flex items-center justify-between gap-5">
-            <button
-              type="button"
-              className="text-3xl font-black tracking-tight text-white shrink-0 leading-none"
-              onClick={goToHomeByRole}
-              style={{
-                textShadow:
-                  "2px 2px 0 rgba(184,50,42,0.7), -1px -1px 0 rgba(15,76,117,0.55)",
-              }}
-            >
-              English<span className="text-white/90">Wise</span>
-            </button>
-
-            <div className="hidden xl:flex items-center justify-center gap-6 flex-1 min-w-0">
-              {getNavLinks().map((link) => {
-                const isActive =
-                  location.pathname === link.path ||
-                  (link.path !== "/dashboard" &&
-                    location.pathname.startsWith(link.path));
-
-                return (
-                  <NavTextButton
-                    key={link.path}
-                    link={link}
-                    isActive={isActive}
-                    onClick={() => navigate(link.path)}
-                  />
-                );
-              })}
-            </div>
-
-            <div className="flex items-center gap-3 shrink-0">
-              <MessageBell />
-
-              <div className="hidden sm:flex items-center gap-3 bg-white/16 border border-white/25 rounded-2xl px-3 py-2">
-                <div className="w-9 h-9 rounded-2xl bg-white text-[#0F4C75] flex items-center justify-center font-black shadow-sm">
-                  {userDisplayName?.[0] || "U"}
-                </div>
-
-                <div>
-                  <div className="text-sm font-black text-white leading-tight">
-                    {userDisplayName}
+      <div className="relative z-10 flex min-h-screen flex-col">
+        <header className="sticky top-0 z-50" dir="ltr">
+          <div className="h-[78px] w-full border-b border-white/18 bg-gradient-to-b from-[#2f7bd6]/96 to-[#286fbd]/92 shadow-[0_9px_30px_rgba(7,47,88,0.24)] backdrop-blur-xl">
+            <div className="mx-auto flex h-full max-w-[1900px] items-center gap-4 px-4 md:px-6">
+              <div className="flex min-w-[260px] shrink-0 items-center gap-4" dir="rtl">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/28 bg-white/10 shadow-inner">
+                    <UserLineIcon />
                   </div>
 
-                  <div className="text-[11px] text-white/72">
-                    {getRoleLabel(user.role)}
+                  <div className="leading-tight">
+                    <div className="text-[18px] font-black text-white">
+                      {userDisplayName}
+                    </div>
+                    <div className="text-[12px] font-bold text-white/72">
+                      {getRoleLabel(user.role)}
+                    </div>
                   </div>
                 </div>
+
+                <div className="h-8 w-px bg-white/24" />
+
+                <button
+                  type="button"
+                  className="flex items-center gap-1"
+                  title="בחירת שפה"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-2xl shadow-[0_5px_12px_rgba(0,0,0,0.16)]">
+                    🇬🇧
+                  </span>
+                  <span className="text-white/72">▾</span>
+                </button>
+
+                <MessageBell />
               </div>
 
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="bg-[#B8322A] text-white hover:bg-[#9F2A24] px-4 py-2.5 rounded-2xl text-sm font-black transition-all shadow-sm"
-              >
-                התנתק
-              </button>
-            </div>
-          </div>
+              <nav className="min-w-0 flex-1" dir="rtl">
+                <div className="mx-auto flex max-w-5xl items-center justify-center overflow-x-auto px-2 py-2">
+                  <div className="flex min-w-max items-center justify-center gap-2 rounded-full bg-[#0b2f50]/78 px-4 py-2 shadow-[0_10px_26px_rgba(7,35,64,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl">
+                    {navLinks.map((link) => {
+                      const isActive =
+                        location.pathname === link.path ||
+                        (link.path !== "/dashboard" &&
+                          location.pathname.startsWith(link.path));
 
-          <div className="xl:hidden max-w-7xl mx-auto mt-3 bg-[#5BBFED]/55 backdrop-blur-2xl border border-white/40 shadow-sm rounded-[1.4rem] p-3">
-            <div className="flex flex-wrap gap-x-6 gap-y-3 justify-center">
-              {getNavLinks().map((link) => {
-                const isActive =
-                  location.pathname === link.path ||
-                  (link.path !== "/dashboard" &&
-                    location.pathname.startsWith(link.path));
+                      return (
+                        <TopNavItem
+                          key={link.path}
+                          link={link}
+                          isActive={isActive}
+                          onClick={() => navigate(link.path)}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              </nav>
 
-                return (
-                  <NavTextButton
-                    key={link.path}
-                    link={link}
-                    isActive={isActive}
-                    compact
-                    onClick={() => navigate(link.path)}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        </nav>
+              <div className="flex min-w-[245px] shrink-0 items-center justify-end gap-4" dir="rtl">
+                <button
+                  type="button"
+                  className="hidden text-[17px] font-black text-white/92 transition hover:text-white md:block"
+                >
+                  הגדרות
+                </button>
 
-        {user.role === "student" && (
-          <div className="px-4 md:px-8 pt-2 max-w-7xl mx-auto">
-            <div className="bg-[#5BBFED]/42 backdrop-blur-2xl border border-white/35 rounded-2xl p-3 shadow-sm">
-              <div className="flex justify-between text-xs mb-1 font-bold text-white/90">
-                <span>התקדמות כללית בקורסים</span>
-                <span>{user.progress || 0}%</span>
+                <div className="hidden h-8 w-px bg-white/24 md:block" />
+
+                <button
+                  type="button"
+                  className="flex items-center gap-2 text-[20px] font-black text-white"
+                >
+                  <CrownIcon />
+                  <span>Premium</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="rounded-full bg-[#b8322a] px-4 py-2 text-sm font-black text-white shadow-[0_6px_14px_rgba(90,20,20,0.22)] transition hover:bg-[#9f2a24]"
+                >
+                  התנתק
+                </button>
               </div>
-
-              <div className="h-2 bg-white/25 rounded-full w-full overflow-hidden">
-                <div
-                  className="h-full bg-[#B8322A] rounded-full transition-all duration-1000"
-                  style={{ width: `${user.progress || 0}%` }}
-                />
-              </div>
             </div>
           </div>
-        )}
+        </header>
 
-        <main className="p-4 md:p-8 max-w-7xl mx-auto">
-          <Outlet />
+        <main className="relative flex-1 px-4 pb-8 pt-5 md:px-8">
+          <div className="mx-auto max-w-7xl">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
   );
 }
 
-function NavTextButton({ link, isActive, compact = false, onClick }) {
+function TopNavItem({ link, isActive, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`relative h-10 px-1.5 font-black transition-colors whitespace-nowrap ${
-        compact ? "text-base" : "text-[17px]"
-      } ${isActive ? "text-white" : "text-white/86 hover:text-white"}`}
+      className={`relative shrink-0 rounded-full px-5 py-2.5 text-[17px] font-black transition-all ${
+        isActive
+          ? "bg-[#176aa8] text-white shadow-[0_0_18px_rgba(255,255,255,0.18),inset_0_1px_0_rgba(255,255,255,0.16)]"
+          : "bg-transparent text-white/86 hover:bg-[#176aa8]/80 hover:text-white"
+      }`}
       style={{
         textShadow: isActive
-          ? "1.5px 1.5px 0 #B8322A, -1px -1px 0 rgba(15,76,117,0.9), 0 0 10px rgba(255,255,255,0.35)"
-          : "1px 1px 0 rgba(15,76,117,0.68)",
+          ? "1.2px 1.2px 0 rgba(184,50,42,0.82), -1px -1px 0 rgba(5,44,80,0.85)"
+          : "1px 1px 0 rgba(5,44,80,0.58)",
       }}
     >
-      <span className="relative z-10">{link.name}</span>
-
-      <span
-        className={`absolute left-0 right-0 -bottom-0.5 mx-auto h-[3px] rounded-full transition-all duration-200 ${
-          isActive ? "w-full bg-[#B8322A]" : "w-0 bg-[#B8322A]"
-        }`}
-      />
+      {link.name}
 
       {isActive && (
-        <span className="absolute -inset-x-3 inset-y-1 rounded-full bg-white/10 -z-0" />
+        <span className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-[#ffd439] shadow-[0_0_14px_rgba(255,212,57,0.95)]" />
       )}
     </button>
   );
 }
 
-function SkyIllustrationBackground() {
+function MondlySkyBackground() {
   return (
     <div className="pointer-events-none fixed inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#61C4F3] via-[#4EADE4] to-[#2B83C6]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#5a95df] via-[#89d2e7] to-[#2c77b8]" />
+
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_18%,rgba(255,255,255,0.40),transparent_25%),radial-gradient(circle_at_78%_14%,rgba(255,255,255,0.27),transparent_30%),linear-gradient(to_bottom,rgba(255,255,255,0.08)_0%,transparent_36%,rgba(9,68,121,0.38)_100%)]" />
 
       <svg
-        className="absolute inset-0 w-full h-full opacity-[0.28]"
-        viewBox="0 0 1600 900"
+        className="absolute inset-0 h-full w-full opacity-[0.43]"
+        viewBox="0 0 1800 950"
         preserveAspectRatio="xMidYMid slice"
       >
         <g
           fill="none"
-          stroke="white"
-          strokeWidth="3"
+          stroke="#d9f5ff"
           strokeLinecap="round"
           strokeLinejoin="round"
+          strokeWidth="4"
         >
-          <path d="M40 245 H105 L145 205 L190 245 H280" />
-          <path d="M1220 180 H1280 L1325 130 L1370 180 H1510" />
-          <path d="M980 210 H1040 L1080 170 L1120 210 H1180" />
+          <path d="M0 270 H70 L110 235 H175 L225 180 L300 260 H420" />
+          <path d="M1170 250 H1260 L1315 205 H1395 L1445 160 L1530 250 H1800" />
+          <path d="M590 260 H670 L715 210 H780 L830 155 H910 L970 260 H1085" />
 
-          <path d="M80 650 C170 590 230 620 315 560 C410 492 510 540 602 480 C695 420 790 450 875 390 C970 322 1060 370 1160 300 C1275 220 1390 260 1520 175" />
-          <path d="M105 690 C190 635 250 660 345 600 C440 545 535 570 635 520 C740 468 835 500 935 435 C1048 360 1140 400 1255 330 C1360 268 1440 288 1530 235" />
+          <rect x="55" y="525" width="110" height="230" opacity="0.37" />
+          <rect x="145" y="455" width="150" height="300" opacity="0.32" />
+          <rect x="250" y="380" width="110" height="375" opacity="0.26" />
 
-          <path d="M120 790 H1480" opacity="0.45" />
-          <path d="M210 760 C270 710 330 710 390 760" opacity="0.5" />
-          <path d="M760 745 C840 685 920 685 1000 745" opacity="0.5" />
-          <path d="M1180 760 C1240 710 1300 710 1360 760" opacity="0.5" />
+          <rect x="615" y="350" width="105" height="390" opacity="0.36" />
+          <rect x="740" y="225" width="155" height="515" opacity="0.32" />
+          <path d="M895 225 L970 300 V740 H895 Z" opacity="0.32" />
 
-          <rect
-            x="210"
-            y="510"
-            width="100"
-            height="180"
-            rx="8"
-            opacity="0.35"
-          />
-          <rect
-            x="335"
-            y="450"
-            width="150"
-            height="240"
-            rx="8"
-            opacity="0.35"
-          />
-          <rect
-            x="1130"
-            y="480"
-            width="115"
-            height="200"
-            rx="8"
-            opacity="0.35"
-          />
-          <rect
-            x="1270"
-            y="420"
-            width="170"
-            height="260"
-            rx="8"
-            opacity="0.35"
-          />
+          <rect x="1410" y="400" width="100" height="335" opacity="0.37" />
+          <rect x="1515" y="280" width="130" height="455" opacity="0.32" />
+          <rect x="1605" y="345" width="120" height="390" opacity="0.27" />
 
-          <circle cx="185" cy="390" r="28" opacity="0.42" />
-          <path d="M185 418 V520" opacity="0.42" />
+          <path d="M0 505 H1800" opacity="0.56" />
+          <path d="M0 585 H1800" opacity="0.37" />
 
-          <circle cx="1430" cy="355" r="33" opacity="0.42" />
-          <path d="M1430 388 V520" opacity="0.42" />
+          <path d="M260 520 C330 470 410 470 480 520" opacity="0.49" />
+          <path d="M1010 535 C1080 485 1160 485 1230 535" opacity="0.49" />
+          <path d="M1410 545 C1480 495 1560 495 1630 545" opacity="0.49" />
 
-          <path
-            d="M680 190 C705 165 745 165 770 190 C800 165 850 177 862 220 C875 266 835 300 790 286 C760 320 705 305 700 260 C660 252 650 212 680 190Z"
-            opacity="0.45"
-          />
+          <path d="M820 460 C900 410 990 415 1060 460" opacity="0.37" />
+          <path d="M820 460 V520 H1060 V460" opacity="0.32" />
+
+          <path d="M730 170 C760 145 805 145 835 170 C875 140 940 165 950 220 C965 295 855 315 835 260 C790 305 700 285 720 215 C690 205 700 185 730 170Z" opacity="0.41" />
+
+          <circle cx="1060" cy="110" r="36" opacity="0.45" />
+          <path d="M1060 146 V205" opacity="0.45" />
+
+          <path d="M160 735 C230 690 315 690 385 735" opacity="0.49" />
+          <path d="M1005 735 C1085 680 1185 680 1265 735" opacity="0.49" />
+          <path d="M1485 735 C1555 690 1640 690 1710 735" opacity="0.49" />
+
+          <path d="M135 455 C170 420 230 420 265 455" opacity="0.45" />
+          <path d="M560 445 C590 420 640 420 670 445" opacity="0.45" />
+          <path d="M1255 455 C1295 420 1360 420 1400 455" opacity="0.45" />
+
+          <path d="M80 770 H365" opacity="0.31" />
+          <path d="M1450 735 H1780" opacity="0.31" />
+          <path d="M560 770 H970" opacity="0.23" />
         </g>
       </svg>
 
-      <div className="absolute top-24 right-[8%] w-80 h-28 rounded-full bg-white/16 blur-2xl" />
-      <div className="absolute top-36 left-[12%] w-[30rem] h-32 rounded-full bg-white/14 blur-2xl" />
-      <div className="absolute bottom-[-120px] right-[-8%] w-[55%] h-80 rounded-t-full bg-white/10 blur-2xl" />
-      <div className="absolute bottom-[-150px] left-[-8%] w-[55%] h-96 rounded-t-full bg-white/8 blur-2xl" />
+      <div className="absolute bottom-0 left-0 right-0 h-[36%] bg-[#1e67a7]/26" />
+      <div className="absolute bottom-0 left-0 right-0 h-[14%] bg-[#14548f]/26" />
+      <div className="absolute right-[8%] top-24 h-28 w-80 rounded-full bg-white/16 blur-2xl" />
+      <div className="absolute left-[12%] top-36 h-32 w-[30rem] rounded-full bg-white/14 blur-2xl" />
     </div>
+  );
+}
+
+function UserLineIcon() {
+  return (
+    <svg className="h-6 w-6 text-white/90" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21c1-4.5 3.7-7 8-7s7 2.5 8 7"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
+
+function CrownIcon() {
+  return (
+    <svg className="h-8 w-8 text-[#ffd439] drop-shadow" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M3 8l4.5 3.5L12 5l4.5 6.5L21 8l-2 11H5L3 8Z"
+        fill="currentColor"
+      />
+    </svg>
   );
 }
 

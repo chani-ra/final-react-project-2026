@@ -1,0 +1,160 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgSky" x1="960" y1="0" x2="960" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5B93DE"/>
+      <stop offset="0.28" stop-color="#79BDE6"/>
+      <stop offset="0.58" stop-color="#58B6E8"/>
+      <stop offset="1" stop-color="#2E74B8"/>
+    </linearGradient>
+
+    <linearGradient id="lineWhite" x1="960" y1="80" x2="960" y2="980" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.52"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.22"/>
+    </linearGradient>
+
+    <linearGradient id="mountainBlue" x1="960" y1="210" x2="960" y2="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9ED7F1" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#3E88CE" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <filter id="blurSoft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="28"/>
+    </filter>
+
+    <filter id="blurSmall" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+
+  <!-- base -->
+  <rect width="1920" height="1080" fill="url(#bgSky)"/>
+
+  <!-- soft light -->
+  <ellipse cx="350" cy="180" rx="300" ry="110" fill="white" opacity="0.22" filter="url(#blurSoft)"/>
+  <ellipse cx="1560" cy="170" rx="320" ry="120" fill="white" opacity="0.15" filter="url(#blurSoft)"/>
+  <ellipse cx="980" cy="430" rx="350" ry="80" fill="white" opacity="0.10" filter="url(#blurSoft)"/>
+
+  <!-- top mountains -->
+  <path d="M0 285L95 255L165 305L250 215L315 280L392 208L470 275L550 205L620 278L705 225L780 295L860 228L945 305L1032 235L1120 300L1210 222L1290 292L1375 235L1460 296L1545 245L1620 285L1700 238L1775 285L1920 250V365H0V285Z"
+        fill="#D4EEF9" fill-opacity="0.32"/>
+
+  <!-- middle world/map like shape -->
+  <path d="M0 360C100 338 160 356 255 338C340 322 430 338 520 312C610 287 675 302 770 288C850 276 935 240 1030 250C1115 260 1180 312 1265 320C1340 328 1420 300 1498 318C1578 336 1662 318 1750 330C1820 340 1878 360 1920 378V590C1865 602 1798 614 1718 612C1640 610 1564 588 1478 594C1394 600 1306 632 1222 636C1142 640 1062 614 984 614C916 614 842 632 770 646C682 663 600 698 514 708C432 717 346 708 260 716C172 724 92 746 0 742V360Z"
+        fill="url(#mountainBlue)" fill-opacity="0.88"/>
+
+  <!-- lower land mass -->
+  <path d="M0 760C92 748 170 774 255 760C360 742 454 690 550 700C648 710 718 764 820 770C918 776 1010 740 1110 736C1204 732 1284 756 1378 744C1490 730 1596 680 1712 680C1790 680 1858 700 1920 718V1080H0V760Z"
+        fill="#2D6DAF" fill-opacity="0.35"/>
+
+  <path d="M0 860C120 860 205 840 315 854C432 870 550 924 662 930C785 936 900 894 1020 896C1138 898 1248 936 1360 930C1480 924 1590 878 1710 880C1790 881 1858 894 1920 910V1080H0V860Z"
+        fill="#15548F" fill-opacity="0.33"/>
+
+  <!-- dotted journey roads -->
+  <g opacity="0.55">
+    <path d="M215 602L410 666L590 592L790 662L990 570L1160 636L1360 560L1550 620L1732 560"
+          stroke="white" stroke-opacity="0.55" stroke-width="3" stroke-linecap="round" stroke-dasharray="8 11"/>
+    <path d="M160 485L320 545L500 485L685 555L870 465L1045 528L1230 460L1410 518L1602 445"
+          stroke="white" stroke-opacity="0.32" stroke-width="3" stroke-linecap="round" stroke-dasharray="8 11"/>
+  </g>
+
+  <!-- white illustrations -->
+  <g stroke="url(#lineWhite)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.62">
+    <!-- Eiffel tower -->
+    <path d="M128 690L200 420L272 690"/>
+    <path d="M154 600H246"/>
+    <path d="M170 540H230"/>
+    <path d="M186 485H214"/>
+    <path d="M148 690H252"/>
+    <path d="M168 660H232"/>
+
+    <!-- Statue of liberty -->
+    <path d="M118 845H220"/>
+    <path d="M136 845V816H202V845"/>
+    <path d="M160 816V748"/>
+    <path d="M160 748L184 724L195 680L210 700L208 724L224 750L214 760L212 800"/>
+    <path d="M172 770H197"/>
+    <path d="M150 795H205"/>
+
+    <!-- Colosseum -->
+    <path d="M380 760C395 705 450 670 520 670C590 670 645 705 660 760"/>
+    <path d="M400 760V715C400 688 456 662 520 662C584 662 640 688 640 715V760"/>
+    <path d="M422 760V716"/>
+    <path d="M454 760V708"/>
+    <path d="M487 760V705"/>
+    <path d="M520 760V704"/>
+    <path d="M552 760V705"/>
+    <path d="M585 760V708"/>
+    <path d="M618 760V716"/>
+    <path d="M414 732H626"/>
+    <path d="M434 704H606"/>
+
+    <!-- Big Ben -->
+    <rect x="690" y="690" width="72" height="182" rx="4"/>
+    <path d="M726 690V640"/>
+    <path d="M700 640H752"/>
+    <circle cx="726" cy="742" r="20"/>
+    <path d="M726 742V730"/>
+    <path d="M726 742L736 748"/>
+    <path d="M700 782H752"/>
+    <path d="M700 822H752"/>
+
+    <!-- Taj-like palace -->
+    <path d="M860 790H1080"/>
+    <path d="M895 790V710H1045V790"/>
+    <path d="M942 790V678H998V790"/>
+    <path d="M970 646C988 646 1004 662 1004 680H936C936 662 952 646 970 646Z"/>
+    <path d="M904 710C922 710 936 694 936 676C936 662 926 650 912 650C898 650 888 662 888 676C888 694 902 710 920 710"/>
+    <path d="M1036 710C1054 710 1068 694 1068 676C1068 662 1058 650 1044 650C1030 650 1020 662 1020 676C1020 694 1034 710 1052 710"/>
+    <path d="M915 790V736"/>
+    <path d="M942 790V736"/>
+    <path d="M970 790V736"/>
+    <path d="M998 790V736"/>
+    <path d="M1025 790V736"/>
+
+    <!-- Sagrada style -->
+    <path d="M1170 770L1202 610L1228 690L1254 565L1282 705L1308 588L1338 770"/>
+    <path d="M1192 770H1318"/>
+    <path d="M1214 630V590"/>
+    <path d="M1254 585V545"/>
+    <path d="M1294 608V568"/>
+
+    <!-- Opera house -->
+    <path d="M1450 760C1470 710 1510 710 1530 760"/>
+    <path d="M1500 760C1520 700 1560 700 1580 760"/>
+    <path d="M1550 760C1570 712 1610 712 1630 760"/>
+    <path d="M1440 760H1645"/>
+
+    <!-- bridge / city block -->
+    <rect x="1688" y="705" width="84" height="128" rx="3"/>
+    <path d="M1702 737H1758"/>
+    <path d="M1702 772H1758"/>
+    <path d="M1702 807H1758"/>
+    <path d="M1788 680L1840 645L1890 680V833H1788V680Z"/>
+
+    <!-- hot air balloon line icon -->
+    <circle cx="1522" cy="205" r="38"/>
+    <path d="M1522 243V294"/>
+    <path d="M1504 294H1540"/>
+
+    <!-- cloud -->
+    <path d="M816 190C846 162 892 162 920 188C960 158 1022 182 1032 236C1044 302 936 320 914 274C870 316 786 298 804 236C776 228 784 204 816 190Z"/>
+
+    <!-- small clouds -->
+    <path d="M302 180C322 162 356 162 376 180"/>
+    <path d="M1266 186C1290 166 1330 166 1354 186"/>
+    <path d="M1072 860C1100 836 1148 836 1176 860"/>
+    <path d="M72 748C104 720 158 720 190 748"/>
+  </g>
+
+  <!-- faint city line shapes -->
+  <g stroke="url(#lineWhite)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.28">
+    <path d="M220 325H320L360 285H415L468 242L545 325H640"/>
+    <path d="M1350 342H1455L1510 295H1575L1635 248L1718 342H1850"/>
+    <path d="M612 340H690L745 292H815L865 246H940L996 340H1092"/>
+  </g>
+
+  <!-- bottom soft fog -->
+  <ellipse cx="460" cy="1010" rx="540" ry="120" fill="white" opacity="0.08" filter="url(#blurSoft)"/>
+  <ellipse cx="1490" cy="1010" rx="520" ry="120" fill="white" opacity="0.08" filter="url(#blurSoft)"/>
+</svg>

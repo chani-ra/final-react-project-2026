@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { logoutUser } from "../../redux/slices/authSlice";
 import MessageBell from "./MessageBell";
+import skyJourneyBackground from "../../assets/sky-journey-background.svg";
 
 export default function MainLayout() {
   const { user } = useSelector((state) => state.auth);
@@ -73,50 +74,66 @@ export default function MainLayout() {
 
   return (
     <div
-      className="relative min-h-screen overflow-x-hidden bg-[#4fb4ec] text-white"
+      className="relative min-h-screen overflow-x-hidden bg-[#55b9ef] text-white"
       dir="rtl"
     >
-      <MondlySkyBackground />
+      <div
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${skyJourneyBackground})` }}
+      />
+
+      <div className="fixed inset-0 bg-gradient-to-b from-white/0 via-white/0 to-[#0b4f88]/18" />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="sticky top-0 z-50" dir="ltr">
-          <div className="h-[78px] w-full border-b border-white/18 bg-gradient-to-b from-[#2f7bd6]/96 to-[#286fbd]/92 shadow-[0_9px_30px_rgba(7,47,88,0.24)] backdrop-blur-xl">
-            <div className="mx-auto flex h-full max-w-[1900px] items-center gap-4 px-4 md:px-6">
-              <div className="flex min-w-[260px] shrink-0 items-center gap-4" dir="rtl">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/28 bg-white/10 shadow-inner">
+        <header className="sticky top-0 z-50 w-full" dir="ltr">
+          <div className="h-[94px] w-full border-b border-white/20 bg-gradient-to-b from-[#4c8ee4]/96 via-[#3d80d4]/96 to-[#2868ad]/96 shadow-[0_13px_36px_rgba(7,47,88,0.32)] backdrop-blur-xl">
+            <div className="mx-auto grid h-full max-w-[1900px] grid-cols-[300px_1fr_255px] items-center gap-4 px-5">
+              <div
+                className="flex h-full min-w-0 items-center gap-4"
+                dir="rtl"
+              >
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={goToHomeByRole}
+                    className="flex h-12 w-12 items-center justify-center rounded-full border border-white/32 bg-white/13 shadow-[inset_0_1px_0_rgba(255,255,255,0.20),0_8px_18px_rgba(7,35,64,0.20)] transition hover:bg-white/20"
+                    title="חזרה לדשבורד"
+                  >
                     <UserLineIcon />
-                  </div>
+                  </button>
 
                   <div className="leading-tight">
-                    <div className="text-[18px] font-black text-white">
+                    <div className="text-[19px] font-black text-white">
                       {userDisplayName}
                     </div>
-                    <div className="text-[12px] font-bold text-white/72">
+                    <div className="text-[12px] font-bold text-white/76">
                       {getRoleLabel(user.role)}
                     </div>
                   </div>
                 </div>
 
-                <div className="h-8 w-px bg-white/24" />
+                <div className="h-10 w-px bg-white/25" />
 
                 <button
                   type="button"
                   className="flex items-center gap-1"
                   title="בחירת שפה"
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-2xl shadow-[0_5px_12px_rgba(0,0,0,0.16)]">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-2xl shadow-[0_5px_12px_rgba(0,0,0,0.16)]">
                     🇬🇧
                   </span>
-                  <span className="text-white/72">▾</span>
+                  <span className="text-white/78">▾</span>
                 </button>
 
                 <MessageBell />
               </div>
 
-              <nav className="min-w-0 flex-1" dir="rtl">
-                <div className="mx-auto flex max-w-5xl items-center justify-center overflow-x-auto px-2 py-2">
-                  <div className="flex min-w-max items-center justify-center gap-2 rounded-full bg-[#0b2f50]/78 px-4 py-2 shadow-[0_10px_26px_rgba(7,35,64,0.25),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl">
+              <nav
+                className="flex h-full min-w-0 items-center justify-center"
+                dir="rtl"
+              >
+                <div className="flex w-full max-w-[1060px] items-center justify-center rounded-full bg-[#072842]/92 px-4 py-3 shadow-[0_12px_32px_rgba(7,35,64,0.34),inset_0_1px_0_rgba(255,255,255,0.15)] backdrop-blur-xl">
+                  <div className="flex w-full items-center justify-center gap-1.5">
                     {navLinks.map((link) => {
                       const isActive =
                         location.pathname === link.path ||
@@ -136,19 +153,22 @@ export default function MainLayout() {
                 </div>
               </nav>
 
-              <div className="flex min-w-[245px] shrink-0 items-center justify-end gap-4" dir="rtl">
+              <div
+                className="flex h-full min-w-0 items-center justify-end gap-4"
+                dir="rtl"
+              >
                 <button
                   type="button"
-                  className="hidden text-[17px] font-black text-white/92 transition hover:text-white md:block"
+                  className="text-[18px] font-black text-white/92 transition hover:text-white"
                 >
                   הגדרות
                 </button>
 
-                <div className="hidden h-8 w-px bg-white/24 md:block" />
+                <div className="h-10 w-px bg-white/25" />
 
                 <button
                   type="button"
-                  className="flex items-center gap-2 text-[20px] font-black text-white"
+                  className="flex items-center gap-2 text-[21px] font-black text-white"
                 >
                   <CrownIcon />
                   <span>Premium</span>
@@ -157,7 +177,7 @@ export default function MainLayout() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="rounded-full bg-[#b8322a] px-4 py-2 text-sm font-black text-white shadow-[0_6px_14px_rgba(90,20,20,0.22)] transition hover:bg-[#9f2a24]"
+                  className="rounded-full bg-[#b8322a] px-5 py-2.5 text-[15px] font-black text-white shadow-[0_7px_16px_rgba(90,20,20,0.26)] transition hover:bg-[#9f2a24]"
                 >
                   התנתק
                 </button>
@@ -181,95 +201,23 @@ function TopNavItem({ link, isActive, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`relative shrink-0 rounded-full px-5 py-2.5 text-[17px] font-black transition-all ${
+      className={`relative min-w-0 shrink rounded-full px-4 py-2.5 text-[clamp(15px,0.92vw,19px)] font-black leading-none transition-all ${
         isActive
-          ? "bg-[#176aa8] text-white shadow-[0_0_18px_rgba(255,255,255,0.18),inset_0_1px_0_rgba(255,255,255,0.16)]"
-          : "bg-transparent text-white/86 hover:bg-[#176aa8]/80 hover:text-white"
+          ? "bg-[#1c74b5] text-white shadow-[0_0_16px_rgba(255,255,255,0.16),inset_0_1px_0_rgba(255,255,255,0.16)]"
+          : "bg-transparent text-white/90 hover:bg-[#1c74b5]/90 hover:text-white"
       }`}
       style={{
         textShadow: isActive
-          ? "1.2px 1.2px 0 rgba(184,50,42,0.82), -1px -1px 0 rgba(5,44,80,0.85)"
+          ? "1.2px 1.2px 0 rgba(140,35,33,0.72), -1px -1px 0 rgba(5,44,80,0.85)"
           : "1px 1px 0 rgba(5,44,80,0.58)",
       }}
     >
-      {link.name}
+      <span className="whitespace-nowrap">{link.name}</span>
 
       {isActive && (
-        <span className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-[#ffd439] shadow-[0_0_14px_rgba(255,212,57,0.95)]" />
+        <span className="absolute -bottom-[7px] left-1/2 h-[3px] w-8 -translate-x-1/2 rounded-full bg-white/85 shadow-[0_0_10px_rgba(255,255,255,0.6)]" />
       )}
     </button>
-  );
-}
-
-function MondlySkyBackground() {
-  return (
-    <div className="pointer-events-none fixed inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#5a95df] via-[#89d2e7] to-[#2c77b8]" />
-
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_18%,rgba(255,255,255,0.40),transparent_25%),radial-gradient(circle_at_78%_14%,rgba(255,255,255,0.27),transparent_30%),linear-gradient(to_bottom,rgba(255,255,255,0.08)_0%,transparent_36%,rgba(9,68,121,0.38)_100%)]" />
-
-      <svg
-        className="absolute inset-0 h-full w-full opacity-[0.43]"
-        viewBox="0 0 1800 950"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <g
-          fill="none"
-          stroke="#d9f5ff"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="4"
-        >
-          <path d="M0 270 H70 L110 235 H175 L225 180 L300 260 H420" />
-          <path d="M1170 250 H1260 L1315 205 H1395 L1445 160 L1530 250 H1800" />
-          <path d="M590 260 H670 L715 210 H780 L830 155 H910 L970 260 H1085" />
-
-          <rect x="55" y="525" width="110" height="230" opacity="0.37" />
-          <rect x="145" y="455" width="150" height="300" opacity="0.32" />
-          <rect x="250" y="380" width="110" height="375" opacity="0.26" />
-
-          <rect x="615" y="350" width="105" height="390" opacity="0.36" />
-          <rect x="740" y="225" width="155" height="515" opacity="0.32" />
-          <path d="M895 225 L970 300 V740 H895 Z" opacity="0.32" />
-
-          <rect x="1410" y="400" width="100" height="335" opacity="0.37" />
-          <rect x="1515" y="280" width="130" height="455" opacity="0.32" />
-          <rect x="1605" y="345" width="120" height="390" opacity="0.27" />
-
-          <path d="M0 505 H1800" opacity="0.56" />
-          <path d="M0 585 H1800" opacity="0.37" />
-
-          <path d="M260 520 C330 470 410 470 480 520" opacity="0.49" />
-          <path d="M1010 535 C1080 485 1160 485 1230 535" opacity="0.49" />
-          <path d="M1410 545 C1480 495 1560 495 1630 545" opacity="0.49" />
-
-          <path d="M820 460 C900 410 990 415 1060 460" opacity="0.37" />
-          <path d="M820 460 V520 H1060 V460" opacity="0.32" />
-
-          <path d="M730 170 C760 145 805 145 835 170 C875 140 940 165 950 220 C965 295 855 315 835 260 C790 305 700 285 720 215 C690 205 700 185 730 170Z" opacity="0.41" />
-
-          <circle cx="1060" cy="110" r="36" opacity="0.45" />
-          <path d="M1060 146 V205" opacity="0.45" />
-
-          <path d="M160 735 C230 690 315 690 385 735" opacity="0.49" />
-          <path d="M1005 735 C1085 680 1185 680 1265 735" opacity="0.49" />
-          <path d="M1485 735 C1555 690 1640 690 1710 735" opacity="0.49" />
-
-          <path d="M135 455 C170 420 230 420 265 455" opacity="0.45" />
-          <path d="M560 445 C590 420 640 420 670 445" opacity="0.45" />
-          <path d="M1255 455 C1295 420 1360 420 1400 455" opacity="0.45" />
-
-          <path d="M80 770 H365" opacity="0.31" />
-          <path d="M1450 735 H1780" opacity="0.31" />
-          <path d="M560 770 H970" opacity="0.23" />
-        </g>
-      </svg>
-
-      <div className="absolute bottom-0 left-0 right-0 h-[36%] bg-[#1e67a7]/26" />
-      <div className="absolute bottom-0 left-0 right-0 h-[14%] bg-[#14548f]/26" />
-      <div className="absolute right-[8%] top-24 h-28 w-80 rounded-full bg-white/16 blur-2xl" />
-      <div className="absolute left-[12%] top-36 h-32 w-[30rem] rounded-full bg-white/14 blur-2xl" />
-    </div>
   );
 }
 
@@ -287,7 +235,11 @@ function UserLineIcon() {
 
 function CrownIcon() {
   return (
-    <svg className="h-8 w-8 text-[#ffd439] drop-shadow" viewBox="0 0 24 24" fill="none">
+    <svg
+      className="h-8 w-8 text-[#ffd439] drop-shadow"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
       <path
         d="M3 8l4.5 3.5L12 5l4.5 6.5L21 8l-2 11H5L3 8Z"
         fill="currentColor"

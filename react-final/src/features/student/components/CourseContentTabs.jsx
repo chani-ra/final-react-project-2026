@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import CustomAudioPlayer from "../../../components/CustomAudioPlayer";
 
@@ -12,11 +13,13 @@ export default function CourseContentTabs({
   onToggleCourseItem,
 }) {
   const navigate = useNavigate();
+  const railRef = useRef(null);
 
   const [activeTab, setActiveTab] = useState("lessons");
   const [activeSongId, setActiveSongId] = useState(
     course.songs?.[0]?._id || null
   );
+  const [songPanelOpen, setSongPanelOpen] = useState(false);
 
   const lessons = course.lessons || [];
   const songs = course.songs || [];
@@ -30,120 +33,134 @@ export default function CourseContentTabs({
     {
       id: "lessons",
       label: "שיעורים",
-      icon: "🎬",
+      typeLabel: "שיעור",
       count: lessons.length,
       completed: progress?.completedLessons?.length || 0,
+      color: "from-[#2c8fd6] to-[#123c6b]",
     },
     {
       id: "songs",
       label: "שירים",
-      icon: "🎵",
+      typeLabel: "שיר",
       count: songs.length,
       completed: progress?.completedSongs?.length || 0,
+      color: "from-[#ffd439] to-[#d98918]",
     },
     {
       id: "exercises",
       label: "תרגילים",
-      icon: "📝",
+      typeLabel: "תרגיל",
       count: exercises.length,
       completed: progress?.completedExercises?.length || 0,
+      color: "from-[#4fc3f7] to-[#176aa8]",
     },
     {
       id: "quizzes",
       label: "בחנים",
-      icon: "🧠",
+      typeLabel: "בוחן",
       count: quizzes.length,
       completed: progress?.completedQuizzes?.length || 0,
+      color: "from-[#6ba6ff] to-[#2458a8]",
     },
   ];
 
-  const safeIsItemCompleted =
-    isItemCompleted ||
-    (() => {
-      return false;
-    });
+  const safeIsItemCompleted = isItemCompleted || (() => false);
+  const safeToggle = onToggleCourseItem || (() => null);
 
-  const safeToggle =
-    onToggleCourseItem ||
-    (() => {
-      return null;
+  const activeItems = useMemo(() => {
+    if (activeTab === "lessons") return lessons;
+    if (activeTab === "songs") return songs;
+    if (activeTab === "exercises") return exercises;
+    if (activeTab === "quizzes") return quizzes;
+    return [];
+  }, [activeTab, lessons, songs, exercises, quizzes]);
+
+  const activeTabData = tabs.find((tab) => tab.id === activeTab);
+
+  const scrollRail = (direction) => {
+    if (!railRef.current) return;
+
+    railRef.current.scrollBy({
+      left: direction === "left" ? -520 : 520,
+      behavior: "smooth",
     });
+  };
+
+  const openSongPanel = (songId) => {
+    setActiveSongId(songId);
+    setSongPanelOpen(true);
+  };
 
   return (
-    <section className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
-      <div className="border-b border-white/10 p-4 flex gap-2 overflow-x-auto">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={`shrink-0 px-5 py-3 rounded-2xl font-bold transition-all flex items-center gap-2 ${
-              activeTab === tab.id
-                ? "bg-yellow-400 text-slate-950 shadow-lg"
-                : "bg-slate-950/60 text-gray-300 hover:bg-white/10"
-            }`}
-          >
-            <span>{tab.icon}</span>
+    <section className="relative overflow-hidden rounded-[2rem] border border-white/24 bg-[#123c6b]/50 shadow-[0_18px_55px_rgba(3,31,61,0.24),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-xl">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,255,255,0.10),transparent_24%),linear-gradient(to_bottom,rgba(255,255,255,0.045),transparent_45%)]" />
 
-            <span>{tab.label}</span>
+      <div className="relative z-10">
+        <div className="flex flex-col gap-3 border-b border-white/10 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/18 bg-[#1b5f95]/55 text-lg font-black text-white shadow-sm">
+              {getContentIcon(activeTab)}
+            </div>
 
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full ${
-                activeTab === tab.id
-                  ? "bg-slate-950/20 text-slate-950"
-                  : "bg-white/10 text-gray-300"
-              }`}
-            >
-              {tab.completed}/{tab.count}
-            </span>
-          </button>
-        ))}
-      </div>
+            <div>
+              <h2 className="text-xl font-black text-white">מסלול הקורס</h2>
+              <p className="text-xs font-bold text-white/58">
+                בחרי סוג תוכן וגללי לרוחב בין הקרונות.
+              </p>
+            </div>
+          </div>
 
-      <div className="p-6">
-        {activeTab === "lessons" && (
-          <LessonsTab
-            lessons={lessons}
-            getLevelLabel={getLevelLabel}
-            getCategoryLabel={getCategoryLabel}
-            navigate={navigate}
-            actionLoadingKey={actionLoadingKey}
-            isItemCompleted={safeIsItemCompleted}
-            onToggleCourseItem={safeToggle}
-          />
-        )}
+          <div className="flex flex-wrap gap-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-black transition-all ${
+                  activeTab === tab.id
+                    ? "bg-white text-[#123c6b] shadow-[0_0_14px_rgba(255,255,255,0.16)]"
+                    : "bg-white/10 text-white/82 hover:bg-white/17 hover:text-white"
+                }`}
+              >
+                {tab.label}
+                <span
+                  className={`mr-2 rounded-full px-2 py-0.5 text-[11px] ${
+                    activeTab === tab.id
+                      ? "bg-[#123c6b]/10 text-[#123c6b]"
+                      : "bg-white/10 text-white/72"
+                  }`}
+                >
+                  {tab.completed}/{tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
 
-        {activeTab === "songs" && (
-          <SongsTab
-            songs={songs}
+        <ContentRail
+          railRef={railRef}
+          scrollRail={scrollRail}
+          activeTab={activeTab}
+          activeTabData={activeTabData}
+          items={activeItems}
+          navigate={navigate}
+          getLevelLabel={getLevelLabel}
+          getCategoryLabel={getCategoryLabel}
+          actionLoadingKey={actionLoadingKey}
+          isItemCompleted={safeIsItemCompleted}
+          onToggleCourseItem={safeToggle}
+          activeSongId={activeSongId}
+          openSongPanel={openSongPanel}
+        />
+
+        {activeTab === "songs" && activeSong && songPanelOpen && (
+          <SongPlayerPanel
             activeSong={activeSong}
-            activeSongId={activeSongId}
-            setActiveSongId={setActiveSongId}
             getLevelLabel={getLevelLabel}
             actionLoadingKey={actionLoadingKey}
             isItemCompleted={safeIsItemCompleted}
             onToggleCourseItem={safeToggle}
-          />
-        )}
-
-        {activeTab === "exercises" && (
-          <ExercisesTab
-            exercises={exercises}
-            navigate={navigate}
-            actionLoadingKey={actionLoadingKey}
-            isItemCompleted={safeIsItemCompleted}
-            onToggleCourseItem={safeToggle}
-          />
-        )}
-
-        {activeTab === "quizzes" && (
-          <QuizzesTab
-            course={course}
-            quizzes={quizzes}
-            navigate={navigate}
-            actionLoadingKey={actionLoadingKey}
-            isItemCompleted={safeIsItemCompleted}
-            onToggleCourseItem={safeToggle}
+            onClose={() => setSongPanelOpen(false)}
           />
         )}
       </div>
@@ -151,463 +168,295 @@ export default function CourseContentTabs({
   );
 }
 
-function LessonsTab({
-  lessons,
+function ContentRail({
+  railRef,
+  scrollRail,
+  activeTab,
+  activeTabData,
+  items,
+  navigate,
   getLevelLabel,
   getCategoryLabel,
-  navigate,
   actionLoadingKey,
   isItemCompleted,
   onToggleCourseItem,
+  activeSongId,
+  openSongPanel,
 }) {
-  if (!lessons.length) {
+  if (!items.length) {
     return (
-      <EmptyContent icon="🎬" text="עדיין אין שיעורים מוקלטים בקורס הזה." />
+      <EmptyContent
+        label={activeTabData?.label}
+        text={`עדיין אין ${activeTabData?.label || "תוכן"} בקורס הזה.`}
+      />
     );
   }
 
   return (
-    <div>
-      <div className="mb-5">
-        <h2 className="text-2xl font-black">🎬 שיעורי הקורס</h2>
+    <div className="relative px-4 py-4">
+      <RailLine />
 
-        <p className="text-gray-400 text-sm mt-1">
-          צפייה מסודרת בשיעורים שהותאמו למסלול שלך. אחרי צפייה סמני שהשיעור
-          בוצע כדי לעדכן את התקדמות הקורס.
-        </p>
-      </div>
+      {items.length > 4 && (
+        <>
+          <button
+            type="button"
+            onClick={() => scrollRail("right")}
+            className="absolute right-3 top-1/2 z-30 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/18 bg-[#123c6b]/80 text-3xl font-black text-white shadow-[0_10px_24px_rgba(3,31,61,0.26)] backdrop-blur-xl transition hover:bg-[#176aa8] xl:flex"
+          >
+            ›
+          </button>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {lessons.map((lesson, index) => {
+          <button
+            type="button"
+            onClick={() => scrollRail("left")}
+            className="absolute left-3 top-1/2 z-30 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/18 bg-[#123c6b]/80 text-3xl font-black text-white shadow-[0_10px_24px_rgba(3,31,61,0.26)] backdrop-blur-xl transition hover:bg-[#176aa8] xl:flex"
+          >
+            ‹
+          </button>
+        </>
+      )}
+
+      <div
+        ref={railRef}
+        className="course-horizontal-rail relative z-10 flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden px-2 pb-4 pt-5"
+      >
+        {items.map((item, index) => {
+          const itemType = getItemType(activeTab);
           const completed = isItemCompleted({
-            itemType: "lesson",
-            itemId: lesson._id,
+            itemType,
+            itemId: item._id,
           });
 
-          const loadingKey = `lesson-${lesson._id}`;
+          const loadingKey = `${itemType}-${item._id}`;
           const isLoading = actionLoadingKey === loadingKey;
+          const isActiveSong = activeTab === "songs" && activeSongId === item._id;
 
           return (
-            <div
-              key={lesson._id}
-              className={`border rounded-3xl p-5 transition-all ${
-                completed
-                  ? "bg-emerald-500/10 border-emerald-400/30"
-                  : "bg-slate-950/60 border-white/10 hover:border-indigo-400/40"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-2xl">
-                  {lesson.icon || "🎬"}
-                </div>
-
-                <div className="flex flex-col items-end gap-2">
-                  <span className="bg-white/10 text-gray-300 px-3 py-1 rounded-full text-xs font-bold">
-                    שיעור {index + 1}
-                  </span>
-
-                  {completed && (
-                    <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-black">
-                      בוצע ✓
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <h3 className="text-xl font-black text-white line-clamp-2">
-                {lesson.title}
-              </h3>
-
-              <p className="text-gray-400 text-sm mt-2 line-clamp-3">
-                {lesson.description || "אין תיאור לשיעור זה."}
-              </p>
-
-              <div className="flex gap-2 mt-4 flex-wrap">
-                {lesson.level && (
-                  <span className="bg-white/10 text-xs px-2 py-1 rounded-lg text-gray-300">
-                    {getLevelLabel(lesson.level)}
-                  </span>
-                )}
-
-                {lesson.category && (
-                  <span className="bg-yellow-400/10 text-yellow-300 text-xs px-2 py-1 rounded-lg">
-                    {getCategoryLabel(lesson.category)}
-                  </span>
-                )}
-              </div>
-
-              <div className="mt-5 grid grid-cols-1 gap-3">
-                <button
-                  type="button"
-                  onClick={() => navigate(`/teacher/lesson/${lesson._id}`)}
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all"
-                >
-                  צפייה בשיעור
-                </button>
-
-                <ProgressToggleButton
-                  completed={completed}
-                  isLoading={isLoading}
-                  completedLabel="השיעור בוצע ✓"
-                  pendingLabel="סמני שיעור כבוצע"
-                  onClick={() =>
-                    onToggleCourseItem({
-                      itemType: "lesson",
-                      itemId: lesson._id,
-                      completed: !completed,
-                    })
-                  }
-                />
-              </div>
-            </div>
+            <CourseRailCar
+              key={item._id}
+              item={item}
+              index={index}
+              activeTab={activeTab}
+              typeLabel={activeTabData?.typeLabel || "פריט"}
+              color={activeTabData?.color}
+              completed={completed}
+              isLoading={isLoading}
+              isActiveSong={isActiveSong}
+              getLevelLabel={getLevelLabel}
+              getCategoryLabel={getCategoryLabel}
+              onOpen={() =>
+                openItem({
+                  activeTab,
+                  item,
+                  navigate,
+                  openSongPanel,
+                })
+              }
+              onToggle={() =>
+                onToggleCourseItem({
+                  itemType,
+                  itemId: item._id,
+                  completed: !completed,
+                })
+              }
+            />
           );
         })}
       </div>
+
+      {items.length > 4 && <RailHint />}
     </div>
   );
 }
 
-function SongsTab({
-  songs,
-  activeSong,
-  activeSongId,
-  setActiveSongId,
+function CourseRailCar({
+  item,
+  index,
+  activeTab,
+  typeLabel,
+  color,
+  completed,
+  isLoading,
+  isActiveSong,
   getLevelLabel,
-  actionLoadingKey,
-  isItemCompleted,
-  onToggleCourseItem,
+  getCategoryLabel,
+  onOpen,
+  onToggle,
 }) {
-  if (!songs.length) {
-    return (
-      <EmptyContent icon="🎵" text="עדיין אין שירים מותאמים בקורס הזה." />
-    );
-  }
-
-  const activeSongCompleted = activeSong
-    ? isItemCompleted({
-        itemType: "song",
-        itemId: activeSong._id,
-      })
-    : false;
-
-  const activeSongLoading = activeSong
-    ? actionLoadingKey === `song-${activeSong._id}`
-    : false;
-
   return (
-    <div>
-      <div className="mb-5">
-        <h2 className="text-2xl font-black">🎵 שירי תרגול</h2>
-
-        <p className="text-gray-400 text-sm mt-1">
-          האזנה קצרה, נעימה וממוקדת לחיזוק השמיעה והביטחון. אחרי שהאזנת סמני
-          את השיר כבוצע.
-        </p>
+    <article
+      className={`relative h-[252px] w-[270px] shrink-0 snap-center rounded-[1.7rem] border p-4 text-white shadow-[0_15px_34px_rgba(3,31,61,0.22),0_0_20px_rgba(103,232,249,0.10),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl transition hover:-translate-y-2 ${
+        isActiveSong
+          ? "border-[#ffd439]/58 bg-[#1b5f95]/70"
+          : "border-cyan-100/28 bg-[#1b5f95]/54 hover:bg-[#1b5f95]/66"
+      }`}
+    >
+      <div className="absolute -top-4 right-5 flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-[#075a98] bg-gradient-to-b from-[#ff6659] to-[#b8322a] text-base font-black shadow-[0_7px_14px_rgba(3,31,61,0.22)]">
+        {index + 1}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
-        <div className="xl:col-span-2 bg-slate-950/50 border border-white/10 rounded-3xl p-4">
-          <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
-            {songs.map((song, index) => {
-              const isActive = activeSongId === song._id;
+      <div className="flex h-full flex-col">
+        <div className="flex items-start justify-between gap-3">
+          <div
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/18 bg-gradient-to-b ${color} text-xl shadow-[0_7px_16px_rgba(0,0,0,0.17)]`}
+          >
+            {getContentIcon(activeTab)}
+          </div>
 
-              const completed = isItemCompleted({
-                itemType: "song",
-                itemId: song._id,
-              });
+          <div className="flex flex-col items-end gap-1.5">
+            <span className="rounded-full bg-white/12 px-3 py-1 text-[11px] font-black text-white/80">
+              {typeLabel}
+            </span>
 
-              return (
-                <button
-                  key={song._id}
-                  type="button"
-                  onClick={() => setActiveSongId(song._id)}
-                  className={`w-full text-right p-4 rounded-2xl border transition-all ${
-                    isActive
-                      ? "bg-emerald-500/20 border-emerald-400"
-                      : completed
-                      ? "bg-emerald-500/10 border-emerald-500/20"
-                      : "bg-black/20 border-white/10 hover:border-white/30"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl ${
-                        isActive
-                          ? "bg-emerald-400 text-slate-950"
-                          : completed
-                          ? "bg-emerald-500/20 text-emerald-300"
-                          : "bg-white/10"
-                      }`}
-                    >
-                      {completed ? "✓" : "🎧"}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-black text-white truncate">
-                        {index + 1}.{" "}
-                        {song.title || song.theme || "שיר לימודי"}
-                      </h3>
-
-                      <p className="text-gray-400 text-sm mt-1 truncate">
-                        {getLevelLabel(song.level)} ·{" "}
-                        {song.theme || "ללא נושא"}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+            {completed && (
+              <span className="rounded-full border border-emerald-300/35 bg-emerald-400/16 px-3 py-1 text-[11px] font-black text-emerald-200">
+                בוצע ✓
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="xl:col-span-3">
-          {activeSong && (
-            <>
-              <CustomAudioPlayer
-                src={`http://localhost:3000/songs/song/${activeSong._id}/stream`}
-                title={activeSong.title || activeSong.theme || "שיר לימודי"}
-                subtitle={`רמה: ${getLevelLabel(activeSong.level)} · נושא: ${
-                  activeSong.theme || "לא צוין"
-                }`}
-                allowDownload={true}
-              />
+        <h3 className="mt-4 line-clamp-2 text-xl font-black leading-tight">
+          {item.title || item.theme || `${typeLabel} ${index + 1}`}
+        </h3>
 
-              <div className="mt-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4">
-                <h4 className="font-bold text-emerald-300 mb-2">
-                  הצעת תרגול:
-                </h4>
+        <p className="mt-2 line-clamp-2 text-xs font-bold leading-relaxed text-white/66">
+          {item.description ||
+            item.instructions ||
+            item.theme ||
+            getDefaultDescription(activeTab)}
+        </p>
 
-                <p className="text-gray-300 text-sm leading-relaxed">
-                  האזיני פעם אחת להבנה כללית, ואז פעם נוספת כדי לזהות מילים או
-                  ביטויים שחוזרים על עצמם.
-                </p>
-              </div>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {item.level && (
+            <span className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white/72">
+              {getLevelLabel(item.level)}
+            </span>
+          )}
 
-              <div className="mt-4">
-                <ProgressToggleButton
-                  completed={activeSongCompleted}
-                  isLoading={activeSongLoading}
-                  completedLabel="השיר סומן כהושלם ✓"
-                  pendingLabel="סמני שהאזנת לשיר"
-                  onClick={() =>
-                    onToggleCourseItem({
-                      itemType: "song",
-                      itemId: activeSong._id,
-                      completed: !activeSongCompleted,
-                    })
-                  }
-                />
-              </div>
-            </>
+          {item.category && (
+            <span className="rounded-full bg-[#ffd439]/14 px-2.5 py-1 text-[11px] font-bold text-[#ffe99a]">
+              {getCategoryLabel(item.category)}
+            </span>
           )}
         </div>
+
+        <div className="mt-auto grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onOpen}
+            className="rounded-full border-2 border-white/50 bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-3 py-2.5 text-xs font-black text-white shadow-[0_5px_0_rgba(89,15,20,0.40)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none"
+          >
+            {getOpenButtonText(activeTab)}
+          </button>
+
+          <ProgressToggleButton
+            completed={completed}
+            isLoading={isLoading}
+            completedLabel="בוצע ✓"
+            pendingLabel="סמני"
+            onClick={onToggle}
+            variant="dark"
+          />
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
 
-function ExercisesTab({
-  exercises,
-  navigate,
+function SongPlayerPanel({
+  activeSong,
+  getLevelLabel,
   actionLoadingKey,
   isItemCompleted,
   onToggleCourseItem,
+  onClose,
 }) {
-  if (!exercises.length) {
-    return (
-      <EmptyContent icon="📝" text="עדיין אין תרגילים מותאמים בקורס הזה." />
-    );
-  }
+  const completed = isItemCompleted({
+    itemType: "song",
+    itemId: activeSong._id,
+  });
 
-  return (
-    <div>
-      <div className="mb-5">
-        <h2 className="text-2xl font-black">📝 תרגילים</h2>
+  const isLoading = actionLoadingKey === `song-${activeSong._id}`;
 
-        <p className="text-gray-400 text-sm mt-1">
-          תרגול קצר כדי לחזק את החומר של הקורס. אחרי שסיימת תרגיל סמני אותו
-          כבוצע.
-        </p>
-      </div>
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#031f3d]/55 px-4 py-6 backdrop-blur-md"
+      dir="rtl"
+    >
+      <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2.4rem] border border-white/28 bg-[#123c6b]/96 text-white shadow-[0_35px_100px_rgba(3,31,61,0.58),inset_0_1px_0_rgba(255,255,255,0.18)]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,255,255,0.16),transparent_26%),linear-gradient(to_bottom,rgba(255,255,255,0.08),transparent_48%)]" />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {exercises.map((exercise, index) => {
-          const completed = isItemCompleted({
-            itemType: "exercise",
-            itemId: exercise._id,
-          });
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute left-5 top-5 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/24 bg-white/12 text-3xl font-black text-white shadow-lg transition hover:bg-white/22"
+          aria-label="סגירת נגן"
+        >
+          ×
+        </button>
 
-          const loadingKey = `exercise-${exercise._id}`;
-          const isLoading = actionLoadingKey === loadingKey;
+        <div className="relative z-10 p-5 md:p-7">
+          <div className="mb-6 flex items-center gap-4 pl-14">
+            <div className="flex h-17 w-17 shrink-0 items-center justify-center rounded-[1.5rem] border border-white/28 bg-gradient-to-b from-[#ffd439] to-[#d98918] text-4xl shadow-[0_12px_28px_rgba(3,31,61,0.28)]">
+              ♪
+            </div>
 
-          return (
-            <div
-              key={exercise._id}
-              className={`border rounded-3xl p-5 transition-all ${
-                completed
-                  ? "bg-emerald-500/10 border-emerald-400/30"
-                  : "bg-slate-950/60 border-white/10"
-              }`}
-            >
-              <div className="flex justify-between items-start gap-3">
-                <span className="bg-white/10 text-gray-300 px-3 py-1 rounded-full text-xs font-bold">
-                  תרגיל {index + 1}
-                </span>
-
-                {completed && (
-                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-black">
-                    בוצע ✓
-                  </span>
-                )}
+            <div>
+              <div className="text-xs font-black text-[#ffe99a]">
+                נגן שיר פעיל
               </div>
 
-              <h3 className="text-xl font-black text-white mt-4">
-                {exercise.title}
+              <h3 className="mt-1 text-2xl font-black leading-tight md:text-3xl">
+                {activeSong.title || activeSong.theme || "שיר לימודי"}
               </h3>
 
-              <p className="text-gray-400 text-sm mt-2">
-                {exercise.description ||
-                  exercise.instructions ||
-                  "תרגיל לתרגול אישי"}
+              <p className="mt-1 text-sm font-bold text-white/68">
+                רמה: {getLevelLabel(activeSong.level)} · נושא:{" "}
+                {activeSong.theme || "לא צוין"}
               </p>
-
-              <div className="mt-5 grid grid-cols-1 gap-3">
-                <button
-                  type="button"
-                  onClick={() => navigate(`/exercise/${exercise._id}`)}
-                  className="w-full bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-3 rounded-xl transition-all"
-                >
-                  התחל תרגיל
-                </button>
-
-                <ProgressToggleButton
-                  completed={completed}
-                  isLoading={isLoading}
-                  completedLabel="התרגיל בוצע ✓"
-                  pendingLabel="סמני תרגיל כבוצע"
-                  onClick={() =>
-                    onToggleCourseItem({
-                      itemType: "exercise",
-                      itemId: exercise._id,
-                      completed: !completed,
-                    })
-                  }
-                />
-              </div>
             </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+          </div>
 
-function QuizzesTab({
-  course,
-  quizzes,
-  navigate,
-  actionLoadingKey,
-  isItemCompleted,
-  onToggleCourseItem,
-}) {
-  if (!quizzes.length) {
-    return (
-      <EmptyContent icon="🧠" text="עדיין אין בחנים מותאמים בקורס הזה." />
-    );
-  }
+          <div className="rounded-[2rem] border border-white/22 bg-white/8 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]">
+            <CustomAudioPlayer
+              src={`http://localhost:3000/songs/song/${activeSong._id}/stream`}
+              title={activeSong.title || activeSong.theme || "שיר לימודי"}
+              subtitle={`תרגול האזנה · ${getLevelLabel(activeSong.level)}`}
+              allowDownload={true}
+            />
+          </div>
 
-  return (
-    <div>
-      <div className="mb-5">
-        <h2 className="text-2xl font-black">🧠 בחנים</h2>
-
-        <p className="text-gray-400 text-sm mt-1">
-          בדקי הבנה והתקדמות לפי החומר במסלול. בסיום הבוחן תקבלי ציון, תשובות
-          נכונות והסברים.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {quizzes.map((quiz, index) => {
-          const completed = isItemCompleted({
-            itemType: "quiz",
-            itemId: quiz._id,
-          });
-
-          const loadingKey = `quiz-${quiz._id}`;
-          const isLoading = actionLoadingKey === loadingKey;
-
-          return (
-            <div
-              key={quiz._id}
-              className={`border rounded-3xl p-5 transition-all ${
-                completed
-                  ? "bg-emerald-500/10 border-emerald-400/30"
-                  : "bg-slate-950/60 border-white/10"
-              }`}
-            >
-              <div className="flex justify-between items-start gap-3">
-                <span className="bg-white/10 text-gray-300 px-3 py-1 rounded-full text-xs font-bold">
-                  בוחן {index + 1}
-                </span>
-
-                {completed && (
-                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-black">
-                    בוצע ✓
-                  </span>
-                )}
-              </div>
-
-              <h3 className="text-xl font-black text-white mt-4">
-                {quiz.title}
-              </h3>
-
-              <p className="text-gray-400 text-sm mt-2">
-                ציון מעבר: {quiz.passingScore || 70}%
+          <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+            <div className="rounded-[1.5rem] border border-white/14 bg-white/9 p-4">
+              <h4 className="font-black text-white">הצעת תרגול</h4>
+              <p className="mt-1 text-sm font-bold leading-relaxed text-white/64">
+                האזיני פעם אחת להבנה כללית, ואז פעם נוספת כדי לזהות מילים או
+                ביטויים שחוזרים על עצמם.
               </p>
-
-              {quiz.duration && (
-                <p className="text-gray-500 text-xs mt-1">
-                  משך משוער: {quiz.duration} דקות
-                </p>
-              )}
-
-              <div className="mt-5 grid grid-cols-1 gap-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigate(`/quiz/${quiz._id}?courseId=${course._id}`)
-                  }
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all"
-                >
-                  התחל בוחן
-                </button>
-
-                {completed ? (
-                  <div className="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 rounded-xl py-3 text-center font-black">
-                    הבוחן הושלם ✓
-                  </div>
-                ) : (
-                  <ProgressToggleButton
-                    completed={completed}
-                    isLoading={isLoading}
-                    completedLabel="הבוחן בוצע ✓"
-                    pendingLabel="סמני בוחן כבוצע"
-                    onClick={() =>
-                      onToggleCourseItem({
-                        itemType: "quiz",
-                        itemId: quiz._id,
-                        completed: !completed,
-                      })
-                    }
-                  />
-                )}
-              </div>
             </div>
-          );
-        })}
+
+            <div className="min-w-[200px]">
+              <ProgressToggleButton
+                completed={completed}
+                isLoading={isLoading}
+                completedLabel="השיר הושלם ✓"
+                pendingLabel="סמני שהאזנת"
+                onClick={() =>
+                  onToggleCourseItem({
+                    itemType: "song",
+                    itemId: activeSong._id,
+                    completed: !completed,
+                  })
+                }
+                variant="light"
+              />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -617,32 +466,141 @@ function ProgressToggleButton({
   pendingLabel,
   completedLabel,
   onClick,
+  variant = "dark",
 }) {
+  const pendingClass =
+    variant === "light"
+      ? "border-[#176aa8]/20 bg-[#176aa8]/10 text-[#123c6b] hover:bg-[#176aa8]/16"
+      : "border-white/16 bg-white/10 text-white hover:bg-white/16";
+
+  const completedClass =
+    variant === "light"
+      ? "border-emerald-400/35 bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+      : "border-emerald-300/35 bg-emerald-400/16 text-emerald-200 hover:bg-emerald-400/22";
+
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={isLoading}
-      className={`w-full font-black py-3 rounded-xl transition-all disabled:opacity-60 ${
-        completed
-          ? "bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30"
-          : "bg-white/10 hover:bg-white/20 text-white border border-white/10"
+      className={`w-full rounded-full border px-3 py-2.5 text-xs font-black transition-all disabled:opacity-60 ${
+        completed ? completedClass : pendingClass
       }`}
     >
-      {isLoading
-        ? "מעדכן..."
-        : completed
-        ? completedLabel
-        : pendingLabel}
+      {isLoading ? "מעדכן..." : completed ? completedLabel : pendingLabel}
     </button>
   );
 }
 
-function EmptyContent({ icon, text }) {
+function RailLine() {
   return (
-    <div className="text-center py-16 bg-slate-950/50 border border-dashed border-white/10 rounded-3xl">
-      <div className="text-5xl mb-4">{icon}</div>
-      <p className="text-gray-400 font-bold">{text}</p>
+    <svg
+      className="pointer-events-none absolute inset-x-0 top-[48%] z-0 h-28 w-full"
+      viewBox="0 0 1200 120"
+      preserveAspectRatio="none"
+    >
+      <path
+        d="M20 62C130 20 240 96 350 62C470 25 565 95 680 62C790 30 900 82 1015 58C1090 42 1145 46 1180 30"
+        fill="none"
+        stroke="rgba(255,255,255,0.28)"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeDasharray="12 16"
+      />
+      <path
+        d="M20 66C130 24 240 100 350 66C470 29 565 99 680 66C790 34 900 86 1015 62C1090 46 1145 50 1180 34"
+        fill="none"
+        stroke="rgba(7,90,152,0.22)"
+        strokeWidth="13"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function RailHint() {
+  return (
+    <div className="mt-1 text-center text-xs font-bold text-white/50">
+      יש עוד קרונות במסלול — אפשר להשתמש בחצים או לגלול בעדינות לרוחב
     </div>
   );
+}
+
+function EmptyContent({ label, text }) {
+  return (
+    <div className="p-5">
+      <div className="rounded-[2rem] border border-dashed border-white/18 bg-[#123c6b]/44 py-16 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/14 bg-white/9 text-2xl">
+          —
+        </div>
+        <h3 className="text-2xl font-black text-white">{label}</h3>
+        <p className="mt-2 font-bold text-white/60">{text}</p>
+      </div>
+    </div>
+  );
+}
+
+function getItemType(activeTab) {
+  const map = {
+    lessons: "lesson",
+    songs: "song",
+    exercises: "exercise",
+    quizzes: "quiz",
+  };
+
+  return map[activeTab] || "lesson";
+}
+
+function openItem({ activeTab, item, navigate, openSongPanel }) {
+  if (activeTab === "lessons") {
+    navigate(`/teacher/lesson/${item._id}`);
+    return;
+  }
+
+  if (activeTab === "songs") {
+    openSongPanel(item._id);
+    return;
+  }
+
+  if (activeTab === "exercises") {
+    navigate(`/exercise/${item._id}`);
+    return;
+  }
+
+  if (activeTab === "quizzes") {
+    return;
+  }
+}
+
+function getOpenButtonText(activeTab) {
+  const map = {
+    lessons: "צפייה",
+    songs: "השמעה",
+    exercises: "התחל",
+    quizzes: "התחל",
+  };
+
+  return map[activeTab] || "פתח";
+}
+
+function getContentIcon(activeTab) {
+  const map = {
+    lessons: "▶",
+    songs: "♪",
+    exercises: "✎",
+    quizzes: "✓",
+  };
+
+  return map[activeTab] || "•";
+}
+
+function getDefaultDescription(activeTab) {
+  const map = {
+    lessons: "שיעור קצר וממוקד מתוך מסלול הלמידה.",
+    songs: "תרגול שמיעה ושפה דרך שיר.",
+    exercises: "תרגול אישי לחיזוק החומר.",
+    quizzes: "בדיקת הבנה והתקדמות.",
+  };
+
+  return map[activeTab] || "פריט מתוך הקורס.";
 }

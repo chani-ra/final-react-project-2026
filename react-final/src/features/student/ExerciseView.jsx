@@ -15,7 +15,6 @@ export default function ExerciseView() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  // טעינת פרטי התרגיל מהשרת
   const loadExercise = async () => {
     try {
       setLoading(true);
@@ -34,7 +33,6 @@ export default function ExerciseView() {
     loadExercise();
   }, [exerciseId]);
 
-  // סימון התרגיל כהושלם
   const handleCompleteExercise = async () => {
     try {
       setSaving(true);
@@ -44,7 +42,7 @@ export default function ExerciseView() {
 
       setMessage({
         type: "success",
-        text: "מעולה! התרגיל סומן כהושלם ✅",
+        text: "מעולה! התרגיל סומן כהושלם.",
       });
 
       setTimeout(() => {
@@ -57,151 +55,237 @@ export default function ExerciseView() {
     }
   };
 
+  const handleClose = () => {
+    navigate(-1);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center text-white font-bold text-xl">
-        <div className="animate-pulse">טוען את התרגיל... 📝</div>
-      </div>
+      <main
+        className="flex min-h-[70vh] items-center justify-center text-white"
+        dir="rtl"
+      >
+        <div className="rounded-[2rem] border border-white/28 bg-[#123c6b]/74 px-10 py-7 text-xl font-black shadow-[0_22px_60px_rgba(3,31,61,0.32)] backdrop-blur-xl">
+          טוען את התרגיל...
+        </div>
+      </main>
     );
   }
 
   if (!exercise) {
     return (
-      <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-6 rounded-3xl font-bold">
-        התרגיל לא נמצא.
-      </div>
+      <main className="mx-auto max-w-4xl px-4 py-6" dir="rtl">
+        <div className="relative overflow-hidden rounded-[2.4rem] border border-red-300/35 bg-[#123c6b]/78 p-7 text-white shadow-[0_28px_80px_rgba(3,31,61,0.38)] backdrop-blur-xl">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="absolute left-5 top-5 flex h-11 w-11 items-center justify-center rounded-full border border-white/24 bg-white/12 text-3xl font-black text-white transition hover:bg-white/22"
+          >
+            ×
+          </button>
+
+          <div className="max-w-2xl">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-[1.4rem] border border-red-300/35 bg-red-500/16 text-3xl">
+              !
+            </div>
+
+            <h1 className="text-3xl font-black text-red-100">
+              התרגיל לא נמצא
+            </h1>
+
+            <p className="mt-3 text-base font-bold leading-relaxed text-white/72">
+              לא הצלחנו למצוא את התרגיל המבוקש.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleClose}
+              className="mt-7 rounded-full bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-7 py-3 font-black text-white shadow-[0_6px_0_rgba(89,15,20,0.42)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none"
+            >
+              חזרה לקורס
+            </button>
+          </div>
+        </div>
+      </main>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6" dir="rtl">
-      <section className="bg-white/5 border border-white/10 rounded-3xl p-8">
+    <main className="mx-auto max-w-7xl px-4 py-4" dir="rtl">
+      <section className="relative overflow-hidden rounded-[2.4rem] border border-white/32 bg-[#123c6b]/70 text-white shadow-[0_32px_95px_rgba(3,31,61,0.38),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,255,255,0.14),transparent_28%),linear-gradient(to_bottom,rgba(255,255,255,0.07),transparent_52%)]" />
+
         <button
-          onClick={() => navigate(-1)}
-          className="text-sm text-gray-400 hover:text-yellow-400 font-bold mb-6"
+          type="button"
+          onClick={handleClose}
+          className="absolute left-5 top-5 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/24 bg-white/12 text-3xl font-black text-white shadow-lg transition hover:bg-white/22"
+          aria-label="סגירת תרגיל"
         >
-          ← חזרה לקורס
+          ×
         </button>
 
-        <div className="flex flex-col md:flex-row justify-between gap-6">
-          <div>
-            <div className="flex gap-2 mb-4">
-              <span className="bg-yellow-400/10 text-yellow-300 border border-yellow-400/20 px-3 py-1 rounded-full text-sm font-bold">
+        <div className="relative z-10 p-4 md:p-5">
+          <header className="mb-4 pl-14">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/18 bg-white/10 px-4 py-2 text-sm font-black text-white/82 transition hover:bg-white/16 hover:text-white"
+            >
+              <span>→</span>
+              <span>חזרה לקורס</span>
+            </button>
+
+            <div className="mb-2 flex flex-wrap gap-2">
+              <span className="rounded-full border border-[#ffd439]/24 bg-[#ffd439]/14 px-3 py-1 text-xs font-black text-[#ffe89a]">
                 תרגיל
               </span>
 
-              <span className="bg-white/10 text-gray-300 border border-white/10 px-3 py-1 rounded-full text-sm font-bold">
+              <span className="rounded-full border border-white/18 bg-white/10 px-3 py-1 text-xs font-black text-white/72">
                 {exercise.type || "practice"}
               </span>
             </div>
 
-            <h1 className="text-4xl font-black text-white mb-4">
-              {exercise.title}
+            <h1
+              className="text-2xl font-black leading-tight md:text-4xl"
+              style={{
+                textShadow:
+                  "3px 3px 0 rgba(184,50,42,0.54), -1px -1px 0 rgba(15,76,117,0.86), 0 14px 30px rgba(7,89,133,0.38)",
+              }}
+            >
+              {exercise.title || "תרגיל ללא כותרת"}
             </h1>
 
-            <p className="text-gray-300 leading-relaxed max-w-3xl">
+            <p className="mt-2 line-clamp-2 max-w-4xl text-sm font-bold leading-relaxed text-white/66">
               {exercise.description || "אין תיאור לתרגיל זה."}
             </p>
-          </div>
+          </header>
 
-          <div className="bg-yellow-400 text-slate-950 rounded-3xl p-6 min-w-[180px] text-center h-fit">
-            <div className="text-4xl mb-2">📝</div>
-            <div className="font-black">תרגול אישי</div>
-          </div>
-        </div>
-      </section>
-
-      {message.text && (
-        <div
-          className={`p-4 rounded-2xl font-bold ${
-            message.type === "success"
-              ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
-              : "bg-red-500/10 border border-red-500/30 text-red-400"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
-
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-6">
-          <h2 className="text-2xl font-black text-yellow-400 mb-4">
-            הוראות התרגיל
-          </h2>
-
-          <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-5 text-gray-300 leading-relaxed whitespace-pre-line">
-            {exercise.instructions ||
-              "קראי את ההנחיות, כתבי תשובה קצרה, וסמני את התרגיל כהושלם."}
-          </div>
-
-          <div className="mt-6">
-            <label className="block text-sm font-bold text-gray-300 mb-2">
-              התשובה שלי
-            </label>
-
-            <textarea
-              rows="8"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              placeholder="כתבי כאן את התשובה שלך..."
-              className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-yellow-400"
-            />
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-4 mt-6">
-            <button
-              onClick={handleCompleteExercise}
-              disabled={saving}
-              className="flex-1 bg-yellow-400 hover:bg-yellow-300 disabled:bg-yellow-400/50 text-slate-950 font-black py-4 rounded-2xl transition-all"
+          {message.text && (
+            <div
+              className={`mb-4 rounded-[1.5rem] px-5 py-4 text-sm font-black shadow-[0_12px_32px_rgba(3,31,61,0.16)] ${
+                message.type === "success"
+                  ? "border border-emerald-300/28 bg-emerald-400/14 text-emerald-100"
+                  : "border border-red-300/30 bg-red-500/16 text-red-100"
+              }`}
             >
-              {saving ? "שומר..." : "סיימתי את התרגיל ✅"}
-            </button>
-
-            <button
-              onClick={() => navigate(-1)}
-              className="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-4 rounded-2xl border border-white/10 transition-all"
-            >
-              חזרה בלי שמירה
-            </button>
-          </div>
-        </div>
-
-        <aside className="bg-white/5 border border-white/10 rounded-3xl p-6 h-fit">
-          <h2 className="text-xl font-black mb-4">📎 חומרי עזר</h2>
-
-          {!exercise.materials?.length ? (
-            <p className="text-gray-400 text-sm">
-              אין חומרי עזר מצורפים לתרגיל הזה.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {exercise.materials.map((material, index) => (
-                <div
-                  key={`${material}-${index}`}
-                  className="bg-slate-950/60 border border-white/10 rounded-2xl p-4"
-                >
-                  <div className="text-sm font-bold text-white">
-                    חומר עזר {index + 1}
-                  </div>
-
-                  <div className="text-gray-400 text-sm mt-1 break-all">
-                    {material}
-                  </div>
-                </div>
-              ))}
+              {message.text}
             </div>
           )}
 
-          <div className="mt-6 bg-indigo-500/10 border border-indigo-400/20 rounded-2xl p-4">
-            <h3 className="font-bold text-indigo-300 mb-2">טיפ קטן:</h3>
+          <div className="grid gap-4 xl:grid-cols-[1.72fr_0.58fr]">
+            <section className="overflow-hidden rounded-[2rem] border border-white/22 bg-[#061f36]/76 p-4 shadow-[0_24px_65px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.14)]">
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-black">הוראות התרגיל</h2>
+                  <p className="text-[11px] font-bold text-white/55">
+                    קראי את ההוראות, כתבי תשובה, וסמני שסיימת.
+                  </p>
+                </div>
 
-            <p className="text-gray-300 text-sm leading-relaxed">
-              נסי לכתוב תשובה קצרה וברורה. גם אם היא לא מושלמת — עצם הכתיבה
-              באנגלית מחזקת ביטחון ושטף.
-            </p>
+                <div className="rounded-full border border-white/14 bg-white/8 px-3 py-1 text-[11px] font-black text-white/70">
+                  Exercise mode
+                </div>
+              </div>
+
+              <div className="rounded-[1.6rem] border border-white/14 bg-[#123c6b]/54 p-4 text-sm font-bold leading-relaxed text-white/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] whitespace-pre-line">
+                {exercise.instructions ||
+                  "קראי את ההנחיות, כתבי תשובה קצרה, וסמני את התרגיל כהושלם."}
+              </div>
+
+              <div className="mt-4">
+                <label className="mb-2 block text-sm font-black text-white">
+                  התשובה שלי
+                </label>
+
+                <textarea
+                  rows="7"
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder="כתבי כאן את התשובה שלך..."
+                  className="w-full resize-none rounded-[1.6rem] border border-white/20 p-4 text-sm font-bold leading-relaxed caret-[#ffd439] outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_10px_26px_rgba(3,31,61,0.16)] transition placeholder:text-white/40 focus:border-[#ffd439]/65 focus:ring-4 focus:ring-[#ffd439]/12"
+                  style={{
+                    backgroundColor: "rgba(6, 31, 54, 0.92)",
+                    color: "#ffffff",
+                  }}
+                />
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={handleCompleteExercise}
+                  disabled={saving}
+                  className="rounded-full border-2 border-white/55 bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-5 py-3 text-sm font-black text-white shadow-[0_6px_0_rgba(89,15,20,0.42)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none disabled:opacity-60"
+                >
+                  {saving ? "שומר..." : "סיימתי את התרגיל"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="rounded-full border border-white/18 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/16"
+                >
+                  חזרה בלי שמירה
+                </button>
+              </div>
+            </section>
+
+            <aside className="space-y-3">
+              <div className="rounded-[1.7rem] border border-white/18 bg-[#1b5f95]/42 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl">
+                <h2 className="text-lg font-black">חומרי עזר</h2>
+
+                {!exercise.materials?.length ? (
+                  <div className="mt-3 rounded-xl border border-white/12 bg-white/8 px-3 py-3 text-xs font-bold leading-relaxed text-white/62">
+                    אין חומרי עזר מצורפים לתרגיל הזה.
+                  </div>
+                ) : (
+                  <div className="mt-3 max-h-[190px] space-y-2 overflow-y-auto pr-1">
+                    {exercise.materials.map((material, index) => (
+                      <div
+                        key={`${material}-${index}`}
+                        className="rounded-xl border border-white/12 bg-white/8 px-3 py-3"
+                      >
+                        <div className="text-xs font-black text-white">
+                          חומר עזר {index + 1}
+                        </div>
+
+                        <div className="mt-1 break-all text-[11px] font-bold text-white/56">
+                          {material}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-[1.7rem] border border-[#ffd439]/24 bg-[#082844]/68 p-4 text-white shadow-[0_18px_45px_rgba(3,31,61,0.22),inset_0_1px_0_rgba(255,255,255,0.14)]">
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#ffd439]/24 bg-[#ffd439]/14 text-lg text-[#ffd439]">
+                    ✎
+                  </div>
+
+                  <h2 className="text-lg font-black text-white">טיפ קטן</h2>
+                </div>
+
+                <p className="rounded-xl bg-white/8 px-3 py-3 text-xs font-bold leading-relaxed text-white/74">
+                  כתבי תשובה קצרה וברורה. גם אם היא לא מושלמת, עצם הכתיבה
+                  באנגלית מחזקת ביטחון ושטף.
+                </p>
+              </div>
+
+              <div className="rounded-[1.7rem] border border-white/18 bg-white/10 p-4">
+                <div className="text-xs font-bold text-white/56">מצב תרגול</div>
+                <div className="mt-1 text-xl font-black text-white">
+                  תרגול אישי
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/16">
+                  <div className="h-full w-2/3 rounded-full bg-gradient-to-l from-[#ffd439] via-[#ff6659] to-[#b8322a]" />
+                </div>
+              </div>
+            </aside>
           </div>
-        </aside>
+        </div>
       </section>
-    </div>
+    </main>
   );
 }

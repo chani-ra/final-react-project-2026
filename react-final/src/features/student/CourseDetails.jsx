@@ -57,7 +57,6 @@ export default function CourseDetails() {
     course?.exercises?.length > 0 ||
     course?.quizzes?.length > 0;
 
-  // טעינת הקורס מהשרת
   const loadCourse = async () => {
     try {
       setLoading(true);
@@ -73,7 +72,6 @@ export default function CourseDetails() {
     }
   };
 
-  // טעינת התקדמות הקורס מהשרת
   const loadProgress = async () => {
     try {
       setProgressLoading(true);
@@ -102,7 +100,6 @@ export default function CourseDetails() {
     }
   }, [courseId]);
 
-  // ברגע שהקורס נטען ויש totals, נחשב מחדש התקדמות כדי לוודא אחוז נכון
   useEffect(() => {
     const syncProgressPercent = async () => {
       if (!course || totalItems === 0) return;
@@ -122,7 +119,6 @@ export default function CourseDetails() {
     syncProgressPercent();
   }, [courseId, course, totalItems]);
 
-  // רענון מסלול אישי
   const handleRefreshCourse = async () => {
     try {
       setRefreshing(true);
@@ -141,7 +137,7 @@ export default function CourseDetails() {
 
       if (totalAdded > 0) {
         setRefreshMessage(
-          `המסלול רוענן בהצלחה! נמצאו ${totalAdded} פריטי תוכן שיכולים להתאים לך.`
+          `המסלול רוענן בהצלחה. נמצאו ${totalAdded} פריטי תוכן שיכולים להתאים לך.`
         );
       } else {
         setRefreshMessage(
@@ -158,7 +154,6 @@ export default function CourseDetails() {
     }
   };
 
-  // סימון פריט בקורס כבוצע / ביטול ביצוע
   const handleToggleCourseItem = async ({ itemType, itemId, completed }) => {
     const loadingKey = `${itemType}-${itemId}`;
 
@@ -190,7 +185,6 @@ export default function CourseDetails() {
     }
   };
 
-  // בדיקה אם פריט מסוים כבר בוצע
   const isItemCompleted = ({ itemType, itemId }) => {
     if (!progress || !itemId) return false;
 
@@ -207,7 +201,6 @@ export default function CourseDetails() {
     return completedList.some((id) => id?.toString() === itemId?.toString());
   };
 
-  // תרגום רמות לתצוגה
   const getLevelLabel = (level) => {
     const labels = {
       beginner: "מתחילים",
@@ -221,7 +214,6 @@ export default function CourseDetails() {
     return labels[level] || level || "לא צוין";
   };
 
-  // תרגום קטגוריות לתצוגה
   const getCategoryLabel = (category) => {
     const labels = {
       grammar: "דקדוק",
@@ -237,15 +229,20 @@ export default function CourseDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center text-white font-bold text-xl">
-        <div className="animate-pulse">טוען את הקורס שלך... 📚</div>
+      <div className="flex min-h-[58vh] items-center justify-center text-white" dir="rtl">
+        <div className="rounded-[2rem] border border-white/28 bg-[#061f36]/78 px-10 py-7 text-xl font-black shadow-[0_0_45px_rgba(255,255,255,0.22)] backdrop-blur-xl">
+          טוען את הקורס שלך...
+        </div>
       </div>
     );
   }
 
   if (error && !course) {
     return (
-      <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-6 rounded-3xl font-bold">
+      <div
+        className="rounded-[2rem] border border-red-300/35 bg-red-500/18 p-6 text-center font-bold text-red-100 shadow-xl backdrop-blur-xl"
+        dir="rtl"
+      >
         {error}
       </div>
     );
@@ -253,15 +250,20 @@ export default function CourseDetails() {
 
   if (!course) {
     return (
-      <div className="text-center py-16 bg-white/5 rounded-3xl border border-white/10">
-        <div className="text-5xl mb-4">📚</div>
+      <div
+        className="rounded-[2rem] border border-white/24 bg-[#061f36]/72 p-10 text-center text-white shadow-xl backdrop-blur-xl"
+        dir="rtl"
+      >
+        <div className="mx-auto mb-5 flex h-18 w-18 items-center justify-center rounded-3xl border border-white/18 bg-white/10 text-3xl">
+          —
+        </div>
 
-        <h2 className="text-2xl font-bold">הקורס לא נמצא</h2>
+        <h2 className="text-3xl font-black">הקורס לא נמצא</h2>
 
         <button
           type="button"
           onClick={() => navigate("/courses")}
-          className="mt-6 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black px-8 py-3 rounded-xl"
+          className="mt-6 rounded-full bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-8 py-3 font-black text-white shadow-[0_7px_0_rgba(89,15,20,0.42)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none"
         >
           חזרה לקורסים שלי
         </button>
@@ -270,167 +272,34 @@ export default function CourseDetails() {
   }
 
   return (
-    <div className="space-y-6" dir="rtl">
-      <section className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8">
-        <button
-          type="button"
-          onClick={() => navigate("/courses")}
-          className="text-sm text-gray-400 hover:text-yellow-400 font-bold mb-6"
-        >
-          ← חזרה לכל הקורסים
-        </button>
-
-        <div className="flex flex-col lg:flex-row justify-between gap-6">
-          <div className="max-w-4xl">
-            <div className="flex flex-wrap gap-2 mb-4">
-              <span className="bg-yellow-400/10 text-yellow-300 border border-yellow-400/20 px-3 py-1 rounded-full text-sm font-bold">
-                {getCategoryLabel(course.category)}
-              </span>
-
-              <span className="bg-white/10 text-white border border-white/10 px-3 py-1 rounded-full text-sm font-bold">
-                רמה: {getLevelLabel(course.level)}
-              </span>
-
-              {course.createdByAI && (
-                <span className="bg-indigo-400/10 text-indigo-300 border border-indigo-400/20 px-3 py-1 rounded-full text-sm font-bold">
-                  נבנה בהתאמה אישית ✨
-                </span>
-              )}
-            </div>
-
-            <h1 className="text-4xl md:text-5xl font-black mb-4">
-              {course.title}
-            </h1>
-
-            <p className="text-gray-300 leading-relaxed">
-              {course.description || "אין עדיין תיאור לקורס זה."}
-            </p>
-          </div>
-
-          <div className="w-full lg:w-72 space-y-3">
-            <button
-              type="button"
-              onClick={handleRefreshCourse}
-              disabled={refreshing}
-              className="w-full bg-yellow-400 hover:bg-yellow-300 disabled:bg-yellow-400/50 text-slate-950 px-6 py-4 rounded-2xl font-black shadow-lg transition-all"
-            >
-              {refreshing ? "מרענן מסלול..." : "רענן מסלול 🔄"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/create-personal-course")}
-              className="w-full bg-white/10 hover:bg-white/20 text-white px-6 py-4 rounded-2xl font-bold border border-white/10 transition-all"
-            >
-              בנה קורס נוסף ✨
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <CourseProgressCard
+    <div className="space-y-4" dir="rtl">
+      <CourseCompactHeader
+        course={course}
+        totals={totals}
         progressPercent={progressPercent}
         completedItems={completedItems}
         totalItems={totalItems}
         progressLoading={progressLoading}
+        refreshing={refreshing}
+        onBack={() => navigate("/courses")}
+        onRefreshCourse={handleRefreshCourse}
+        onCreateCourse={() => navigate("/create-personal-course")}
+        getLevelLabel={getLevelLabel}
+        getCategoryLabel={getCategoryLabel}
       />
 
-      {refreshMessage && (
-        <div className="bg-emerald-500/10 border border-emerald-400/20 text-emerald-300 rounded-3xl p-5 font-bold">
-          {refreshMessage}
-        </div>
-      )}
+      <MessagesArea
+        error={error}
+        refreshMessage={refreshMessage}
+        progressMessage={progressMessage}
+      />
 
-      {progressMessage.text && (
-        <div
-          className={`rounded-3xl p-5 font-bold ${
-            progressMessage.type === "success"
-              ? "bg-emerald-500/10 border border-emerald-400/20 text-emerald-300"
-              : "bg-red-500/10 border border-red-500/30 text-red-400"
-          }`}
-        >
-          {progressMessage.text}
-        </div>
-      )}
-
-      {error && course && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-5 rounded-3xl font-bold">
-          {error}
-        </div>
-      )}
-
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard
-          icon="🎬"
-          label="שיעורים"
-          value={course.lessons?.length || 0}
-          completed={progress?.completedLessons?.length || 0}
+      {!hasAnyContent ? (
+        <EmptyCourseState
+          refreshing={refreshing}
+          onRefreshCourse={handleRefreshCourse}
         />
-
-        <StatCard
-          icon="🎵"
-          label="שירים"
-          value={course.songs?.length || 0}
-          completed={progress?.completedSongs?.length || 0}
-        />
-
-        <StatCard
-          icon="📝"
-          label="תרגילים"
-          value={course.exercises?.length || 0}
-          completed={progress?.completedExercises?.length || 0}
-        />
-
-        <StatCard
-          icon="🧠"
-          label="בחנים"
-          value={course.quizzes?.length || 0}
-          completed={progress?.completedQuizzes?.length || 0}
-        />
-      </section>
-
-      {course.aiReason && (
-        <section className="bg-indigo-500/10 border border-indigo-400/20 rounded-3xl p-5">
-          <div className="flex items-start gap-4">
-            <div className="text-4xl">🤖</div>
-
-            <div>
-              <h2 className="text-xl font-black text-indigo-300 mb-1">
-                למה נבנה לך הקורס הזה?
-              </h2>
-
-              <p className="text-gray-300 leading-relaxed">
-                {course.aiReason}
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {!hasAnyContent && (
-        <section className="bg-yellow-400/10 border border-yellow-400/20 rounded-3xl p-8 text-center">
-          <div className="text-6xl mb-4">✨</div>
-
-          <h2 className="text-3xl font-black text-yellow-300 mb-3">
-            המסלול שלך נוצר, אבל עדיין אין מספיק תכנים מותאמים
-          </h2>
-
-          <p className="text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            כשהמורים יעלו תכנים מתאימים, אפשר לרענן את המסלול והוא יתעדכן.
-          </p>
-
-          <button
-            type="button"
-            onClick={handleRefreshCourse}
-            disabled={refreshing}
-            className="mt-8 bg-yellow-400 hover:bg-yellow-300 disabled:bg-yellow-400/50 text-slate-950 font-black px-8 py-4 rounded-2xl transition-all"
-          >
-            {refreshing ? "בודק תכנים חדשים..." : "בדוק אם נוספו תכנים 🔄"}
-          </button>
-        </section>
-      )}
-
-      {hasAnyContent && (
+      ) : (
         <CourseContentTabs
           course={course}
           progress={progress}
@@ -441,63 +310,218 @@ export default function CourseDetails() {
           onToggleCourseItem={handleToggleCourseItem}
         />
       )}
+
+      {course.aiReason && (
+        <CourseReason reason={course.aiReason} />
+      )}
     </div>
   );
 }
 
-function CourseProgressCard({
+function CourseCompactHeader({
+  course,
+  totals,
   progressPercent,
   completedItems,
   totalItems,
   progressLoading,
+  refreshing,
+  onBack,
+  onRefreshCourse,
+  onCreateCourse,
+  getLevelLabel,
+  getCategoryLabel,
 }) {
   return (
-    <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-      <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
-        <div>
-          <h2 className="text-2xl font-black text-white">
-            התקדמות בקורס 🎯
-          </h2>
+    <section className="relative overflow-hidden rounded-[2.2rem] border border-white/30 bg-[#061f36]/72 p-5 text-white shadow-[0_24px_70px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-xl">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,255,255,0.12),transparent_24%),linear-gradient(to_bottom,rgba(255,255,255,0.05),transparent_48%)]" />
 
-          <p className="text-gray-400 text-sm mt-1">
-            סמני שיעורים, שירים ותרגילים שביצעת — וזה יעדכן את מפת הלמידה שלך.
-          </p>
+      <div className="relative z-10">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="rounded-full border border-white/16 bg-white/8 px-4 py-2 text-sm font-black text-white/78 transition hover:bg-white/14 hover:text-white"
+          >
+            חזרה לקורסים
+          </button>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={onRefreshCourse}
+              disabled={refreshing}
+              className="rounded-full border border-white/18 bg-[#ffd439]/16 px-4 py-2 text-sm font-black text-[#fff0a8] transition hover:bg-[#ffd439]/22 disabled:opacity-60"
+            >
+              {refreshing ? "מרענן..." : "רענן מסלול"}
+            </button>
+
+            <button
+              type="button"
+              onClick={onCreateCourse}
+              className="rounded-full border border-white/16 bg-white/9 px-4 py-2 text-sm font-black text-white/78 transition hover:bg-white/14 hover:text-white"
+            >
+              בנה קורס נוסף
+            </button>
+          </div>
         </div>
 
-        <div className="bg-yellow-400 text-slate-950 px-5 py-3 rounded-2xl font-black h-fit">
-          {progressLoading ? "טוען..." : `${progressPercent}%`}
+        <div className="grid gap-5 xl:grid-cols-[1.35fr_0.9fr] xl:items-center">
+          <div>
+            <div className="mb-3 flex flex-wrap gap-2">
+              <span className="rounded-full border border-[#ffd439]/25 bg-[#ffd439]/12 px-3 py-1 text-xs font-black text-[#ffe89a]">
+                {getCategoryLabel(course.category)}
+              </span>
+
+              <span className="rounded-full border border-white/16 bg-white/9 px-3 py-1 text-xs font-black text-white/72">
+                רמה: {getLevelLabel(course.level)}
+              </span>
+
+              {course.createdByAI && (
+                <span className="rounded-full border border-cyan-200/28 bg-cyan-300/12 px-3 py-1 text-xs font-black text-cyan-100">
+                  נבנה בהתאמה אישית
+                </span>
+              )}
+            </div>
+
+            <h1
+              className="text-3xl font-black leading-tight md:text-5xl"
+              style={{
+                textShadow:
+                  "3px 3px 0 rgba(184,50,42,0.55), -1px -1px 0 rgba(15,76,117,0.85), 0 12px 28px rgba(7,89,133,0.36)",
+              }}
+            >
+              {course.title}
+            </h1>
+
+            <p className="mt-3 line-clamp-2 max-w-4xl text-sm font-bold leading-relaxed text-white/64 md:text-base">
+              {course.description || "אין עדיין תיאור לקורס זה."}
+            </p>
+          </div>
+
+          <div className="rounded-[1.7rem] border border-white/14 bg-[#082844]/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+            <div className="mb-3 flex items-end justify-between gap-3">
+              <div>
+                <div className="text-sm font-black text-white/58">
+                  התקדמות בקורס
+                </div>
+
+                <div className="mt-1 text-3xl font-black">
+                  {progressLoading ? "..." : `${progressPercent}%`}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/14 bg-white/9 px-4 py-2 text-sm font-black text-white/72">
+                {completedItems}/{totalItems} פריטים
+              </div>
+            </div>
+
+            <div className="h-3 overflow-hidden rounded-full bg-white/16">
+              <div
+                className="h-full rounded-full bg-gradient-to-l from-[#ffd439] via-[#ff6659] to-[#b8322a] transition-all duration-700"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+
+            <div className="mt-4 grid grid-cols-4 gap-2">
+              <SmallStat label="שיעורים" value={totals.lessons} />
+              <SmallStat label="שירים" value={totals.songs} />
+              <SmallStat label="תרגילים" value={totals.exercises} />
+              <SmallStat label="בחנים" value={totals.quizzes} />
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div className="flex justify-between text-xs mb-2 font-semibold text-gray-400">
-        <span>
-          הושלמו {completedItems} מתוך {totalItems} פריטים
-        </span>
-
-        <span>{progressPercent}%</span>
-      </div>
-
-      <div className="h-3 bg-slate-950/70 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-yellow-400 rounded-full transition-all duration-700"
-          style={{ width: `${progressPercent}%` }}
-        />
       </div>
     </section>
   );
 }
 
-// כרטיס סטטיסטיקה עליון
-function StatCard({ icon, label, value, completed }) {
+function SmallStat({ label, value }) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
-      <div className="text-3xl mb-2">{icon}</div>
+    <div className="rounded-2xl border border-white/10 bg-white/7 px-2 py-2 text-center">
+      <div className="text-lg font-black text-[#ffd439]">{value}</div>
+      <div className="text-[11px] font-bold text-white/56">{label}</div>
+    </div>
+  );
+}
 
-      <div className="text-2xl font-black">
-        {completed}/{value}
+function MessagesArea({ error, refreshMessage, progressMessage }) {
+  const hasMessages = error || refreshMessage || progressMessage.text;
+
+  if (!hasMessages) return null;
+
+  return (
+    <div className="space-y-3">
+      {refreshMessage && (
+        <div className="rounded-[1.5rem] border border-emerald-300/25 bg-emerald-400/13 px-5 py-4 font-bold text-emerald-100 backdrop-blur-xl">
+          {refreshMessage}
+        </div>
+      )}
+
+      {progressMessage.text && (
+        <div
+          className={`rounded-[1.5rem] px-5 py-4 font-bold backdrop-blur-xl ${
+            progressMessage.type === "success"
+              ? "border border-emerald-300/25 bg-emerald-400/13 text-emerald-100"
+              : "border border-red-300/30 bg-red-500/16 text-red-100"
+          }`}
+        >
+          {progressMessage.text}
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-[1.5rem] border border-red-300/30 bg-red-500/16 px-5 py-4 font-bold text-red-100 backdrop-blur-xl">
+          {error}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EmptyCourseState({ refreshing, onRefreshCourse }) {
+  return (
+    <section className="rounded-[2.2rem] border border-[#ffd439]/25 bg-[#061f36]/72 p-10 text-center text-white shadow-[0_24px_70px_rgba(3,31,61,0.28)] backdrop-blur-xl">
+      <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-[1.7rem] border border-[#ffd439]/30 bg-[#ffd439]/14 text-3xl font-black text-[#ffe89a]">
+        +
       </div>
 
-      <div className="text-sm text-gray-400">{label}</div>
-    </div>
+      <h2 className="text-3xl font-black text-[#ffe89a]">
+        המסלול שלך נוצר, אבל עדיין אין מספיק תכנים מותאמים
+      </h2>
+
+      <p className="mx-auto mt-3 max-w-2xl font-bold leading-relaxed text-white/64">
+        כשהמורים יעלו תכנים מתאימים, אפשר לרענן את המסלול והוא יתעדכן.
+      </p>
+
+      <button
+        type="button"
+        onClick={onRefreshCourse}
+        disabled={refreshing}
+        className="mt-8 rounded-full bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-9 py-4 font-black text-white shadow-[0_7px_0_rgba(89,15,20,0.42)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none disabled:opacity-60"
+      >
+        {refreshing ? "בודק תכנים חדשים..." : "בדוק אם נוספו תכנים"}
+      </button>
+    </section>
+  );
+}
+
+function CourseReason({ reason }) {
+  return (
+    <section className="rounded-[2rem] border border-cyan-200/24 bg-[#061f36]/60 p-5 text-white shadow-[0_18px_50px_rgba(3,31,61,0.22)] backdrop-blur-xl">
+      <div className="flex items-start gap-4">
+        <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl border border-cyan-200/24 bg-cyan-300/10 text-xl font-black text-cyan-100">
+          AI
+        </div>
+
+        <div>
+          <h2 className="text-xl font-black text-cyan-100">
+            למה נבנה לך הקורס הזה?
+          </h2>
+
+          <p className="mt-1 leading-relaxed text-white/66">{reason}</p>
+        </div>
+      </div>
+    </section>
   );
 }

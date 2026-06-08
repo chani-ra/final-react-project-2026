@@ -66,14 +66,20 @@ export const getQuizzesByCourse = async (courseId) => {
 };
 
 // הגשת בוחן לתלמידה
-// תומך בקריאה: submitQuiz(quizId, { answers, timeTaken, courseId })
-// וגם בקריאה: submitQuiz({ quizId, answers, timeTaken, courseId })
+// תומך בקריאה:
+// submitQuiz(quizId, { answers, timeTaken, courseId })
+// וגם בקריאה:
+// submitQuiz({ quizId, answers, timeTaken, courseId })
 export const submitQuiz = async (quizIdOrPayload, payload = null) => {
   try {
     const quizId =
       typeof quizIdOrPayload === "object"
         ? quizIdOrPayload.quizId
         : quizIdOrPayload;
+
+    if (!quizId) {
+      throw "חסר מזהה בוחן";
+    }
 
     const body =
       typeof quizIdOrPayload === "object"
@@ -92,6 +98,10 @@ export const submitQuiz = async (quizIdOrPayload, payload = null) => {
 
     return response.data;
   } catch (error) {
+    if (typeof error === "string") {
+      throw error;
+    }
+
     throw error.response?.data?.message || "נכשל בהגשת הבוחן";
   }
 };

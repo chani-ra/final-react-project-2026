@@ -97,17 +97,11 @@ export default function CourseContentTabs({
 
       <div className="relative z-10">
         <div className="flex flex-col gap-3 border-b border-white/10 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/18 bg-[#1b5f95]/55 text-lg font-black text-white shadow-sm">
-              {getContentIcon(activeTab)}
-            </div>
-
-            <div>
-              <h2 className="text-xl font-black text-white">מסלול הקורס</h2>
-              <p className="text-xs font-bold text-white/58">
-                בחרי סוג תוכן וגללי לרוחב בין הקרונות.
-              </p>
-            </div>
+          <div>
+            <h2 className="text-xl font-black text-white">מסלול הקורס</h2>
+            <p className="text-xs font-bold text-white/58">
+              בחרי סוג תוכן והתקדמי בין הקרונות.
+            </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -143,6 +137,7 @@ export default function CourseContentTabs({
           activeTab={activeTab}
           activeTabData={activeTabData}
           items={activeItems}
+          courseId={course._id}
           navigate={navigate}
           getLevelLabel={getLevelLabel}
           getCategoryLabel={getCategoryLabel}
@@ -174,6 +169,7 @@ function ContentRail({
   activeTab,
   activeTabData,
   items,
+  courseId,
   navigate,
   getLevelLabel,
   getCategoryLabel,
@@ -229,7 +225,8 @@ function ContentRail({
 
           const loadingKey = `${itemType}-${item._id}`;
           const isLoading = actionLoadingKey === loadingKey;
-          const isActiveSong = activeTab === "songs" && activeSongId === item._id;
+          const isActiveSong =
+            activeTab === "songs" && activeSongId === item._id;
 
           return (
             <CourseRailCar
@@ -248,6 +245,7 @@ function ContentRail({
                 openItem({
                   activeTab,
                   item,
+                  courseId,
                   navigate,
                   openSongPanel,
                 })
@@ -285,7 +283,7 @@ function CourseRailCar({
 }) {
   return (
     <article
-      className={`relative h-[252px] w-[270px] shrink-0 snap-center rounded-[1.7rem] border p-4 text-white shadow-[0_15px_34px_rgba(3,31,61,0.22),0_0_20px_rgba(103,232,249,0.10),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl transition hover:-translate-y-2 ${
+      className={`relative h-[236px] w-[270px] shrink-0 snap-center rounded-[1.7rem] border p-4 text-white shadow-[0_15px_34px_rgba(3,31,61,0.22),0_0_20px_rgba(103,232,249,0.10),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl transition hover:-translate-y-2 ${
         isActiveSong
           ? "border-[#ffd439]/58 bg-[#1b5f95]/70"
           : "border-cyan-100/28 bg-[#1b5f95]/54 hover:bg-[#1b5f95]/66"
@@ -296,35 +294,26 @@ function CourseRailCar({
       </div>
 
       <div className="flex h-full flex-col">
-        <div className="flex items-start justify-between gap-3">
-          <div
-            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/18 bg-gradient-to-b ${color} text-xl shadow-[0_7px_16px_rgba(0,0,0,0.17)]`}
+        <div className="mb-3 flex items-center justify-between gap-3 pr-9">
+          <span
+            className={`rounded-full border border-white/18 bg-gradient-to-b ${color} px-3 py-1 text-[11px] font-black text-white shadow-[0_5px_12px_rgba(3,31,61,0.16)]`}
           >
-            {getContentIcon(activeTab)}
-          </div>
+            {typeLabel}
+          </span>
 
-          <div className="flex flex-col items-end gap-1.5">
-            <span className="rounded-full bg-white/12 px-3 py-1 text-[11px] font-black text-white/80">
-              {typeLabel}
+          {completed && (
+            <span className="rounded-full border border-emerald-300/35 bg-emerald-400/16 px-3 py-1 text-[11px] font-black text-emerald-200">
+              בוצע
             </span>
-
-            {completed && (
-              <span className="rounded-full border border-emerald-300/35 bg-emerald-400/16 px-3 py-1 text-[11px] font-black text-emerald-200">
-                בוצע ✓
-              </span>
-            )}
-          </div>
+          )}
         </div>
 
-        <h3 className="mt-4 line-clamp-2 text-xl font-black leading-tight">
+        <h3 className="line-clamp-2 min-h-[50px] text-xl font-black leading-tight">
           {item.title || item.theme || `${typeLabel} ${index + 1}`}
         </h3>
 
-        <p className="mt-2 line-clamp-2 text-xs font-bold leading-relaxed text-white/66">
-          {item.description ||
-            item.instructions ||
-            item.theme ||
-            getDefaultDescription(activeTab)}
+        <p className="mt-2 line-clamp-2 min-h-[34px] text-xs font-bold leading-relaxed text-white/62">
+          {getShortDescription(activeTab, item)}
         </p>
 
         <div className="mt-3 flex flex-wrap gap-1.5">
@@ -353,7 +342,7 @@ function CourseRailCar({
           <ProgressToggleButton
             completed={completed}
             isLoading={isLoading}
-            completedLabel="בוצע ✓"
+            completedLabel="בוצע"
             pendingLabel="סמני"
             onClick={onToggle}
             variant="dark"
@@ -429,10 +418,9 @@ function SongPlayerPanel({
 
           <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
             <div className="rounded-[1.5rem] border border-white/14 bg-white/9 p-4">
-              <h4 className="font-black text-white">הצעת תרגול</h4>
+              <h4 className="font-black text-white">תרגול קצר</h4>
               <p className="mt-1 text-sm font-bold leading-relaxed text-white/64">
-                האזיני פעם אחת להבנה כללית, ואז פעם נוספת כדי לזהות מילים או
-                ביטויים שחוזרים על עצמם.
+                האזיני לשיר, ואז סמני שהשלמת.
               </p>
             </div>
 
@@ -440,7 +428,7 @@ function SongPlayerPanel({
               <ProgressToggleButton
                 completed={completed}
                 isLoading={isLoading}
-                completedLabel="השיר הושלם ✓"
+                completedLabel="השיר הושלם"
                 pendingLabel="סמני שהאזנת"
                 onClick={() =>
                   onToggleCourseItem({
@@ -551,7 +539,7 @@ function getItemType(activeTab) {
   return map[activeTab] || "lesson";
 }
 
-function openItem({ activeTab, item, navigate, openSongPanel }) {
+function openItem({ activeTab, item, courseId, navigate, openSongPanel }) {
   if (activeTab === "lessons") {
     navigate(`/teacher/lesson/${item._id}`);
     return;
@@ -568,6 +556,7 @@ function openItem({ activeTab, item, navigate, openSongPanel }) {
   }
 
   if (activeTab === "quizzes") {
+    navigate(`/quiz/${item._id}?courseId=${courseId}`);
     return;
   }
 }
@@ -583,24 +572,22 @@ function getOpenButtonText(activeTab) {
   return map[activeTab] || "פתח";
 }
 
-function getContentIcon(activeTab) {
-  const map = {
-    lessons: "▶",
-    songs: "♪",
-    exercises: "✎",
-    quizzes: "✓",
-  };
+function getShortDescription(activeTab, item) {
+  if (activeTab === "lessons") {
+    return item.description || "שיעור מתוך המסלול.";
+  }
 
-  return map[activeTab] || "•";
-}
+  if (activeTab === "songs") {
+    return item.theme || "תרגול האזנה.";
+  }
 
-function getDefaultDescription(activeTab) {
-  const map = {
-    lessons: "שיעור קצר וממוקד מתוך מסלול הלמידה.",
-    songs: "תרגול שמיעה ושפה דרך שיר.",
-    exercises: "תרגול אישי לחיזוק החומר.",
-    quizzes: "בדיקת הבנה והתקדמות.",
-  };
+  if (activeTab === "exercises") {
+    return "תרגול אישי.";
+  }
 
-  return map[activeTab] || "פריט מתוך הקורס.";
+  if (activeTab === "quizzes") {
+    return item.description || "בדיקת הבנה.";
+  }
+
+  return item.description || item.theme || "פריט מתוך הקורס.";
 }

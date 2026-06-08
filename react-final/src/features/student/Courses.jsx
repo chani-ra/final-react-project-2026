@@ -85,21 +85,28 @@ export default function Courses() {
   const scrollCourses = (direction) => {
     if (!scrollerRef.current) return;
 
-    const amount = 430;
     scrollerRef.current.scrollBy({
-      left: direction === "left" ? -amount : amount,
+      left: direction === "left" ? -420 : 420,
       behavior: "smooth",
     });
   };
 
   const getLevelLabel = (level) => {
     const labels = {
-      beginner: "רמת בסיס",
-      intermediate: "רמת ביניים",
-      advanced: "רמה מתקדמת",
+      beginner: "מתחילים",
+      intermediate: "ביניים",
+      advanced: "מתקדמים",
+      מתחילים: "מתחילים",
+      בינוני: "ביניים",
+      מתקדמים: "מתקדמים",
+      בסיס: "מתחילים",
     };
 
-    return labels[level] || level || "רמה אישית";
+    return labels[level] || level || "אישי";
+  };
+
+  const getCourseLevel = (course) => {
+    return course.englishLevel || course.level || course.difficulty || "";
   };
 
   const getCategoryLabel = (category) => {
@@ -116,77 +123,76 @@ export default function Courses() {
   };
 
   const getCourseContentStats = (course) => {
-    const lessons = course.lessons?.length || 0;
-    const exercises = course.exercises?.length || 0;
-    const quizzes = course.quizzes?.length || 0;
-    const songs = course.songs?.length || 0;
-
-    return { lessons, exercises, quizzes, songs };
+    return {
+      lessons: course.lessons?.length || 0,
+      exercises: course.exercises?.length || 0,
+      quizzes: course.quizzes?.length || 0,
+      songs: course.songs?.length || 0,
+    };
   };
 
   if (loading) {
     return (
       <div className="flex min-h-[58vh] items-center justify-center" dir="rtl">
-        <div className="rounded-[2rem] border border-white/35 bg-[#031f3d]/78 px-10 py-8 text-xl font-black text-white shadow-[0_0_45px_rgba(255,255,255,0.35)] backdrop-blur-xl">
-          טוען את מפת הלמידה שלך...
+        <div className="rounded-[2rem] border border-white/28 bg-[#123c6b]/74 px-10 py-7 text-xl font-black text-white shadow-[0_22px_60px_rgba(3,31,61,0.32)] backdrop-blur-xl">
+          טוען את הקורסים...
         </div>
       </div>
     );
   }
 
   return (
-    <section className="relative min-h-[calc(100vh-190px)] overflow-hidden pb-10" dir="rtl">
+    <section
+      className="relative min-h-[calc(100vh-170px)] overflow-hidden pb-8"
+      dir="rtl"
+    >
       <CoursesHeader
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         handleRecommendedTab={handleRecommendedTab}
         myCoursesCount={myCourses.length}
         recommendedCoursesCount={recommendedCourses.length}
+        onCreateCourse={() => navigate("/create-personal-course")}
       />
 
-      {error && (
-        <div className="mx-auto mt-5 max-w-3xl rounded-2xl border border-red-200/50 bg-red-500/18 px-5 py-3 text-center font-bold text-white shadow-lg backdrop-blur-md">
-          {error}
-        </div>
-      )}
+      <Messages error={error} actionMessage={actionMessage} />
 
-      {actionMessage && (
-        <div className="mx-auto mt-5 max-w-3xl rounded-2xl border border-yellow-300/60 bg-yellow-300/16 px-5 py-3 text-center font-bold text-yellow-50 shadow-lg backdrop-blur-md">
-          {actionMessage}
-        </div>
-      )}
-
-      <div className="relative mt-8 flex min-h-[430px] items-center">
+      <div className="relative mt-5 flex min-h-[390px] items-center">
         {activeTab === "recommended" && recommendedLoading ? (
-          <div className="mx-auto rounded-[2rem] border border-white/25 bg-[#031f3d]/75 px-10 py-8 text-center text-xl font-black text-white shadow-[0_0_45px_rgba(255,255,255,0.35)] backdrop-blur-xl">
+          <div className="mx-auto rounded-[2rem] border border-white/25 bg-[#123c6b]/74 px-10 py-8 text-center text-xl font-black text-white shadow-[0_22px_60px_rgba(3,31,61,0.30)] backdrop-blur-xl">
             טוען קורסים מומלצים...
           </div>
         ) : visibleCourses.length === 0 ? (
           <EmptyState
             activeTab={activeTab}
             onShowRecommended={handleRecommendedTab}
+            onCreateCourse={() => navigate("/create-personal-course")}
           />
         ) : (
           <>
-            <button
-              type="button"
-              onClick={() => scrollCourses("right")}
-              className="absolute right-0 z-20 hidden h-12 w-12 items-center justify-center rounded-full bg-[#062f52]/80 text-3xl font-black text-white shadow-[0_10px_28px_rgba(0,0,0,0.22)] backdrop-blur-md transition hover:bg-[#062f52] lg:flex"
-            >
-              ›
-            </button>
+            {visibleCourses.length > 3 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => scrollCourses("right")}
+                  className="absolute right-0 z-20 hidden h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-[#123c6b]/82 text-3xl font-black text-white shadow-[0_10px_28px_rgba(3,31,61,0.25)] backdrop-blur-xl transition hover:bg-[#176aa8] lg:flex"
+                >
+                  ›
+                </button>
 
-            <button
-              type="button"
-              onClick={() => scrollCourses("left")}
-              className="absolute left-0 z-20 hidden h-12 w-12 items-center justify-center rounded-full bg-[#062f52]/80 text-3xl font-black text-white shadow-[0_10px_28px_rgba(0,0,0,0.22)] backdrop-blur-md transition hover:bg-[#062f52] lg:flex"
-            >
-              ‹
-            </button>
+                <button
+                  type="button"
+                  onClick={() => scrollCourses("left")}
+                  className="absolute left-0 z-20 hidden h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-[#123c6b]/82 text-3xl font-black text-white shadow-[0_10px_28px_rgba(3,31,61,0.25)] backdrop-blur-xl transition hover:bg-[#176aa8] lg:flex"
+                >
+                  ‹
+                </button>
+              </>
+            )}
 
             <div
               ref={scrollerRef}
-              className="courses-horizontal-scroll flex w-full snap-x snap-mandatory items-center gap-7 overflow-x-auto overflow-y-hidden px-4 py-10"
+              className="courses-horizontal-scroll flex w-full snap-x snap-mandatory items-stretch gap-5 overflow-x-auto overflow-y-hidden px-3 py-7"
             >
               {visibleCourses.map((course, index) => (
                 <CourseCard
@@ -196,6 +202,7 @@ export default function Courses() {
                   isRecommended={activeTab === "recommended"}
                   getCourseContentStats={getCourseContentStats}
                   getLevelLabel={getLevelLabel}
+                  getCourseLevel={getCourseLevel}
                   getCategoryLabel={getCategoryLabel}
                   onEnroll={handleEnroll}
                   onOpen={() => navigate(`/course/${course._id}`)}
@@ -210,15 +217,15 @@ export default function Courses() {
         {`
           .courses-horizontal-scroll {
             scrollbar-width: thin;
-            scrollbar-color: rgba(255, 212, 57, 0.8) rgba(3, 31, 61, 0.35);
+            scrollbar-color: rgba(255, 212, 57, 0.7) rgba(3, 31, 61, 0.25);
           }
 
           .courses-horizontal-scroll::-webkit-scrollbar {
-            height: 10px;
+            height: 9px;
           }
 
           .courses-horizontal-scroll::-webkit-scrollbar-track {
-            background: rgba(3, 31, 61, 0.28);
+            background: rgba(3, 31, 61, 0.25);
             border-radius: 999px;
           }
 
@@ -238,49 +245,84 @@ function CoursesHeader({
   handleRecommendedTab,
   myCoursesCount,
   recommendedCoursesCount,
+  onCreateCourse,
 }) {
   return (
-    <header className="pt-3 text-center">
-      <div className="inline-flex items-center gap-3 rounded-full border border-white/35 bg-[#06365f]/34 px-4 py-2 shadow-[0_0_35px_rgba(255,255,255,0.2)] backdrop-blur-xl">
-        <button
-          type="button"
-          onClick={() => setActiveTab("myCourses")}
-          className={`rounded-full px-5 py-2 text-sm font-black transition-all ${
-            activeTab === "myCourses"
-              ? "bg-white text-[#0b5e96] shadow-lg"
-              : "text-white/90 hover:bg-white/10"
-          }`}
-        >
-          הקורסים שלי {myCoursesCount}
-        </button>
+    <header className="mx-auto max-w-6xl pt-2">
+      <div className="flex flex-col gap-4 rounded-[2rem] border border-white/24 bg-[#123c6b]/54 p-4 text-white shadow-[0_18px_55px_rgba(3,31,61,0.24),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-xl md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1
+            className="text-3xl font-black leading-tight md:text-4xl"
+            style={{
+              textShadow:
+                "3px 3px 0 rgba(184,50,42,0.50), -1px -1px 0 rgba(15,76,117,0.82), 0 12px 28px rgba(7,89,133,0.35)",
+            }}
+          >
+            {activeTab === "myCourses" ? "הקורסים שלי" : "קורסים מומלצים"}
+          </h1>
 
-        <button
-          type="button"
-          onClick={handleRecommendedTab}
-          className={`rounded-full px-5 py-2 text-sm font-black transition-all ${
-            activeTab === "recommended"
-              ? "bg-[#ffd439] text-[#08324e] shadow-lg"
-              : "text-white/90 hover:bg-white/10"
-          }`}
-        >
-          מומלצים {recommendedCoursesCount}
-        </button>
+          <p className="mt-1 max-w-xl text-sm font-bold text-white/64">
+            בחרי קורס והמשיכי למסלול הלמידה שלך.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex rounded-full border border-white/18 bg-[#061f36]/48 p-1">
+            <button
+              type="button"
+              onClick={() => setActiveTab("myCourses")}
+              className={`rounded-full px-4 py-2 text-xs font-black transition ${
+                activeTab === "myCourses"
+                  ? "bg-white text-[#123c6b]"
+                  : "text-white/76 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              שלי {myCoursesCount}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleRecommendedTab}
+              className={`rounded-full px-4 py-2 text-xs font-black transition ${
+                activeTab === "recommended"
+                  ? "bg-white text-[#123c6b]"
+                  : "text-white/76 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              מומלצים {recommendedCoursesCount}
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={onCreateCourse}
+            className="rounded-full border-2 border-white/55 bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-5 py-2.5 text-xs font-black text-white shadow-[0_5px_0_rgba(89,15,20,0.40)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none"
+          >
+            קורס חדש
+          </button>
+        </div>
       </div>
-
-      <h1
-        className="mt-7 text-4xl font-black tracking-tight text-white md:text-6xl"
-        style={{
-          textShadow:
-            "3px 3px 0 rgba(184,50,42,0.62), -1px -1px 0 rgba(15,76,117,0.75), 0 10px 25px rgba(7,89,133,0.35)",
-        }}
-      >
-        {activeTab === "myCourses" ? "השיעורים שלך" : "קורסים מומלצים"}
-      </h1>
-
-      <p className="mx-auto mt-3 max-w-2xl text-base font-extrabold text-[#08324e]/82 md:text-xl">
-        בחרי שיעור, התחילי להתקדם, והפכי את האנגלית למסע ברור, קליל וכיפי
-      </p>
     </header>
+  );
+}
+
+function Messages({ error, actionMessage }) {
+  if (!error && !actionMessage) return null;
+
+  return (
+    <div className="mx-auto mt-4 max-w-4xl space-y-3">
+      {error && (
+        <div className="rounded-[1.5rem] border border-red-300/30 bg-red-500/16 px-5 py-3 text-center text-sm font-black text-red-100 shadow-lg backdrop-blur-xl">
+          {error}
+        </div>
+      )}
+
+      {actionMessage && (
+        <div className="rounded-[1.5rem] border border-[#ffd439]/35 bg-[#ffd439]/16 px-5 py-3 text-center text-sm font-black text-[#fff0a8] shadow-lg backdrop-blur-xl">
+          {actionMessage}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -290,52 +332,40 @@ function CourseCard({
   isRecommended,
   getCourseContentStats,
   getLevelLabel,
+  getCourseLevel,
   getCategoryLabel,
   onEnroll,
   onOpen,
 }) {
   const stats = getCourseContentStats(course);
+  const level = getCourseLevel(course);
 
   return (
-    <article className="group relative h-[315px] w-[380px] shrink-0 snap-center rounded-[1.8rem] border border-cyan-200/55 bg-[#031f3d]/78 p-5 shadow-[0_0_28px_rgba(103,232,249,0.30),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 hover:bg-[#02182f]/86 hover:shadow-[0_0_46px_rgba(255,255,255,0.42)]">
-      <div className="absolute -top-9 right-8">
-        <div className="relative">
-          <div className="h-20 w-16 rounded-[50%_50%_46%_46%] border-[5px] border-[#075a98] bg-gradient-to-b from-[#ff6257] to-[#b8322a] shadow-[0_9px_18px_rgba(4,47,77,0.38),inset_0_4px_0_rgba(255,255,255,0.25)]">
-            <div className="flex h-full items-center justify-center text-3xl font-black text-white">
-              {index + 1}
-            </div>
-          </div>
-
-          <div className="mx-auto -mt-1 h-5 w-8 rounded-b-lg border-[3px] border-[#075a98] bg-[#b8322a]" />
-
-          <div className="absolute -left-3 top-2 h-3.5 w-3.5 rounded-full bg-[#ffd439] shadow-[0_0_18px_rgba(255,212,57,0.95)]" />
-        </div>
+    <article className="group relative h-[280px] w-[330px] shrink-0 snap-center rounded-[1.8rem] border border-cyan-100/24 bg-[#1b5f95]/50 p-4 text-white shadow-[0_16px_38px_rgba(3,31,61,0.24),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:bg-[#1b5f95]/62">
+      <div className="absolute -top-4 right-5 flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-[#075a98] bg-gradient-to-b from-[#ff6659] to-[#b8322a] text-base font-black shadow-[0_7px_14px_rgba(3,31,61,0.22)]">
+        {index + 1}
       </div>
 
       <div className="flex h-full flex-col">
-        <div className="flex items-start gap-4 pr-20">
-          <div className="flex h-16 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-            <MiniCourseDrawing index={index} />
-          </div>
+        <div className="mb-3 flex items-center justify-between gap-2 pr-10">
+          <span className="rounded-full border border-white/14 bg-white/10 px-3 py-1 text-[11px] font-black text-white/74">
+            {getCategoryLabel(course.category)}
+          </span>
 
-          <div className="min-w-0 text-right">
-            <h3 className="line-clamp-2 text-2xl font-black leading-tight text-white drop-shadow">
-              {course.title || `שיעור ${index + 1}`}
-            </h3>
-
-            <div className="mt-2 text-sm font-bold text-white/74">
-              {getCategoryLabel(course.category)}
-            </div>
-
-            <div className="mt-2 inline-flex rounded-full border border-white/14 bg-white/8 px-3 py-1 text-xs font-black text-white">
-              {getLevelLabel(course.level)}
-            </div>
-          </div>
+          <span className="rounded-full border border-[#ffd439]/22 bg-[#ffd439]/12 px-3 py-1 text-[11px] font-black text-[#ffe89a]">
+            {getLevelLabel(level)}
+          </span>
         </div>
 
-        <ProgressDots index={index} />
+        <h3 className="line-clamp-2 min-h-[58px] text-2xl font-black leading-tight text-white">
+          {course.title || `קורס ${index + 1}`}
+        </h3>
 
-        <div className="mt-5 grid grid-cols-4 gap-2 text-[11px] font-bold text-white/84">
+        <p className="mt-2 line-clamp-2 min-h-[38px] text-sm font-bold leading-relaxed text-white/58">
+          {course.description || "מסלול לימוד מותאם להתקדמות באנגלית."}
+        </p>
+
+        <div className="mt-4 grid grid-cols-4 gap-2">
           <SmallStat label="שיעורים" value={stats.lessons} />
           <SmallStat label="תרגילים" value={stats.exercises} />
           <SmallStat label="בחנים" value={stats.quizzes} />
@@ -345,9 +375,9 @@ function CourseCard({
         <button
           type="button"
           onClick={isRecommended ? () => onEnroll(course._id) : onOpen}
-          className="mt-auto w-full rounded-full border-2 border-white/65 bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-5 py-3 text-lg font-black text-white shadow-[0_6px_0_rgba(89,15,20,0.48),0_0_18px_rgba(255,255,255,0.18)] transition-all hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none"
+          className="mt-auto rounded-full border-2 border-white/55 bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-5 py-3 text-sm font-black text-white shadow-[0_6px_0_rgba(89,15,20,0.42)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none"
         >
-          {isRecommended ? "הצטרפי" : "התחל"}
+          {isRecommended ? "הצטרפות לקורס" : "כניסה למסלול"}
         </button>
       </div>
     </article>
@@ -356,86 +386,51 @@ function CourseCard({
 
 function SmallStat({ label, value }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-[#010f1f]/42 px-2 py-2 text-center">
-      <div className="text-sm font-black text-[#ffd439]">{value}</div>
-      <div>{label}</div>
+    <div className="rounded-xl border border-white/10 bg-[#061f36]/42 px-2 py-2 text-center">
+      <div className="text-sm font-black text-white">{value}</div>
+      <div className="mt-0.5 text-[10px] font-bold text-white/50">{label}</div>
     </div>
   );
 }
 
-function ProgressDots({ index }) {
-  const full = Math.min(4, Math.max(1, index + 1));
-
+function EmptyState({ activeTab, onShowRecommended, onCreateCourse }) {
   return (
-    <div className="mt-5 flex items-center justify-center gap-1.5">
-      {[0, 1, 2, 3].map((dot) => (
-        <span
-          key={dot}
-          className={`h-2.5 w-12 rounded-full ${
-            dot < full ? "bg-[#ffd439]" : "bg-white/18"
-          }`}
-        />
-      ))}
-    </div>
-  );
-}
+    <div className="mx-auto max-w-xl rounded-[2rem] border border-white/28 bg-[#123c6b]/62 p-8 text-center text-white shadow-[0_22px_65px_rgba(3,31,61,0.30)] backdrop-blur-xl">
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[1.4rem] border border-white/16 bg-white/10 text-2xl font-black">
+        —
+      </div>
 
-function EmptyState({ activeTab, onShowRecommended }) {
-  return (
-    <div className="mx-auto max-w-2xl rounded-[2rem] border border-white/35 bg-[#031f3d]/74 p-9 text-center text-white shadow-[0_0_45px_rgba(255,255,255,0.32)] backdrop-blur-xl">
-      <h2 className="text-3xl font-black">
+      <h2 className="text-2xl font-black">
         {activeTab === "myCourses"
           ? "עדיין אין לך קורסים"
           : "אין כרגע קורסים מומלצים"}
       </h2>
 
-      <p className="mt-4 text-lg font-bold text-white/80">
+      <p className="mx-auto mt-2 max-w-md text-sm font-bold leading-relaxed text-white/62">
         {activeTab === "myCourses"
-          ? "אפשר להתחיל מקורס מומלץ ולהפוך את הלמידה למסע יפה וברור."
+          ? "אפשר להתחיל מקורס מומלץ או ליצור מסלול אישי חדש."
           : "כאשר יתווספו קורסים שמתאימים לך, הם יופיעו כאן."}
       </p>
 
-      {activeTab === "myCourses" && (
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+        {activeTab === "myCourses" && (
+          <button
+            type="button"
+            onClick={onShowRecommended}
+            className="rounded-full border border-white/18 bg-white/10 px-6 py-3 text-sm font-black text-white transition hover:bg-white/16"
+          >
+            הצג מומלצים
+          </button>
+        )}
+
         <button
           type="button"
-          onClick={onShowRecommended}
-          className="mt-7 rounded-full bg-[#ffd439] px-8 py-3 text-lg font-black text-[#08324e] shadow-[0_8px_0_rgba(7,89,133,0.3)] transition hover:brightness-105"
+          onClick={onCreateCourse}
+          className="rounded-full border-2 border-white/55 bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-6 py-3 text-sm font-black text-white shadow-[0_6px_0_rgba(89,15,20,0.42)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none"
         >
-          הצג קורסים מומלצים
+          יצירת קורס חדש
         </button>
-      )}
+      </div>
     </div>
-  );
-}
-
-function MiniCourseDrawing({ index }) {
-  const drawings = [
-    <path
-      key="1"
-      d="M25 70 H130 M42 70 V35 L78 18 L114 35 V70 M58 70 V48 H94 V70"
-    />,
-    <path key="2" d="M35 72 L80 20 L125 72 M52 58 H108 M62 44 H98" />,
-    <path key="3" d="M30 60 H110 L130 45 M55 60 L70 35 H118" />,
-    <path
-      key="4"
-      d="M35 72 H125 M48 72 V38 H112 V72 M48 38 C62 20 98 20 112 38"
-    />,
-    <path key="5" d="M30 72 H130 M55 72 V35 H105 V72 M45 45 H115" />,
-  ];
-
-  return (
-    <svg
-      viewBox="0 0 160 90"
-      className="h-full w-full opacity-45"
-      fill="none"
-      stroke="white"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="4"
-    >
-      {drawings[index % drawings.length]}
-      <path d="M20 20 C35 8 55 8 70 20" opacity="0.55" />
-      <path d="M105 24 C118 14 135 14 148 24" opacity="0.55" />
-    </svg>
   );
 }

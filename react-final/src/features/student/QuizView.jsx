@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getQuizById, submitQuiz } from "../../services/quizService";
+import AppFeedbackModal from "../../components/ui/AppFeedbackModal";
+import QuizQuestionCard from "./components/quiz/QuizQuestionCard";
 
 export default function QuizView() {
   const { quizId } = useParams();
@@ -17,6 +19,7 @@ export default function QuizView() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [resultOpen, setResultOpen] = useState(false);
 
   const questions = quiz?.questions || [];
 
@@ -83,10 +86,11 @@ export default function QuizView() {
       });
 
       setResult(data);
+      setResultOpen(true);
 
       setMessage({
         type: "success",
-        text: data.message || "הבוחן הוגש בהצלחה ✅",
+        text: data.message || "הבוחן הוגש בהצלחה. המשוב מופיע ליד כל שאלה.",
       });
     } catch (error) {
       setMessage({
@@ -106,295 +110,326 @@ export default function QuizView() {
     );
   };
 
+  const handleClose = () => {
+    navigate(-1);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center text-white font-bold text-xl">
-        <div className="animate-pulse">טוען את הבוחן... 🧠</div>
-      </div>
+      <main
+        className="flex min-h-[70vh] items-center justify-center text-white"
+        dir="rtl"
+      >
+        <div className="rounded-[2rem] border border-white/28 bg-[#123c6b]/74 px-10 py-7 text-xl font-black shadow-[0_22px_60px_rgba(3,31,61,0.32)] backdrop-blur-xl">
+          טוען את הבוחן...
+        </div>
+      </main>
     );
   }
 
   if (!quiz) {
     return (
-      <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-6 rounded-3xl font-bold">
-        הבוחן לא נמצא.
-      </div>
+      <main className="mx-auto max-w-4xl px-4 py-6" dir="rtl">
+        <div className="relative overflow-hidden rounded-[2.4rem] border border-red-300/35 bg-[#123c6b]/78 p-7 text-white shadow-[0_28px_80px_rgba(3,31,61,0.38)] backdrop-blur-xl">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="absolute left-5 top-5 flex h-11 w-11 items-center justify-center rounded-full border border-white/24 bg-white/12 text-3xl font-black text-white transition hover:bg-white/22"
+            aria-label="סגירה"
+          >
+            ×
+          </button>
+
+          <div className="max-w-2xl">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-[1.4rem] border border-red-300/35 bg-red-500/16 text-3xl font-black">
+              !
+            </div>
+
+            <h1 className="text-3xl font-black text-red-100">
+              הבוחן לא נמצא
+            </h1>
+
+            <p className="mt-3 text-base font-bold leading-relaxed text-white/72">
+              לא הצלחנו למצוא את הבוחן המבוקש.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleClose}
+              className="mt-7 rounded-full bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-7 py-3 font-black text-white shadow-[0_6px_0_rgba(89,15,20,0.42)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none"
+            >
+              חזרה לקורס
+            </button>
+          </div>
+        </div>
+      </main>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6" dir="rtl">
-      <section className="bg-white/5 border border-white/10 rounded-3xl p-8">
+    <main className="mx-auto max-w-7xl px-4 py-4" dir="rtl">
+      <section className="relative overflow-hidden rounded-[2.4rem] border border-white/32 bg-[#123c6b]/70 text-white shadow-[0_32px_95px_rgba(3,31,61,0.38),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,255,255,0.14),transparent_28%),linear-gradient(to_bottom,rgba(255,255,255,0.07),transparent_52%)]" />
+
         <button
           type="button"
-          onClick={() => navigate(-1)}
-          className="text-sm text-gray-400 hover:text-yellow-400 font-bold mb-6"
+          onClick={handleClose}
+          className="absolute left-5 top-5 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/24 bg-white/12 text-3xl font-black text-white shadow-lg transition hover:bg-white/22"
+          aria-label="סגירת בוחן"
         >
-          ← חזרה לקורס
+          ×
         </button>
 
-        <div className="flex flex-col md:flex-row justify-between gap-6">
-          <div>
-            <div className="flex gap-2 mb-4 flex-wrap">
-              <span className="bg-indigo-500/10 text-indigo-300 border border-indigo-400/20 px-3 py-1 rounded-full text-sm font-bold">
-                בוחן
+        <div className="relative z-10 p-4 md:p-5">
+          <header className="mb-4 pl-14">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/18 bg-white/10 px-4 py-2 text-sm font-black text-white/82 transition hover:bg-white/16 hover:text-white"
+            >
+              <span>→</span>
+              <span>חזרה לקורס</span>
+            </button>
+
+            <div className="mb-2 flex flex-wrap gap-2">
+              <span className="rounded-full border border-[#ffd439]/24 bg-[#ffd439]/14 px-3 py-1 text-xs font-black text-[#ffe89a]">
+                בוחן אמריקאי
               </span>
 
-              <span className="bg-white/10 text-gray-300 border border-white/10 px-3 py-1 rounded-full text-sm font-bold">
-                {quiz.quizType || "mixed"}
+              <span className="rounded-full border border-white/18 bg-white/10 px-3 py-1 text-xs font-black text-white/72">
+                {quiz.quizType || "multiple choice"}
               </span>
 
-              <span className="bg-yellow-400/10 text-yellow-300 border border-yellow-400/20 px-3 py-1 rounded-full text-sm font-bold">
-                ציון מעבר: {quiz.passingScore || 70}%
+              <span className="rounded-full border border-white/18 bg-white/10 px-3 py-1 text-xs font-black text-white/72">
+                {questions.length} שאלות
               </span>
             </div>
 
-            <h1 className="text-4xl font-black text-white mb-4">
-              {quiz.title}
+            <h1
+              className="text-2xl font-black leading-tight md:text-4xl"
+              style={{
+                textShadow:
+                  "3px 3px 0 rgba(184,50,42,0.54), -1px -1px 0 rgba(15,76,117,0.86), 0 14px 30px rgba(7,89,133,0.38)",
+              }}
+            >
+              {quiz.title || "בוחן ללא כותרת"}
             </h1>
 
-            <p className="text-gray-300 leading-relaxed max-w-3xl">
+            <p className="mt-2 line-clamp-2 max-w-4xl text-sm font-bold leading-relaxed text-white/66">
               {quiz.description ||
-                "עני על השאלות. בסיום הבוחן תקבלי ציון, תשובות נכונות והסברים."}
+                "זהו בוחן אמריקאי. קראי כל שאלה ולחצי על התשובה הנכונה ביותר."}
             </p>
-          </div>
+          </header>
 
-          <div className="bg-indigo-500 text-white rounded-3xl p-6 min-w-[190px] text-center h-fit">
-            <div className="text-4xl mb-2">🧠</div>
-            <div className="font-black">בוחן ידע</div>
-            <div className="text-sm mt-2 opacity-90">
-              {questions.length} שאלות
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {message.text && (
-        <div
-          className={`p-4 rounded-2xl font-bold ${
-            message.type === "success"
-              ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
-              : "bg-red-500/10 border border-red-500/30 text-red-400"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
-
-      {result && (
-        <section
-          className={`rounded-3xl p-6 border ${
-            result.passed
-              ? "bg-emerald-500/10 border-emerald-500/30"
-              : "bg-yellow-400/10 border-yellow-400/30"
-          }`}
-        >
-          <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
-            <div>
-              <h2 className="text-2xl font-black text-white">
-                {result.passed
-                  ? "כל הכבוד! עברת את הבוחן 🎉"
-                  : "סיימת את הבוחן 💪"}
-              </h2>
-
-              <p className="text-gray-300 mt-2">
-                קיבלת {result.percentage}% — {result.score} מתוך{" "}
-                {result.totalPoints || quiz.totalPoints || questions.length} נקודות.
-              </p>
-            </div>
-
-            <div className="text-center bg-slate-950/60 border border-white/10 rounded-2xl px-6 py-4">
-              <div className="text-4xl font-black text-yellow-400">
-                {result.percentage}%
-              </div>
-              <div className="text-gray-400 text-sm mt-1">הציון שלך</div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-6">
-          <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-2xl font-black text-yellow-400">
-                שאלות הבוחן
-              </h2>
-
-              <p className="text-gray-400 text-sm mt-1">
-                עני על כל השאלות ולחצי על סיום בוחן.
-              </p>
-            </div>
-
-            <div className="bg-slate-950/70 border border-white/10 rounded-2xl px-4 py-3 text-sm font-bold text-gray-300 h-fit">
-              נענו {answeredCount}/{questions.length}
-            </div>
-          </div>
-
-          <div className="w-full bg-slate-950 rounded-full h-3 overflow-hidden mb-6">
+          {message.text && (
             <div
-              className="bg-yellow-400 h-full transition-all"
-              style={{ width: `${progressPercent}%` }}
+              className={`mb-4 rounded-[1.5rem] px-5 py-4 text-sm font-black shadow-[0_12px_32px_rgba(3,31,61,0.16)] ${message.type === "success"
+                  ? "border border-emerald-300/28 bg-emerald-400/14 text-emerald-100"
+                  : "border border-red-300/30 bg-red-500/16 text-red-100"
+                }`}
+            >
+              {message.text}
+            </div>
+          )}
+
+          <div className="grid gap-4 xl:grid-cols-[1.72fr_0.58fr]">
+            <section className="overflow-hidden rounded-[2rem] border border-white/22 bg-[#061f36]/76 p-4 shadow-[0_24px_65px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.14)]">
+              <QuizProgress
+                answeredCount={answeredCount}
+                totalQuestions={questions.length}
+                progressPercent={progressPercent}
+                result={result}
+              />
+
+              <div className="mb-5 rounded-[1.6rem] border-2 border-[#ffd439]/38 bg-[#ffd439]/18 px-5 py-4 text-lg font-bold leading-9 text-[#fff3b0] shadow-[0_0_24px_rgba(255,212,57,0.16)]">
+                זהו בוחן אמריקאי. בכל שאלה לחצי על התשובה הנכונה ביותר.
+                לאחר ההגשה יוצג משוב מלא: התשובה שלך, התשובה הנכונה והסבר.
+              </div>
+              {!questions.length ? (
+                <div className="rounded-[1.5rem] border border-red-300/30 bg-red-500/16 p-5 text-sm font-black text-red-100">
+                  אין שאלות בבוחן הזה.
+                </div>
+              ) : (
+                <div className="max-h-[520px] space-y-3 overflow-y-auto pr-1">
+                  {questions.map((question, index) => (
+                    <QuizQuestionCard
+                      key={question._id || index}
+                      question={question}
+                      index={index}
+                      selectedAnswer={answers[index] || ""}
+                      answerResult={getAnswerResult(index)}
+                      result={result}
+                      onSelect={handleSelectAnswer}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {!result && (
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={handleSubmitQuiz}
+                    disabled={submitting || !questions.length}
+                    className="rounded-full border-2 border-white/55 bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-5 py-3 text-sm font-black text-white shadow-[0_6px_0_rgba(89,15,20,0.42)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none disabled:opacity-60"
+                  >
+                    {submitting ? "בודק את הבוחן..." : "סיימתי את הבוחן"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    className="rounded-full border border-white/18 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/16"
+                  >
+                    חזרה בלי הגשה
+                  </button>
+                </div>
+              )}
+            </section>
+
+            <QuizSidebar
+              quiz={quiz}
+              questions={questions}
+              answeredCount={answeredCount}
+              progressPercent={progressPercent}
+              result={result}
             />
           </div>
+        </div>
+      </section>
 
-          {!questions.length ? (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-300 rounded-2xl p-5 font-bold">
-              אין שאלות בבוחן הזה.
-            </div>
-          ) : (
-            <div className="space-y-5">
-              {questions.map((question, index) => {
-                const selectedAnswer = answers[index] || "";
-                const answerResult = getAnswerResult(index);
+      <AppFeedbackModal
+        isOpen={resultOpen}
+        type={result?.passed ? "success" : "warning"}
+        title={getResultTitle(result)}
+        message={getResultMessage(result, quiz, questions)}
+        primaryText="חזרה למסלול"
+        secondaryText="לצפות במשוב"
+        onPrimary={() => navigate(-1)}
+        onSecondary={() => setResultOpen(false)}
+        onClose={() => setResultOpen(false)}
+      />
+    </main>
+  );
+}
 
-                return (
-                  <div
-                    key={question._id || index}
-                    className="bg-slate-950/60 border border-white/10 rounded-3xl p-5"
-                  >
-                    <div className="flex justify-between gap-3 mb-4">
-                      <span className="bg-white/10 text-gray-300 px-3 py-1 rounded-full text-xs font-bold">
-                        שאלה {index + 1}
-                      </span>
-
-                      {result && answerResult && (
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-black border ${
-                            answerResult.isCorrect
-                              ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
-                              : "bg-red-500/10 text-red-300 border-red-500/30"
-                          }`}
-                        >
-                          {answerResult.isCorrect ? "נכון ✓" : "לא נכון"}
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="text-lg md:text-xl font-black text-white leading-relaxed">
-                      {question.question}
-                    </h3>
-
-                    <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {(question.options || []).map((option) => {
-                        const isSelected = selectedAnswer === option;
-                        const isCorrectAfterSubmit =
-                          result && answerResult?.correctAnswer === option;
-                        const isWrongSelectedAfterSubmit =
-                          result &&
-                          isSelected &&
-                          answerResult &&
-                          !answerResult.isCorrect;
-
-                        return (
-                          <button
-                            key={option}
-                            type="button"
-                            disabled={Boolean(result)}
-                            onClick={() => handleSelectAnswer(index, option)}
-                            className={`text-right rounded-2xl border p-4 font-bold transition-all disabled:cursor-default ${
-                              isCorrectAfterSubmit
-                                ? "bg-emerald-500/15 border-emerald-400 text-emerald-200"
-                                : isWrongSelectedAfterSubmit
-                                ? "bg-red-500/15 border-red-400 text-red-200"
-                                : isSelected
-                                ? "bg-yellow-400 text-slate-950 border-yellow-300"
-                                : "bg-white/5 hover:bg-white/10 text-gray-200 border-white/10"
-                            }`}
-                          >
-                            {option}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {result && answerResult && (
-                      <div className="mt-5 bg-white/5 border border-white/10 rounded-2xl p-4">
-                        <p className="text-gray-300 text-sm">
-                          <span className="font-black text-white">
-                            התשובה שלך:
-                          </span>{" "}
-                          {answerResult.userAnswer || "לא נענתה"}
-                        </p>
-
-                        <p className="text-gray-300 text-sm mt-2">
-                          <span className="font-black text-emerald-300">
-                            התשובה הנכונה:
-                          </span>{" "}
-                          {answerResult.correctAnswer}
-                        </p>
-
-                        {answerResult.explanation && (
-                          <p className="text-gray-300 text-sm mt-3 leading-relaxed">
-                            <span className="font-black text-yellow-300">
-                              הסבר:
-                            </span>{" "}
-                            {answerResult.explanation}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {!result && (
-            <div className="flex flex-col md:flex-row gap-4 mt-8">
-              <button
-                type="button"
-                onClick={handleSubmitQuiz}
-                disabled={submitting || !questions.length}
-                className="flex-1 bg-yellow-400 hover:bg-yellow-300 disabled:bg-yellow-400/50 text-slate-950 font-black py-4 rounded-2xl transition-all"
-              >
-                {submitting ? "בודק את הבוחן..." : "סיימתי את הבוחן ✅"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-4 rounded-2xl border border-white/10 transition-all"
-              >
-                חזרה בלי הגשה
-              </button>
-            </div>
-          )}
+function QuizProgress({ answeredCount, totalQuestions, progressPercent, result }) {
+  return (
+    <div className="mb-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-black">שאלות הבוחן</h2>
+          <p className="text-[11px] font-bold text-white/55">
+            {result
+              ? "הבוחן נבדק. המשוב מופיע מתחת לכל שאלה."
+              : "זהו בוחן אמריקאי. לחצי על התשובה הנכונה."}
+          </p>
         </div>
 
-        <aside className="bg-white/5 border border-white/10 rounded-3xl p-6 h-fit">
-          <h2 className="text-xl font-black mb-4">📌 מידע על הבוחן</h2>
+        <div className="rounded-full border border-white/14 bg-white/8 px-3 py-1 text-[11px] font-black text-white/70">
+          {answeredCount}/{totalQuestions} נענו
+        </div>
+      </div>
 
-          <div className="space-y-3 text-sm">
-            <InfoRow label="רמה" value={quiz.englishLevel || "לא צוינה"} />
-            <InfoRow label="סוג" value={quiz.quizType || "mixed"} />
-            <InfoRow label="מספר שאלות" value={questions.length} />
-            <InfoRow label="ציון מעבר" value={`${quiz.passingScore || 70}%`} />
-            <InfoRow
-              label="משך"
-              value={quiz.duration ? `${quiz.duration} דקות` : "לא צוין"}
-            />
-          </div>
-
-          <div className="mt-6 bg-indigo-500/10 border border-indigo-400/20 rounded-2xl p-4">
-            <h3 className="font-bold text-indigo-300 mb-2">טיפ לפני הגשה:</h3>
-
-            <p className="text-gray-300 text-sm leading-relaxed">
-              עברי שוב על השאלות לפני הסיום. אחרי ההגשה תקבלי ציון, תשובות
-              נכונות והסברים.
-            </p>
-          </div>
-        </aside>
-      </section>
+      <div className="h-2 overflow-hidden rounded-full bg-white/16">
+        <div
+          className="h-full rounded-full bg-gradient-to-l from-[#ffd439] via-[#ff6659] to-[#b8322a] transition-all duration-500"
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
     </div>
+  );
+}
+
+function QuizSidebar({ quiz, questions, answeredCount, progressPercent, result }) {
+  return (
+    <aside className="space-y-3">
+      {result && (
+        <div
+          className={`rounded-[1.7rem] border p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl ${result.passed
+              ? "border-emerald-300/40 bg-emerald-500/24 shadow-[0_0_24px_rgba(52,211,153,0.22)]"
+              : "border-[#ffd439]/38 bg-[#ffd439]/18"
+            }`}
+        >
+          <div className="text-xs font-bold text-white/70">הציון שלך</div>
+
+          <div className="mt-1 text-4xl font-black text-white">
+            {result.percentage}%
+          </div>
+
+          <div className="mt-2 text-xs font-bold text-white/75">
+            {result.score} מתוך{" "}
+            {result.totalPoints || quiz.totalPoints || questions.length} נקודות
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-[1.7rem] border border-white/18 bg-[#1b5f95]/42 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl">
+        <h2 className="text-lg font-black">מידע על הבוחן</h2>
+
+        <div className="mt-3 space-y-2">
+          <InfoRow label="סוג" value="בוחן אמריקאי" />
+          <InfoRow label="רמה" value={quiz.englishLevel || "לא צוינה"} />
+          <InfoRow label="שאלות" value={questions.length} />
+          <InfoRow label="מעבר" value={`${quiz.passingScore || 70}%`} />
+          <InfoRow
+            label="משך"
+            value={quiz.duration ? `${quiz.duration} דקות` : "לא צוין"}
+          />
+        </div>
+      </div>
+
+      <div className="rounded-[1.7rem] border border-[#ffd439]/24 bg-[#082844]/68 p-4 text-white shadow-[0_18px_45px_rgba(3,31,61,0.22),inset_0_1px_0_rgba(255,255,255,0.14)]">
+        <h2 className="text-lg font-black text-white">הנחיה</h2>
+
+        <p className="mt-3 rounded-xl bg-white/8 px-3 py-3 text-xs font-bold leading-relaxed text-white/74">
+          זהו בוחן אמריקאי. בכל שאלה לחצי על התשובה הנכונה ביותר. אחרי ההגשה
+          תקבלי משוב מלא לכל שאלה.
+        </p>
+      </div>
+
+      <div className="rounded-[1.7rem] border border-white/18 bg-white/10 p-4">
+        <div className="flex items-center justify-between">
+          <div className="text-xs font-bold text-white/56">התקדמות</div>
+          <div className="text-xs font-black text-white/72">
+            {answeredCount}/{questions.length}
+          </div>
+        </div>
+
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/16">
+          <div
+            className="h-full rounded-full bg-gradient-to-l from-[#ffd439] via-[#ff6659] to-[#b8322a]"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+      </div>
+    </aside>
   );
 }
 
 function InfoRow({ label, value }) {
   return (
-    <div className="flex justify-between gap-3 border-b border-white/10 pb-2">
-      <span className="text-gray-400">{label}</span>
-      <span className="text-white font-bold text-left">{value}</span>
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/12 bg-white/8 px-3 py-2">
+      <span className="text-xs font-bold text-white/54">{label}</span>
+      <span className="text-xs font-black text-white">{value}</span>
     </div>
   );
+}
+
+function getResultTitle(result) {
+  if (!result) return "הבוחן נשלח";
+
+  if (result.passed) return "כל הכבוד!";
+
+  return "הבוחן נשלח";
+}
+
+function getResultMessage(result, quiz, questions) {
+  if (!result) {
+    return "הבוחן נשלח ונשמר בהתקדמות האישית שלך.";
+  }
+
+  const total = result.totalPoints || quiz?.totalPoints || questions.length;
+
+  return `הבוחן נשלח ונשמר בהתקדמות האישית שלך. הציון שלך: ${result.percentage}%, ${result.score} מתוך ${total} נקודות. המשוב המלא מופיע מתחת לכל שאלה.`;
 }

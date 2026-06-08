@@ -42,7 +42,7 @@ import AdminMessages from "./features/admin/AdminMessages";
 const AdminSettings = () => (
   <div className="p-6">
     <h1 className="text-2xl font-bold text-white">
-      🛠️ הגדרות מערכת גלובליות
+      הגדרות מערכת גלובליות
     </h1>
   </div>
 );
@@ -67,9 +67,13 @@ export default function App() {
           <Route path="/dashboard" element={<StudentDashboard />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/course/:courseId" element={<CourseDetails />} />
-          <Route path="/create-personal-course" element={<CreatePersonalCourse />} />
+          <Route
+            path="/create-personal-course"
+            element={<CreatePersonalCourse />}
+          />
           <Route path="/exercise/:exerciseId" element={<ExerciseView />} />
-          <Route path="/quiz/:quizId" element={<QuizView />} />          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/quiz/:quizId" element={<QuizView />} />
+          <Route path="/tasks" element={<Tasks />} />
           <Route path="/writing" element={<WritingTrainer />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/dictionary" element={<Dictionary />} />
@@ -78,11 +82,17 @@ export default function App() {
           <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
           <Route path="/teacher/students" element={<TeacherStudents />} />
           <Route path="/teacher/create" element={<TeacherCreate />} />
-          <Route path="/teacher/exercises/create" element={<TeacherExerciseBuilder />} />
+          <Route
+            path="/teacher/exercises/create"
+            element={<TeacherExerciseBuilder />}
+          />
           <Route path="/teacher/library" element={<TeacherLibrary />} />
           <Route path="/teacher/grading" element={<TeacherGrading />} />
           <Route path="/teacher/lesson/:lessonId" element={<LessonView />} />
-          <Route path="/teacher/quizzes/create" element={<TeacherQuizBuilder />} />
+          <Route
+            path="/teacher/quizzes/create"
+            element={<TeacherQuizBuilder />}
+          />
 
           {/* מנהל */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />

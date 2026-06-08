@@ -1,4 +1,5 @@
 import React from "react";
+import { API_BASE_URL } from "../../../services/axiosConfig";
 
 export default function TeacherContentCard({
   item,
@@ -9,146 +10,210 @@ export default function TeacherContentCard({
   onTogglePublish,
   onDelete,
 }) {
-  const isLesson = type === "lesson";
-  const isSong = type === "song";
-  const isExercise = type === "exercise";
   const isLoading = actionLoadingId === item._id;
 
-  const title = item.title || item.theme || "ללא כותרת";
+  const title = item.title || item.topic || item.theme || "תוכן ללא כותרת";
 
-  const subtitle = isLesson
-    ? item.description || "אין תיאור לשיעור זה."
-    : isSong
-    ? `מלחין: ${item.composer || "לא צוין"} · משך: ${item.duration || "לא צוין"}`
-    : item.description || "תרגיל לתרגול אישי";
+  const description =
+    item.description ||
+    item.instructions ||
+    item.theme ||
+    "אין תיאור לתוכן הזה.";
 
-  const icon = isLesson ? item.icon || "🎬" : isSong ? "🎵" : "📝";
+  const canView = type === "lesson";
+  const isSong = type === "song";
+
+  const songUrl = isSong
+    ? `${API_BASE_URL}/songs/song/${item._id}/stream`
+    : "";
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-3xl p-6 hover:border-yellow-400/30 transition-all">
-      <div className="flex justify-between items-start gap-4">
-        <div>
-          <div className="text-4xl mb-3">{icon}</div>
+    <article className="relative overflow-hidden rounded-[2rem] border-2 border-[#ff6659]/38 bg-[#123c6b]/72 p-5 text-white shadow-[0_18px_42px_rgba(3,31,61,0.26),inset_0_1px_0_rgba(255,255,255,0.14)]">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.07),transparent_48%)]" />
 
-          <h3 className="text-2xl font-bold text-white">{title}</h3>
+      <div className="relative z-10">
+        <div className="mb-4">
+          <div className="mb-3 flex flex-wrap gap-2">
+            <StatusBadge isPublic={item.isPublic} />
+            <SoftBadge>{getTypeLabel(type)}</SoftBadge>
+            <SoftBadge>
+              {getLevelLabel(item.level || item.englishLevel)}
+            </SoftBadge>
+            <SoftBadge>{getCategoryLabel(item.category)}</SoftBadge>
+          </div>
 
-          <p className="text-gray-400 text-sm mt-2 line-clamp-2">
-            {subtitle}
+          <h3 className="line-clamp-2 text-2xl font-extrabold leading-tight md:text-3xl">
+            {title}
+          </h3>
+
+          <p className="mt-2 line-clamp-2 text-base font-semibold leading-7 text-white/72">
+            {description}
           </p>
         </div>
 
-        <PublishBadge isPublic={item.isPublic} />
-      </div>
+        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+          <InfoLine
+            label="רמה"
+            value={getLevelLabel(item.level || item.englishLevel)}
+          />
 
-      <ContentMeta item={item} />
+          <InfoLine
+            label="קטגוריה"
+            value={getCategoryLabel(item.category)}
+          />
 
-      {isSong && item.audioFileName && (
-        <div className="bg-black/20 border border-white/10 rounded-2xl p-4 mt-5">
-          <p className="text-gray-400 text-sm mb-3">
-            האזנה לשיר לפני פרסום או עריכה:
-          </p>
+          <InfoLine label="גיל" value={getAgeText(item)} />
 
-          <audio
-            controls
-            className="w-full"
-            src={`http://localhost:3000/songs/song/${item._id}/stream`}
-          >
-            הדפדפן שלך לא תומך בנגן אודיו.
-          </audio>
+          <InfoLine
+            label="מצב"
+            value={item.isPublic ? "מפורסם" : "טיוטה"}
+          />
         </div>
-      )}
 
-      {isExercise && (
-        <div className="bg-black/20 border border-white/10 rounded-2xl p-4 mt-5">
-          <p className="text-gray-400 text-sm mb-2">הוראות התרגיל:</p>
+        {isSong && <SongPreview songUrl={songUrl} title={title} />}
 
-          <p className="text-gray-300 text-sm line-clamp-5 whitespace-pre-line">
-            {item.instructions || "לא הוזנו הוראות לתרגיל."}
-          </p>
-
-          {item.createdByAI && (
-            <div className="mt-3 bg-indigo-500/10 text-indigo-300 border border-indigo-400/20 px-3 py-1 rounded-full text-xs font-bold w-fit">
-              נוצר בעזרת AI ✨
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="flex flex-col md:flex-row gap-3 mt-6">
-        {isLesson && (
-          <button
-            onClick={onView}
-            className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all"
-          >
-            צפייה
-          </button>
-        )}
-
-        <button
-          onClick={onEdit}
-          className="bg-white/10 hover:bg-white/20 text-white font-bold px-5 py-3 rounded-xl transition-all"
-        >
-          עריכה
-        </button>
-
-        <button
-          onClick={onTogglePublish}
-          disabled={isLoading}
-          className={`flex-1 font-bold py-3 rounded-xl transition-all ${
-            item.isPublic
-              ? "bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30"
-              : "bg-emerald-600 hover:bg-emerald-500 text-white"
+        <div
+          className={`mt-6 grid grid-cols-1 gap-2 ${
+            canView ? "md:grid-cols-4" : "md:grid-cols-3"
           }`}
         >
-          {isLoading
-            ? "מעדכן..."
-            : item.isPublic
-            ? "החזר לטיוטה"
-            : "פרסם עכשיו"}
-        </button>
+          {canView && (
+            <ActionButton
+              label="צפייה"
+              onClick={onView}
+              disabled={isLoading}
+              variant="blue"
+            />
+          )}
 
-        <button
-          onClick={onDelete}
-          disabled={isLoading}
-          className="bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold px-5 py-3 rounded-xl transition-all"
-        >
-          מחק
-        </button>
+          <ActionButton
+            label="עריכה"
+            onClick={onEdit}
+            disabled={isLoading}
+            variant="blue"
+          />
+
+          <ActionButton
+            label={item.isPublic ? "החזר לטיוטה" : "פרסם"}
+            onClick={onTogglePublish}
+            disabled={isLoading}
+            variant="dark"
+          />
+
+          <ActionButton
+            label="מחיקה"
+            onClick={onDelete}
+            disabled={isLoading}
+            variant="red"
+          />
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
 
-function PublishBadge({ isPublic }) {
-  return isPublic ? (
-    <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-bold">
-      מפורסם
-    </span>
-  ) : (
-    <span className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1 rounded-full text-xs font-bold">
-      טיוטה
-    </span>
-  );
-}
-
-function ContentMeta({ item }) {
+function SongPreview({ songUrl, title }) {
   return (
-    <div className="flex flex-wrap gap-2 mt-3">
-      <span className="bg-white/10 text-gray-300 px-2 py-1 rounded-lg text-xs">
-        {getLevelLabel(item.level || item.englishLevel)}
-      </span>
-
-      <span className="bg-indigo-400/10 text-indigo-300 px-2 py-1 rounded-lg text-xs">
-        {getCategoryLabel(item.category)}
-      </span>
-
-      {item.targetAges && (
-        <span className="bg-white/10 text-gray-300 px-2 py-1 rounded-lg text-xs">
-          גיל {item.targetAges.min}-{item.targetAges.max}
+    <div className="mt-5 rounded-[1.6rem] border-2 border-[#2c8fd6]/45 bg-[#082844]/82 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]">
+      <div className="mb-3 flex items-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[#ffd439] bg-[#123c6b] text-lg font-extrabold text-[#fff3b0]">
+          ▶
         </span>
-      )}
+
+        <div className="min-w-0">
+          <div className="text-base font-extrabold leading-7 text-white">
+            השמעת השיר
+          </div>
+
+          <div className="truncate text-sm font-semibold leading-6 text-white/62">
+            {title}
+          </div>
+        </div>
+      </div>
+
+      <audio
+        controls
+        preload="metadata"
+        className="w-full rounded-xl"
+        src={songUrl}
+      >
+        הדפדפן לא תומך בהשמעת אודיו.
+      </audio>
     </div>
   );
+}
+
+function InfoLine({ label, value }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl bg-white/[0.04] px-3 py-2.5">
+      <span className="h-3 w-3 shrink-0 rounded-full bg-[#ffd439] shadow-[0_0_12px_rgba(255,212,57,0.55)]" />
+
+      <span className="min-w-0">
+        <span className="block text-sm font-bold leading-5 text-white/58">
+          {label}
+        </span>
+
+        <span className="block truncate text-lg font-extrabold leading-7 text-white">
+          {value || "לא צוין"}
+        </span>
+      </span>
+    </div>
+  );
+}
+
+function ActionButton({ label, onClick, disabled, variant }) {
+  const classes = {
+    blue:
+      "border-[#7dd3fc] bg-[#0f4c75] text-white shadow-[0_5px_0_rgba(3,31,61,0.45)] hover:bg-[#176aa8]",
+    dark:
+      "border-[#ffd439] bg-[#123c6b] text-[#fff3b0] shadow-[0_5px_0_rgba(3,31,61,0.45)] hover:bg-[#0f4c75]",
+    red:
+      "border-[#ffb4ad] bg-[#b8322a] text-white shadow-[0_5px_0_rgba(89,15,20,0.50)] hover:bg-[#9f2a24]",
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`rounded-full border-2 px-4 py-3.5 text-base font-bold leading-7 transition hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-60 ${classes[variant]}`}
+    >
+      {disabled ? "מעדכן..." : label}
+    </button>
+  );
+}
+
+function StatusBadge({ isPublic }) {
+  return (
+    <span
+      className={`rounded-full border px-3 py-1 text-sm font-bold ${
+        isPublic
+          ? "border-white/24 bg-white/12 text-white"
+          : "border-[#ffd439]/32 bg-[#ffd439]/14 text-[#fff3b0]"
+      }`}
+    >
+      {isPublic ? "מפורסם" : "טיוטה"}
+    </span>
+  );
+}
+
+function SoftBadge({ children }) {
+  return (
+    <span className="rounded-full border border-white/12 bg-white/8 px-3 py-1 text-sm font-bold text-white/72">
+      {children}
+    </span>
+  );
+}
+
+function getTypeLabel(type) {
+  const labels = {
+    lesson: "שיעור",
+    song: "שיר",
+    exercise: "תרגיל",
+    quiz: "בוחן",
+  };
+
+  return labels[type] || "תוכן";
 }
 
 function getLevelLabel(level) {
@@ -166,13 +231,22 @@ function getLevelLabel(level) {
 
 function getCategoryLabel(category) {
   const labels = {
+    general: "כללי",
     grammar: "דקדוק",
     vocabulary: "אוצר מילים",
     conversation: "שיחה",
     reading: "קריאה",
     listening: "האזנה",
-    general: "כללי",
   };
 
   return labels[category] || category || "כללי";
+}
+
+function getAgeText(item) {
+  const min = item.targetAges?.min;
+  const max = item.targetAges?.max;
+
+  if (!min && !max) return "כל גיל";
+
+  return `${min || 4}-${max || 120}`;
 }

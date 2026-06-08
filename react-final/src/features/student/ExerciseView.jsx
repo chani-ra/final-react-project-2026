@@ -1,9 +1,35 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getExerciseById,
   markExerciseCompleted,
 } from "../../services/exerciseService";
+import AppFeedbackModal from "../../components/ui/AppFeedbackModal";
+import ExerciseWorkspace from "./components/exercise/ExerciseWorkspace";
+import ExerciseSidebar from "./components/exercise/ExerciseSidebar";
+
+function formatInstructionsText(text) {
+  if (!text) return "";
+
+  return text
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/\s*(\d+\.)\s*/g, "\n$1 ")
+    .replace(/\s*([א-ת]\.)\s*/g, "\n$1 ")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
+}
+
+function getInstructionLines(text) {
+  const formatted = formatInstructionsText(text);
+
+  if (!formatted) return [];
+
+  return formatted
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
 
 export default function ExerciseView() {
   const { exerciseId } = useParams();
@@ -14,6 +40,8 @@ export default function ExerciseView() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [materialsOpen, setMaterialsOpen] = useState(false);
 
   const loadExercise = async () => {
     try {
@@ -33,21 +61,24 @@ export default function ExerciseView() {
     loadExercise();
   }, [exerciseId]);
 
+  const instructionsText = useMemo(() => {
+    return formatInstructionsText(
+      exercise?.instructions ||
+        "1. קראי את ההנחיות.\n2. כתבי תשובה קצרה וברורה.\n3. סמני את התרגיל כהושלם."
+    );
+  }, [exercise]);
+
+  const instructionLines = useMemo(() => {
+    return getInstructionLines(instructionsText);
+  }, [instructionsText]);
+
   const handleCompleteExercise = async () => {
     try {
       setSaving(true);
       setMessage({ type: "", text: "" });
 
       await markExerciseCompleted(exerciseId);
-
-      setMessage({
-        type: "success",
-        text: "מעולה! התרגיל סומן כהושלם.",
-      });
-
-      setTimeout(() => {
-        navigate(-1);
-      }, 900);
+      setSuccessOpen(true);
     } catch (error) {
       setMessage({ type: "error", text: error.toString() });
     } finally {
@@ -80,6 +111,7 @@ export default function ExerciseView() {
             type="button"
             onClick={handleClose}
             className="absolute left-5 top-5 flex h-11 w-11 items-center justify-center rounded-full border border-white/24 bg-white/12 text-3xl font-black text-white transition hover:bg-white/22"
+            aria-label="סגירה"
           >
             ×
           </button>
@@ -173,119 +205,50 @@ export default function ExerciseView() {
           )}
 
           <div className="grid gap-4 xl:grid-cols-[1.72fr_0.58fr]">
-            <section className="overflow-hidden rounded-[2rem] border border-white/22 bg-[#061f36]/76 p-4 shadow-[0_24px_65px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.14)]">
-              <div className="mb-3 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-black">הוראות התרגיל</h2>
-                  <p className="text-[11px] font-bold text-white/55">
-                    קראי את ההוראות, כתבי תשובה, וסמני שסיימת.
-                  </p>
-                </div>
+            <ExerciseWorkspace
+              answer={answer}
+              setAnswer={setAnswer}
+              saving={saving}
+              instructionLines={instructionLines}
+              onComplete={handleCompleteExercise}
+              onClose={handleClose}
+            />
 
-                <div className="rounded-full border border-white/14 bg-white/8 px-3 py-1 text-[11px] font-black text-white/70">
-                  Exercise mode
-                </div>
-              </div>
-
-              <div className="rounded-[1.6rem] border border-white/14 bg-[#123c6b]/54 p-4 text-sm font-bold leading-relaxed text-white/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] whitespace-pre-line">
-                {exercise.instructions ||
-                  "קראי את ההנחיות, כתבי תשובה קצרה, וסמני את התרגיל כהושלם."}
-              </div>
-
-              <div className="mt-4">
-                <label className="mb-2 block text-sm font-black text-white">
-                  התשובה שלי
-                </label>
-
-                <textarea
-                  rows="7"
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  placeholder="כתבי כאן את התשובה שלך..."
-                  className="w-full resize-none rounded-[1.6rem] border border-white/20 p-4 text-sm font-bold leading-relaxed caret-[#ffd439] outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.10),0_10px_26px_rgba(3,31,61,0.16)] transition placeholder:text-white/40 focus:border-[#ffd439]/65 focus:ring-4 focus:ring-[#ffd439]/12"
-                  style={{
-                    backgroundColor: "rgba(6, 31, 54, 0.92)",
-                    color: "#ffffff",
-                  }}
-                />
-              </div>
-
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={handleCompleteExercise}
-                  disabled={saving}
-                  className="rounded-full border-2 border-white/55 bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-5 py-3 text-sm font-black text-white shadow-[0_6px_0_rgba(89,15,20,0.42)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none disabled:opacity-60"
-                >
-                  {saving ? "שומר..." : "סיימתי את התרגיל"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="rounded-full border border-white/18 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/16"
-                >
-                  חזרה בלי שמירה
-                </button>
-              </div>
-            </section>
-
-            <aside className="space-y-3">
-              <div className="rounded-[1.7rem] border border-white/18 bg-[#1b5f95]/42 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl">
-                <h2 className="text-lg font-black">חומרי עזר</h2>
-
-                {!exercise.materials?.length ? (
-                  <div className="mt-3 rounded-xl border border-white/12 bg-white/8 px-3 py-3 text-xs font-bold leading-relaxed text-white/62">
-                    אין חומרי עזר מצורפים לתרגיל הזה.
-                  </div>
-                ) : (
-                  <div className="mt-3 max-h-[190px] space-y-2 overflow-y-auto pr-1">
-                    {exercise.materials.map((material, index) => (
-                      <div
-                        key={`${material}-${index}`}
-                        className="rounded-xl border border-white/12 bg-white/8 px-3 py-3"
-                      >
-                        <div className="text-xs font-black text-white">
-                          חומר עזר {index + 1}
-                        </div>
-
-                        <div className="mt-1 break-all text-[11px] font-bold text-white/56">
-                          {material}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="rounded-[1.7rem] border border-[#ffd439]/24 bg-[#082844]/68 p-4 text-white shadow-[0_18px_45px_rgba(3,31,61,0.22),inset_0_1px_0_rgba(255,255,255,0.14)]">
-                <div className="mb-3 flex items-center gap-2">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#ffd439]/24 bg-[#ffd439]/14 text-lg text-[#ffd439]">
-                    ✎
-                  </div>
-
-                  <h2 className="text-lg font-black text-white">טיפ קטן</h2>
-                </div>
-
-                <p className="rounded-xl bg-white/8 px-3 py-3 text-xs font-bold leading-relaxed text-white/74">
-                  כתבי תשובה קצרה וברורה. גם אם היא לא מושלמת, עצם הכתיבה
-                  באנגלית מחזקת ביטחון ושטף.
-                </p>
-              </div>
-
-              <div className="rounded-[1.7rem] border border-white/18 bg-white/10 p-4">
-                <div className="text-xs font-bold text-white/56">מצב תרגול</div>
-                <div className="mt-1 text-xl font-black text-white">
-                  תרגול אישי
-                </div>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/16">
-                  <div className="h-full w-2/3 rounded-full bg-gradient-to-l from-[#ffd439] via-[#ff6659] to-[#b8322a]" />
-                </div>
-              </div>
-            </aside>
+            <ExerciseSidebar
+              materials={exercise.materials || []}
+              onOpenMaterials={() => setMaterialsOpen(true)}
+            />
           </div>
         </div>
       </section>
+
+      <AppFeedbackModal
+        isOpen={successOpen}
+        type="success"
+        title="כל הכבוד!"
+        message="התרגיל סומן כהושלם ונשמר בהתקדמות האישית שלך. עכשיו אפשר לחזור למסלול ולהמשיך לקרון הבא."
+        primaryText="חזרה למסלול"
+        secondaryText="להישאר כאן"
+        onPrimary={() => navigate(-1)}
+        onSecondary={() => setSuccessOpen(false)}
+        onClose={() => setSuccessOpen(false)}
+      />
+
+      <AppFeedbackModal
+        isOpen={materialsOpen}
+        type="info"
+        title="חומרי עזר"
+        message={
+          exercise.materials?.length
+            ? exercise.materials
+                .map((material, index) => `חומר עזר ${index + 1}: ${material}`)
+                .join("\n")
+            : "אין חומרי עזר מצורפים לתרגיל הזה."
+        }
+        primaryText="סגור"
+        onPrimary={() => setMaterialsOpen(false)}
+        onClose={() => setMaterialsOpen(false)}
+      />
     </main>
   );
 }

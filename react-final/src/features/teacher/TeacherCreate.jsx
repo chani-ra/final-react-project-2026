@@ -1,11 +1,23 @@
 import React, { useState } from "react";
 import { createLesson, uploadSong } from "../../services/teacherService";
+import SmartContentFields from "./components/SmartContentFields";
+
+import {
+  SectionTitle,
+  TextInput,
+  TextArea,
+} from "./components/ui/TeacherFormFields";
+
+import {
+  MessageBox,
+  MiniInfoCard,
+  InfoRow,
+  HeaderLines,
+} from "./components/ui/TeacherInfoBlocks";
 
 export default function TeacherCreate() {
   const [contentType, setContentType] = useState("video");
-  const [selectedIcon, setSelectedIcon] = useState("🧠");
   const [isDragging, setIsDragging] = useState(false);
-
   const [publishMode, setPublishMode] = useState("draft");
 
   const [file, setFile] = useState(null);
@@ -29,47 +41,40 @@ export default function TeacherCreate() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  const iconsList = ["🧠", "💬", "🎵", "📚", "🚀", "📝", "🎧", "🗣️"];
+  const updateSmartField = (field, value) => {
+    if (field === "category") setCategory(value);
+    if (field === "level") setLevel(value);
+    if (field === "targetAgeMin") setMinAge(value);
+    if (field === "targetAgeMax") setMaxAge(value);
+  };
 
-  const categories = [
-    { value: "general", label: "כללי" },
-    { value: "grammar", label: "דקדוק" },
-    { value: "vocabulary", label: "אוצר מילים" },
-    { value: "conversation", label: "שיחה" },
-    { value: "reading", label: "קריאה" },
-    { value: "listening", label: "האזנה" },
-  ];
+  const toggleArrayValue = (field, value) => {
+    if (field === "hobbies") {
+      setHobbies((prev) =>
+        prev.includes(value)
+          ? prev.filter((item) => item !== value)
+          : [...prev, value]
+      );
+    }
 
-  const levels = [
-    { value: "beginner", label: "מתחילים" },
-    { value: "intermediate", label: "בינוני" },
-    { value: "advanced", label: "מתקדמים" },
-  ];
-
-  const hobbyOptions = [
-    { value: "art_music", label: "🎶 אמנות ומוזיקה" },
-    { value: "sports", label: "⚽ ספורט" },
-    { value: "movies", label: "🎬 סרטים וסרטונים" },
-    { value: "books", label: "📚 ספרים וקריאה" },
-  ];
-
-  const expectationOptions = [
-    { value: "grammar", label: "🧠 דקדוק" },
-    { value: "fluent_speaking", label: "🗣️ דיבור שוטף" },
-    { value: "confidence", label: "💪 ביטחון באנגלית" },
-    { value: "vocabulary", label: "📚 אוצר מילים" },
-  ];
-
-  const toggleArrayValue = (value, list, setList) => {
-    if (list.includes(value)) {
-      setList(list.filter((item) => item !== value));
-    } else {
-      setList([...list, value]);
+    if (field === "expectations") {
+      setExpectations((prev) =>
+        prev.includes(value)
+          ? prev.filter((item) => item !== value)
+          : [...prev, value]
+      );
     }
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
+  const handleContentTypeChange = (nextType) => {
+    setContentType(nextType);
+    setFile(null);
+    setFileName("");
+    setMessage({ type: "", text: "" });
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
     setIsDragging(true);
   };
 
@@ -77,20 +82,20 @@ export default function TeacherCreate() {
     setIsDragging(false);
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
+  const handleDrop = (event) => {
+    event.preventDefault();
     setIsDragging(false);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setFile(e.dataTransfer.files[0]);
-      setFileName(e.dataTransfer.files[0].name);
+    if (event.dataTransfer.files && event.dataTransfer.files[0]) {
+      setFile(event.dataTransfer.files[0]);
+      setFileName(event.dataTransfer.files[0].name);
     }
   };
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      setFileName(e.target.files[0].name);
+  const handleFileChange = (event) => {
+    if (event.target.files && event.target.files[0]) {
+      setFile(event.target.files[0]);
+      setFileName(event.target.files[0].name);
     }
   };
 
@@ -109,23 +114,23 @@ export default function TeacherCreate() {
     setDuration("180");
     setComposer("לא ידוע");
     setLyricist("לא ידוע");
-    setSelectedIcon("🧠");
     setPublishMode("draft");
+    setIsDragging(false);
   };
 
   const validateForm = () => {
-    if (!title.trim()) return "נא למלא כותרת";
-    if (!topic.trim()) return "נא למלא נושא לימוד";
-    if (!file) return "נא לבחור קובץ";
+    if (!title.trim()) return "נא למלא כותרת.";
+    if (!topic.trim()) return "נא למלא נושא לימוד.";
+    if (!file) return "נא לבחור קובץ.";
 
     if (Number(minAge) > Number(maxAge)) {
-      return "גיל מינימלי לא יכול להיות גדול מגיל מקסימלי";
+      return "גיל מינימלי לא יכול להיות גדול מגיל מקסימלי.";
     }
 
     if (contentType === "audio") {
-      if (!duration) return "נא למלא משך שיר";
-      if (!composer.trim()) return "נא למלא מלחין";
-      if (!lyricist.trim()) return "נא למלא כותב מילים";
+      if (!duration) return "נא למלא משך שיר.";
+      if (!composer.trim()) return "נא למלא מלחין.";
+      if (!lyricist.trim()) return "נא למלא כותב מילים.";
     }
 
     return "";
@@ -147,7 +152,7 @@ export default function TeacherCreate() {
     formData.append("title", title.trim());
     formData.append("topic", topic.trim());
     formData.append("description", description.trim());
-    formData.append("icon", selectedIcon);
+    formData.append("icon", contentType === "video" ? "lesson" : "song");
 
     formData.append("category", category);
     formData.append("level", level);
@@ -155,12 +160,7 @@ export default function TeacherCreate() {
     formData.append("targetAgeMax", String(maxAge));
     formData.append("hobbies", JSON.stringify(hobbies));
     formData.append("expectations", JSON.stringify(expectations));
-
     formData.append("lessonLanguage", "he");
-
-    // כאן ההבדל החשוב:
-    // draft => לא מפורסם
-    // published => מפורסם לתלמידים ול-AI
     formData.append("isPublic", publishMode === "published" ? "true" : "false");
 
     if (contentType === "video") {
@@ -186,11 +186,11 @@ export default function TeacherCreate() {
         text:
           publishMode === "published"
             ? contentType === "video"
-              ? "השיעור פורסם בהצלחה! 🚀"
-              : "השיר פורסם בהצלחה! 🎵"
+              ? "השיעור פורסם בהצלחה."
+              : "השיר פורסם בהצלחה."
             : contentType === "video"
-            ? "השיעור נשמר כטיוטה 📝"
-            : "השיר נשמר כטיוטה 📝",
+            ? "השיעור נשמר כטיוטה."
+            : "השיר נשמר כטיוטה.",
       });
 
       resetForm();
@@ -202,388 +202,441 @@ export default function TeacherCreate() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto" dir="rtl">
-      <div>
-        <h1 className="text-3xl font-bold text-white">
-          ✨ יצירת והעלאת תוכן חכם
-        </h1>
-        <p className="text-gray-400 mt-1">
-          כל תוכן שתעלי יקבל תגיות חכמות כדי שה־AI יוכל לשלב אותו במסלולים
-          אישיים לתלמידים — רק אם תבחרי לפרסם אותו.
-        </p>
-      </div>
+    <main className="mx-auto max-w-7xl px-4 py-4" dir="rtl">
+      <section className="relative overflow-hidden rounded-[2.4rem] border border-white/32 bg-[#123c6b]/70 text-white shadow-[0_32px_95px_rgba(3,31,61,0.38),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,255,255,0.14),transparent_28%),linear-gradient(to_bottom,rgba(255,255,255,0.07),transparent_52%)]" />
 
-      {message.text && (
-        <div
-          className={`p-4 rounded-xl font-bold ${
-            message.type === "success"
-              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-              : "bg-red-500/20 text-red-400 border border-red-500/30"
-          }`}
-        >
-          {message.text}
+        <HeaderLines />
+
+        <div className="relative z-10 p-4 md:p-6">
+          <header className="mb-6">
+            <div className="mb-3 inline-flex rounded-full border border-[#ffd439]/28 bg-[#ffd439]/16 px-4 py-1.5 text-base font-extrabold text-[#ffe89a]">
+              העלאת תוכן
+            </div>
+
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <div>
+                <h1
+                  className="text-3xl font-extrabold leading-tight md:text-5xl"
+                  style={{
+                    textShadow:
+                      "3px 3px 0 rgba(184,50,42,0.54), -1px -1px 0 rgba(15,76,117,0.86), 0 14px 30px rgba(7,89,133,0.38)",
+                  }}
+                >
+                  יצירת שיעור או שיר
+                </h1>
+
+                <p className="mt-3 max-w-4xl text-base font-semibold leading-8 text-white/76">
+                  העלי קובץ, הגדירי רמה ותגיות, ובחרי אם לשמור כטיוטה או לפרסם
+                  למסלולים אישיים.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:min-w-[320px]">
+                <MiniInfoCard
+                  label="סוג תוכן"
+                  value={contentType === "video" ? "שיעור" : "שיר"}
+                />
+                <MiniInfoCard
+                  label="פרסום"
+                  value={publishMode === "published" ? "מפורסם" : "טיוטה"}
+                />
+              </div>
+            </div>
+          </header>
+
+          <MessageBox message={message} />
+
+          <div className="grid gap-4 xl:grid-cols-[1.55fr_0.72fr]">
+            <section className="rounded-[2rem] border border-white/22 bg-[#061f36]/76 p-4 shadow-[0_24px_65px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.14)]">
+              <ContentTypeTabs
+                contentType={contentType}
+                onChange={handleContentTypeChange}
+              />
+
+              <div className="space-y-6">
+                <section>
+                  <SectionTitle
+                    title="פרטי התוכן"
+                    subtitle="כותרת, נושא ותיאור שיופיעו בספריית התוכן."
+                  />
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <TextInput
+                      label={`כותרת ה${
+                        contentType === "video" ? "שיעור" : "שיר"
+                      }`}
+                      value={title}
+                      onChange={setTitle}
+                      placeholder={
+                        contentType === "video"
+                          ? "לדוגמה: Present Simple Rules"
+                          : "לדוגמה: Vocabulary Song"
+                      }
+                    />
+
+                    <TextInput
+                      label="נושא לימוד"
+                      value={topic}
+                      onChange={setTopic}
+                      placeholder="לדוגמה: Grammar Basics"
+                    />
+                  </div>
+
+                  <TextArea
+                    label="תיאור קצר"
+                    value={description}
+                    onChange={setDescription}
+                    rows={3}
+                    placeholder="מה התלמידה תלמד בתוכן הזה?"
+                  />
+                </section>
+
+                <SmartContentFields
+                  category={category}
+                  level={level}
+                  minAge={minAge}
+                  maxAge={maxAge}
+                  hobbies={hobbies}
+                  expectations={expectations}
+                  onChange={updateSmartField}
+                  onToggleArrayValue={toggleArrayValue}
+                />
+
+                <PublishModeSection
+                  publishMode={publishMode}
+                  setPublishMode={setPublishMode}
+                />
+
+                {contentType === "audio" && (
+                  <SongDetails
+                    duration={duration}
+                    setDuration={setDuration}
+                    composer={composer}
+                    setComposer={setComposer}
+                    lyricist={lyricist}
+                    setLyricist={setLyricist}
+                  />
+                )}
+
+                <MediaUploadBox
+                  contentType={contentType}
+                  fileName={fileName}
+                  isDragging={isDragging}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onFileChange={handleFileChange}
+                />
+
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isLoading}
+                  className="w-full rounded-full border-2 border-white/55 bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-5 py-4 text-lg font-bold text-white shadow-[0_6px_0_rgba(89,15,20,0.42)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none disabled:opacity-60"
+                >
+                  {isLoading
+                    ? "מעלה לשרת..."
+                    : publishMode === "published"
+                    ? "שמירה ופרסום"
+                    : "שמירה כטיוטה"}
+                </button>
+              </div>
+            </section>
+
+            <CreateSummary
+              contentType={contentType}
+              publishMode={publishMode}
+              title={title}
+              topic={topic}
+              category={category}
+              level={level}
+              minAge={minAge}
+              maxAge={maxAge}
+              hobbies={hobbies}
+              expectations={expectations}
+              fileName={fileName}
+            />
+          </div>
         </div>
-      )}
+      </section>
+    </main>
+  );
+}
 
-      <div className="flex gap-4 p-1 bg-white/5 rounded-2xl w-fit border border-white/10">
-        <button
-          type="button"
-          onClick={() => {
-            setContentType("video");
-            setFileName("");
-            setFile(null);
-          }}
-          className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
-            contentType === "video"
-              ? "bg-indigo-500 text-white shadow-lg"
-              : "text-gray-400 hover:text-white"
-          }`}
-        >
-          🎬 שיעור וידאו
-        </button>
+function ContentTypeTabs({ contentType, onChange }) {
+  return (
+    <div className="mb-6 rounded-[1.8rem] border-2 border-white/20 bg-[#061f36]/76 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <TypeButton
+          active={contentType === "video"}
+          title="שיעור וידאו"
+          subtitle="העלאת קובץ וידאו ללמידה"
+          label="V"
+          onClick={() => onChange("video")}
+        />
 
-        <button
-          type="button"
-          onClick={() => {
-            setContentType("audio");
-            setFileName("");
-            setFile(null);
-          }}
-          className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
-            contentType === "audio"
-              ? "bg-emerald-500 text-white shadow-lg"
-              : "text-gray-400 hover:text-white"
-          }`}
-        >
-          🎵 שיר אודיו
-        </button>
-      </div>
-
-      <div className="bg-white/5 border border-white/10 p-8 rounded-3xl space-y-8">
-        <section>
-          <h2 className="text-xl font-bold mb-4 text-yellow-400">
-            פרטי התוכן
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">
-                כותרת ה{contentType === "video" ? "שיעור" : "שיר"}
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500 outline-none text-sm"
-                placeholder="לדוגמה: Present Simple Rules"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">
-                נושא לימוד
-              </label>
-              <input
-                type="text"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500 outline-none text-sm"
-                placeholder="לדוגמה: Grammar Basics"
-              />
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <label className="block text-sm font-bold text-gray-300 mb-2">
-              תיאור קצר
-            </label>
-            <textarea
-              rows="3"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500 outline-none text-sm"
-              placeholder="מה התלמיד ילמד בתוכן הזה?"
-            />
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-bold mb-4 text-yellow-400">
-            תיוג חכם ל־AI
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">
-                קטגוריה
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500 outline-none"
-              >
-                {categories.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">
-                רמה
-              </label>
-              <select
-                value={level}
-                onChange={(e) => setLevel(e.target.value)}
-                className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500 outline-none"
-              >
-                {levels.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">
-                גיל מינימלי
-              </label>
-              <input
-                type="number"
-                min="4"
-                max="120"
-                value={minAge}
-                onChange={(e) => setMinAge(e.target.value)}
-                className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">
-                גיל מקסימלי
-              </label>
-              <input
-                type="number"
-                min="4"
-                max="120"
-                value={maxAge}
-                onChange={(e) => setMaxAge(e.target.value)}
-                className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white focus:border-indigo-500 outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <label className="block text-sm font-bold text-gray-300 mb-3">
-              מתאים לתחביבים
-            </label>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {hobbyOptions.map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() => toggleArrayValue(item.value, hobbies, setHobbies)}
-                  className={`p-3 rounded-xl text-sm font-bold transition-all ${
-                    hobbies.includes(item.value)
-                      ? "bg-yellow-400 text-slate-950"
-                      : "bg-slate-900 text-gray-300 border border-white/10 hover:bg-white/10"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <label className="block text-sm font-bold text-gray-300 mb-3">
-              מתאים למטרות לימוד
-            </label>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {expectationOptions.map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() =>
-                    toggleArrayValue(item.value, expectations, setExpectations)
-                  }
-                  className={`p-3 rounded-xl text-sm font-bold transition-all ${
-                    expectations.includes(item.value)
-                      ? "bg-indigo-400 text-slate-950"
-                      : "bg-slate-900 text-gray-300 border border-white/10 hover:bg-white/10"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-bold mb-4 text-yellow-400">
-            מצב פרסום
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button
-              type="button"
-              onClick={() => setPublishMode("draft")}
-              className={`p-5 rounded-2xl text-right border transition-all ${
-                publishMode === "draft"
-                  ? "bg-white/10 border-yellow-400 text-white"
-                  : "bg-slate-900 border-white/10 text-gray-300 hover:bg-white/5"
-              }`}
-            >
-              <div className="text-2xl mb-2">📝</div>
-              <div className="font-black text-lg">שמור כטיוטה</div>
-              <div className="text-sm text-gray-400 mt-1">
-                התוכן יישמר בספרייה שלך, אבל תלמידים וה־AI עדיין לא ישתמשו בו.
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPublishMode("published")}
-              className={`p-5 rounded-2xl text-right border transition-all ${
-                publishMode === "published"
-                  ? "bg-emerald-500/20 border-emerald-400 text-white"
-                  : "bg-slate-900 border-white/10 text-gray-300 hover:bg-white/5"
-              }`}
-            >
-              <div className="text-2xl mb-2">🚀</div>
-              <div className="font-black text-lg">פרסם לתלמידים</div>
-              <div className="text-sm text-gray-400 mt-1">
-                התוכן יהיה זמין לתלמידים, ויוכל להיכנס למסלולים אישיים של AI.
-              </div>
-            </button>
-          </div>
-        </section>
-
-        {contentType === "audio" && (
-          <section>
-            <h2 className="text-xl font-bold mb-4 text-yellow-400">
-              פרטי שיר
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-bold text-gray-300 mb-2">
-                  משך בשניות
-                </label>
-                <input
-                  type="text"
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white focus:border-emerald-500 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-300 mb-2">
-                  מלחין
-                </label>
-                <input
-                  type="text"
-                  value={composer}
-                  onChange={(e) => setComposer(e.target.value)}
-                  className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white focus:border-emerald-500 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-300 mb-2">
-                  כותב מילים
-                </label>
-                <input
-                  type="text"
-                  value={lyricist}
-                  onChange={(e) => setLyricist(e.target.value)}
-                  className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white focus:border-emerald-500 outline-none"
-                />
-              </div>
-            </div>
-          </section>
-        )}
-
-        <section>
-          <h2 className="text-xl font-bold mb-4 text-yellow-400">
-            קובץ מדיה
-          </h2>
-
-          <div className="mb-5">
-            <label className="block text-sm font-bold text-gray-300 mb-2">
-              בחרי אייקון מייצג
-            </label>
-
-            <div className="flex gap-3 flex-wrap">
-              {iconsList.map((icon) => (
-                <button
-                  key={icon}
-                  type="button"
-                  onClick={() => setSelectedIcon(icon)}
-                  className={`w-12 h-12 text-xl rounded-xl flex items-center justify-center transition-all border ${
-                    selectedIcon === icon
-                      ? "bg-yellow-500 border-yellow-400 text-black scale-110"
-                      : "bg-slate-900 border-white/10 text-white"
-                  }`}
-                >
-                  {icon}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className={`relative border-2 border-dashed rounded-2xl p-10 text-center transition-all hover:border-indigo-500 ${
-              isDragging
-                ? "border-yellow-500 bg-yellow-500/10"
-                : "border-white/25 bg-slate-900/50"
-            }`}
-          >
-            <input
-              type="file"
-              accept={contentType === "video" ? "video/*" : "audio/*"}
-              onChange={handleFileChange}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-            />
-
-            <span className="text-4xl mb-3 block relative z-0">
-              {contentType === "video" ? "📹" : "🎧"}
-            </span>
-
-            <p className="text-gray-300 font-bold text-sm relative z-0">
-              {fileName
-                ? `✅ קובץ נבחר: ${fileName}`
-                : "גררי לכאן או לחצי לבחירה"}
-            </p>
-          </div>
-        </section>
-
-        <button
-          onClick={handleSubmit}
-          disabled={isLoading}
-          className={`w-full py-4 rounded-xl font-black text-white shadow-lg transition-all ${
-            contentType === "video"
-              ? "bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50"
-              : "bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/50"
-          }`}
-        >
-          {isLoading
-            ? "מעלה לשרת..."
-            : publishMode === "published"
-            ? "שמור ופרסם תוכן 🚀"
-            : "שמור כטיוטה 📝"}
-        </button>
+        <TypeButton
+          active={contentType === "audio"}
+          title="שיר אודיו"
+          subtitle="העלאת קובץ שמע לתרגול"
+          label="A"
+          onClick={() => onChange("audio")}
+        />
       </div>
     </div>
   );
+}
+
+function TypeButton({ active, title, subtitle, label, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`relative overflow-hidden rounded-[1.5rem] border-2 p-4 text-right transition-all ${
+        active
+          ? "border-[#ffd439] bg-[#123c6b] text-white shadow-[0_0_24px_rgba(255,212,57,0.20)]"
+          : "border-[#2c8fd6]/42 bg-[#082844]/72 text-white/72 hover:border-[#ff6659]/62 hover:bg-[#123c6b]/82"
+      }`}
+    >
+      <div className="flex items-center gap-4">
+        <span
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] border-2 text-base font-extrabold ${
+            active
+              ? "border-[#fff2a3] bg-[#ffd439] text-[#123c6b]"
+              : "border-[#2c8fd6]/60 bg-[#061f36] text-white/72"
+          }`}
+        >
+          {active ? "✓" : label}
+        </span>
+
+        <span>
+          <span className="block text-xl font-extrabold leading-8">
+            {title}
+          </span>
+
+          <span
+            className={`mt-1 block text-base font-semibold leading-7 ${
+              active ? "text-[#fff3b0]" : "text-white/62"
+            }`}
+          >
+            {subtitle}
+          </span>
+        </span>
+      </div>
+    </button>
+  );
+}
+
+function PublishModeSection({ publishMode, setPublishMode }) {
+  return (
+    <section className="rounded-[2rem] border border-white/18 bg-[#123c6b]/54 p-5">
+      <SectionTitle
+        title="מצב פרסום"
+        subtitle="טיוטה נשמרת רק בספריית המורה. פרסום מאפשר שילוב במסלולים אישיים."
+      />
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <PublishButton
+          active={publishMode === "draft"}
+          title="שמירה כטיוטה"
+          text="התוכן יישמר בספרייה, אך לא יוצג לתלמידות ולא ייכנס למסלולים."
+          onClick={() => setPublishMode("draft")}
+        />
+
+        <PublishButton
+          active={publishMode === "published"}
+          title="פרסום לתלמידות"
+          text="התוכן יהיה זמין ויוכל להשתלב במסלולים אישיים."
+          onClick={() => setPublishMode("published")}
+        />
+      </div>
+    </section>
+  );
+}
+
+function PublishButton({ active, title, text, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-[1.5rem] border-2 p-4 text-right transition-all ${
+        active
+          ? "border-[#ffd439] bg-[#ffd439]/24 text-[#fff4b8] shadow-[0_0_22px_rgba(255,212,57,0.22)]"
+          : "border-[#2c8fd6]/40 bg-[#082844]/72 text-white hover:border-[#ff6659]/58 hover:bg-[#123c6b]/68"
+      }`}
+    >
+      <div className="text-xl font-extrabold leading-8">{title}</div>
+      <div className="mt-1 text-base font-semibold leading-7 text-white/70">
+        {text}
+      </div>
+    </button>
+  );
+}
+
+function SongDetails({
+  duration,
+  setDuration,
+  composer,
+  setComposer,
+  lyricist,
+  setLyricist,
+}) {
+  return (
+    <section className="rounded-[2rem] border border-white/18 bg-[#123c6b]/54 p-5">
+      <SectionTitle
+        title="פרטי שיר"
+        subtitle="השדות האלו נשמרים עם קובץ האודיו."
+      />
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <TextInput
+          label="משך בשניות"
+          value={duration}
+          onChange={setDuration}
+          placeholder="180"
+        />
+
+        <TextInput
+          label="מלחין"
+          value={composer}
+          onChange={setComposer}
+          placeholder="לא ידוע"
+        />
+
+        <TextInput
+          label="כותב מילים"
+          value={lyricist}
+          onChange={setLyricist}
+          placeholder="לא ידוע"
+        />
+      </div>
+    </section>
+  );
+}
+
+function MediaUploadBox({
+  contentType,
+  fileName,
+  isDragging,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onFileChange,
+}) {
+  return (
+    <section className="rounded-[2rem] border border-white/18 bg-[#123c6b]/54 p-5">
+      <SectionTitle
+        title="קובץ מדיה"
+        subtitle={
+          contentType === "video"
+            ? "בחרי קובץ וידאו לשיעור."
+            : "בחרי קובץ אודיו לשיר."
+        }
+      />
+
+      <div
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        className={`relative rounded-[1.8rem] border-2 border-dashed p-10 text-center transition-all ${
+          isDragging
+            ? "border-[#ffd439] bg-[#ffd439]/12"
+            : "border-[#2c8fd6]/55 bg-[#082844]/74 hover:border-[#ffd439]/60"
+        }`}
+      >
+        <input
+          type="file"
+          accept={contentType === "video" ? "video/*" : "audio/*"}
+          onChange={onFileChange}
+          className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+        />
+
+        <div className="relative z-0 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[1.4rem] border-[3px] border-[#075a98] bg-gradient-to-b from-[#ff6659] to-[#b8322a] text-xl font-extrabold text-white shadow-[0_7px_0_rgba(89,15,20,0.42),0_12px_24px_rgba(3,31,61,0.28)]">
+          {contentType === "video" ? "V" : "A"}
+        </div>
+
+        <p className="relative z-0 text-lg font-extrabold leading-8 text-white">
+          {fileName ? `קובץ נבחר: ${fileName}` : "גררי לכאן או לחצי לבחירה"}
+        </p>
+
+        <p className="relative z-0 mt-1 text-base font-semibold text-white/62">
+          {contentType === "video" ? "קובץ וידאו" : "קובץ אודיו"}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function CreateSummary({
+  contentType,
+  publishMode,
+  title,
+  topic,
+  category,
+  level,
+  minAge,
+  maxAge,
+  hobbies,
+  expectations,
+  fileName,
+}) {
+  return (
+    <aside className="space-y-3">
+      <div className="rounded-[1.7rem] border border-white/18 bg-[#1b5f95]/42 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl">
+        <h2 className="text-xl font-extrabold">סיכום העלאה</h2>
+
+        <div className="mt-3 space-y-2">
+          <InfoRow
+            label="סוג"
+            value={contentType === "video" ? "שיעור" : "שיר"}
+          />
+          <InfoRow label="כותרת" value={title || "לא מולאה"} />
+          <InfoRow label="נושא" value={topic || "לא מולא"} />
+          <InfoRow label="רמה" value={getLevelLabel(level)} />
+          <InfoRow label="קטגוריה" value={getCategoryLabel(category)} />
+          <InfoRow label="גיל" value={`${minAge || 4}-${maxAge || 120}`} />
+          <InfoRow label="תחביבים" value={hobbies.length} />
+          <InfoRow label="מטרות" value={expectations.length} />
+          <InfoRow
+            label="פרסום"
+            value={publishMode === "published" ? "מפורסם" : "טיוטה"}
+          />
+          <InfoRow label="קובץ" value={fileName || "לא נבחר"} />
+        </div>
+      </div>
+
+      <div className="rounded-[1.7rem] border border-[#ffd439]/24 bg-[#082844]/68 p-4 text-white shadow-[0_18px_45px_rgba(3,31,61,0.22),inset_0_1px_0_rgba(255,255,255,0.14)]">
+        <h2 className="text-xl font-extrabold text-white">בדיקה לפני שמירה</h2>
+
+        <p className="mt-3 rounded-xl bg-white/8 px-3 py-3 text-base font-semibold leading-8 text-white/78">
+          ודאי שיש כותרת, נושא, קובץ, רמה מדויקת ותגיות מתאימות. תוכן מפורסם
+          יוכל להיכנס למסלולים אישיים.
+        </p>
+      </div>
+    </aside>
+  );
+}
+
+function getLevelLabel(level) {
+  const labels = {
+    beginner: "מתחילים",
+    intermediate: "בינוני",
+    advanced: "מתקדמים",
+  };
+
+  return labels[level] || level || "לא צוין";
+}
+
+function getCategoryLabel(category) {
+  const labels = {
+    general: "כללי",
+    grammar: "דקדוק",
+    vocabulary: "אוצר מילים",
+    conversation: "שיחה",
+    reading: "קריאה",
+    listening: "האזנה",
+  };
+
+  return labels[category] || category || "כללי";
 }

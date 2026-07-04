@@ -38,3 +38,200 @@ button:disabled {
 * {
   box-sizing: border-box;
 }
+
+
+/* ================================
+   EnglishWise soft design helpers
+   סגנון אחיד: שמיים, כרטיסי זכוכית, כחול, אדום, צהוב
+================================ */
+
+.soft-page,
+.soft-widget,
+.auth-polish {
+  --ew-blue: #123c6b;
+  --ew-blue-2: #1d6fb8;
+  --ew-red: #b8322a;
+  --ew-red-light: #ff6659;
+  --ew-yellow: #ffd439;
+  --ew-sky: #a8d8ff;
+  --ew-card: rgba(255, 255, 255, 0.86);
+  --ew-border: rgba(255, 255, 255, 0.72);
+  --ew-shadow: 0 22px 60px rgba(7, 47, 88, 0.16);
+  color: var(--ew-blue) !important;
+}
+
+.soft-page h1,
+.soft-page h2,
+.soft-page h3,
+.soft-widget h1,
+.soft-widget h2,
+.soft-widget h3,
+.auth-polish h1,
+.auth-polish h2,
+.auth-polish h3 {
+  color: #1d4ed8 !important;
+  font-weight: 900 !important;
+}
+
+.soft-page p,
+.soft-page label,
+.soft-page span,
+.soft-page td,
+.soft-page th,
+.soft-page div,
+.soft-widget p,
+.soft-widget label,
+.soft-widget span,
+.soft-widget td,
+.soft-widget th,
+.soft-widget div,
+.auth-polish p,
+.auth-polish label,
+.auth-polish span,
+.auth-polish div {
+  font-weight: 700;
+}
+
+.soft-page :is(.bg-white\/5, .bg-white\/10, .bg-white\/8, .bg-slate-900\/50, .bg-slate-900\/80, .bg-slate-950, .bg-slate-950\/50, .bg-slate-950\/60, .bg-slate-950\/70, .bg-black\/20),
+.soft-widget :is(.bg-white\/5, .bg-white\/10, .bg-white\/8, .bg-slate-900\/50, .bg-slate-900\/80, .bg-slate-950, .bg-slate-950\/50, .bg-slate-950\/60, .bg-slate-950\/70, .bg-black\/20) {
+  background: rgba(255, 255, 255, 0.82) !important;
+  border-color: rgba(255, 255, 255, 0.72) !important;
+  box-shadow: var(--ew-shadow) !important;
+  backdrop-filter: blur(14px);
+}
+
+.soft-page :is(.border-white\/10, .border-white\/12, .border-white\/20, .border-white\/5),
+.soft-widget :is(.border-white\/10, .border-white\/12, .border-white\/20, .border-white\/5) {
+  border-color: rgba(37, 99, 235, 0.18) !important;
+}
+
+.soft-page :is(.text-white, .text-gray-300, .text-gray-400, .text-gray-500),
+.soft-widget :is(.text-white, .text-gray-300, .text-gray-400, .text-gray-500),
+.auth-polish :is(.text-white, .text-gray-300, .text-gray-400, .text-gray-500) {
+  color: #244b6f !important;
+}
+
+.soft-page :is(input, textarea, select),
+.soft-widget :is(input, textarea, select),
+.auth-polish :is(input, textarea, select) {
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: #123c6b !important;
+  border: 2px solid rgba(37, 99, 235, 0.24) !important;
+  border-radius: 1.35rem !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+  box-shadow: 0 12px 30px rgba(7, 47, 88, 0.08) !important;
+}
+
+.soft-page :is(input, textarea, select)::placeholder,
+.soft-widget :is(input, textarea, select)::placeholder,
+.auth-polish :is(input, textarea, select)::placeholder {
+  color: rgba(36, 75, 111, 0.55) !important;
+}
+
+.soft-page :is(input, textarea, select):focus,
+.soft-widget :is(input, textarea, select):focus,
+.auth-polish :is(input, textarea, select):focus {
+  outline: none !important;
+  border-color: #1d6fb8 !important;
+  box-shadow: 0 0 0 4px rgba(168, 216, 255, 0.55) !important;
+}
+
+.soft-page :is(.bg-indigo-600, .bg-indigo-500, .from-indigo-500, .to-purple-500),
+.soft-widget :is(.bg-indigo-600, .bg-indigo-500, .from-indigo-500, .to-purple-500),
+.auth-polish :is(.bg-indigo-600, .bg-indigo-500, .from-indigo-500, .to-purple-500) {
+  background: linear-gradient(180deg, #ff6659 0%, #b8322a 100%) !important;
+  color: white !important;
+}
+
+.soft-page button,
+.soft-widget button,
+.auth-polish button {
+  border-radius: 999px;
+  font-weight: 900 !important;
+}
+
+.soft-page button:not(:disabled):hover,
+.soft-widget button:not(:disabled):hover,
+.auth-polish button:not(:disabled):hover {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+}
+
+.soft-page table,
+.soft-widget table {
+  background: rgba(255, 255, 255, 0.66) !important;
+  border-radius: 1.7rem;
+  overflow: hidden;
+}
+
+.soft-page thead,
+.soft-widget thead {
+  background: rgba(168, 216, 255, 0.55) !important;
+  color: #123c6b !important;
+}
+
+.soft-page tbody,
+.soft-widget tbody {
+  color: #123c6b !important;
+}
+
+.auth-polish {
+  background: linear-gradient(135deg, #a8d8ff 0%, #e0f4ff 52%, #b5dcff 100%) !important;
+}
+
+.auth-polish form,
+.auth-polish .auth-card {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 4px solid rgba(255, 255, 255, 0.75) !important;
+  box-shadow: 0 28px 80px rgba(7, 47, 88, 0.18) !important;
+  color: #123c6b !important;
+}
+
+.auth-polish form::before,
+.auth-polish .auth-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 10% 0%, rgba(255, 212, 57, 0.22), transparent 32%),
+    radial-gradient(circle at 100% 100%, rgba(168, 216, 255, 0.38), transparent 36%);
+}
+
+.auth-polish form > *,
+.auth-polish .auth-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-polish button[type="submit"],
+.auth-polish .primary-auth-button {
+  background: linear-gradient(180deg, #ff6659 0%, #b8322a 100%) !important;
+  color: white !important;
+  border-radius: 999px !important;
+  box-shadow: 0 7px 0 rgba(89, 15, 20, 0.28) !important;
+}
+
+.auth-polish .secondary-auth-button {
+  background: white !important;
+  color: #1d4ed8 !important;
+  border: 2px solid #2563eb !important;
+  border-radius: 999px !important;
+}
+
+.home-polish-card {
+  background: rgba(255, 255, 255, 0.88);
+  border: 4px solid rgba(37, 99, 235, 0.75);
+  border-radius: 2.4rem;
+  box-shadow: 0 25px 70px rgba(7, 47, 88, 0.2);
+}
+
+.reviews-polish-panel {
+  background: rgba(255, 255, 255, 0.4);
+  border: 4px solid rgba(255, 255, 255, 0.75);
+  border-radius: 2.6rem;
+  box-shadow: 0 25px 70px rgba(7, 47, 88, 0.16);
+  backdrop-filter: blur(18px);
+}

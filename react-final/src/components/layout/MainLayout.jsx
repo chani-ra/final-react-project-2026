@@ -34,8 +34,12 @@ export default function MainLayout() {
   };
 
   const getNavLinks = () => {
+    const homeLink = { name: "דף הבית", path: "/" };
+
     const menus = {
       student: [
+        homeLink,
+
         { name: "דשבורד", path: "/dashboard" },
         { name: "קורסים", path: "/courses" },
         { name: "קורס חדש", path: "/create-personal-course" },
@@ -47,6 +51,8 @@ export default function MainLayout() {
       ],
 
       teacher: [
+        homeLink,
+
         { name: "לוח בקרה", path: "/teacher/dashboard" },
         { name: "הכיתות שלי", path: "/teacher/students" },
         { name: "העלאת תוכן", path: "/teacher/create" },
@@ -57,12 +63,15 @@ export default function MainLayout() {
       ],
 
       admin: [
+        homeLink,
+
         { name: "נתוני מערכת", path: "/admin/dashboard" },
         { name: "ניהול משתמשים", path: "/admin/users" },
         { name: "מאגר תוכן", path: "/admin/content" },
         { name: "שליחת הודעות", path: "/admin/messages" },
         { name: "ההודעות שלי", path: "/messages" },
         { name: "הגדרות", path: "/admin/settings" },
+        { name: "המלצות", path: "/admin/reviews" },
       ],
     };
 
@@ -137,9 +146,9 @@ export default function MainLayout() {
                     {navLinks.map((link) => {
                       const isActive =
                         location.pathname === link.path ||
-                        (link.path !== "/dashboard" &&
+                        (link.path !== "/" &&
+                          link.path !== "/dashboard" &&
                           location.pathname.startsWith(link.path));
-
                       return (
                         <TopNavItem
                           key={link.path}
@@ -201,11 +210,10 @@ function TopNavItem({ link, isActive, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`relative min-w-0 shrink rounded-full px-4 py-2.5 text-[clamp(15px,0.92vw,19px)] font-black leading-none transition-all ${
-        isActive
-          ? "bg-[#1c74b5] text-white shadow-[0_0_16px_rgba(255,255,255,0.16),inset_0_1px_0_rgba(255,255,255,0.16)]"
-          : "bg-transparent text-white/90 hover:bg-[#1c74b5]/90 hover:text-white"
-      }`}
+      className={`relative min-w-0 shrink rounded-full px-4 py-2.5 text-[clamp(15px,0.92vw,19px)] font-black leading-none transition-all ${isActive
+        ? "bg-[#1c74b5] text-white shadow-[0_0_16px_rgba(255,255,255,0.16),inset_0_1px_0_rgba(255,255,255,0.16)]"
+        : "bg-transparent text-white/90 hover:bg-[#1c74b5]/90 hover:text-white"
+        }`}
       style={{
         textShadow: isActive
           ? "1.2px 1.2px 0 rgba(140,35,33,0.72), -1px -1px 0 rgba(5,44,80,0.85)"

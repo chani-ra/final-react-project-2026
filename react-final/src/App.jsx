@@ -3,10 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import MainLayout from "./components/layout/MainLayout";
-
 import Home from "./components/Home";
 import Register from "./features/auth/Register";
 import Login from "./features/auth/Login";
+import Introduce from "./components/Introduce";
 
 // shared components
 import MyMessages from "./features/shared/messages/MyMessages";
@@ -38,6 +38,7 @@ import AdminDashboard from "./features/admin/AdminDashboard";
 import AdminUsers from "./features/admin/AdminUsers";
 import AdminContent from "./features/admin/AdminContent";
 import AdminMessages from "./features/admin/AdminMessages";
+import AdminReviews from "./features/admin/AdminReviews";
 
 const AdminSettings = () => (
   <div className="p-6">
@@ -51,8 +52,8 @@ export default function App() {
   return (
     <Router>
       <Toaster position="top-center" reverseOrder={false} />
-
-      <Routes>
+      <Introduce />     
+       <Routes>
         {/* דפים ציבוריים */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -99,6 +100,7 @@ export default function App() {
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/content" element={<AdminContent />} />
           <Route path="/admin/messages" element={<AdminMessages />} />
+          <Route path="/admin/reviews" element={<AdminReviews />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
       </Routes>

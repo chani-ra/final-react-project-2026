@@ -3,6 +3,7 @@ import {
   getMyMessages,
   markMessageAsRead,
 } from "../../../services/messageService";
+import SmartGuideBackButton from "../../../components/ui/SmartGuideBackButton";
 
 export default function MyMessages() {
   const [messages, setMessages] = useState([]);
@@ -13,7 +14,6 @@ export default function MyMessages() {
   const [actionLoadingId, setActionLoadingId] = useState("");
   const [messageState, setMessageState] = useState({ type: "", text: "" });
 
-  // טעינת הודעות המשתמש המחובר
   const loadMessages = async () => {
     try {
       setLoading(true);
@@ -42,6 +42,10 @@ export default function MyMessages() {
     return messages.filter((message) => !message.isRead).length;
   }, [messages]);
 
+  const readCount = useMemo(() => {
+    return messages.filter((message) => message.isRead).length;
+  }, [messages]);
+
   const filteredMessages = useMemo(() => {
     if (filter === "unread") {
       return messages.filter((message) => !message.isRead);
@@ -54,7 +58,6 @@ export default function MyMessages() {
     return messages;
   }, [messages, filter]);
 
-  // פתיחת הודעה וסימון אוטומטי כנקראה
   const handleOpenMessage = async (message) => {
     setActiveMessage(message);
 
@@ -69,9 +72,7 @@ export default function MyMessages() {
 
       setMessages((prev) =>
         prev.map((item) =>
-          item._id === message._id
-            ? { ...item, isRead: true, readAt }
-            : item
+          item._id === message._id ? { ...item, isRead: true, readAt } : item
         )
       );
 
@@ -81,7 +82,6 @@ export default function MyMessages() {
           : prev
       );
 
-      // עדכון מיידי לפעמון בנבבר
       window.dispatchEvent(new Event("messages-updated"));
     } catch (error) {
       setMessageState({ type: "error", text: error.toString() });
@@ -91,29 +91,53 @@ export default function MyMessages() {
   };
 
   return (
-    <div className="space-y-6" dir="rtl">
-      <section className="bg-white/5 border border-white/10 rounded-3xl p-8">
-        <div className="flex flex-col md:flex-row justify-between gap-5">
-          <div>
-            <h1 className="text-3xl font-black text-white">💬 ההודעות שלי</h1>
+    <div className="space-y-5" dir="rtl">
+      <SmartGuideBackButton />
 
-            <p className="text-gray-400 mt-2">
-              כאן מופיעות הודעות מערכת שנשלחו אלייך על ידי מנהל האתר.
+      <section
+        className="relative overflow-hidden rounded-[2.2rem] border-2 border-white/25 bg-slate-950/65 p-5 text-white backdrop-blur-xl md:p-6"
+        style={{
+          boxShadow:
+            "0 32px 95px rgba(3,31,61,0.42), inset 0 1px 0 rgba(255,255,255,0.14)",
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
+
+        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="mb-3 inline-flex rounded-full border border-yellow-300/45 bg-yellow-300/15 px-4 py-2 text-sm font-black text-yellow-100">
+              מרכז הודעות
+            </div>
+
+            <h1
+              className="text-3xl font-black leading-tight text-white md:text-4xl"
+              style={{
+                textShadow:
+                  "3px 3px 0 rgba(184,50,42,0.45), -1px -1px 0 rgba(15,76,117,0.90)",
+              }}
+            >
+              ההודעות שלי
+            </h1>
+
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-7 text-white/68">
+              כאן מופיעות הודעות מערכת, עדכונים ופידבקים שנשלחו אלייך.
             </p>
           </div>
 
-          <div className="bg-yellow-400 text-slate-950 rounded-2xl px-6 py-4 h-fit font-black">
-            {unreadCount} הודעות שלא נקראו
+          <div className="grid grid-cols-3 gap-3 lg:min-w-[330px]">
+            <StatBox label="סה״כ" value={messages.length} tone="yellow" />
+            <StatBox label="חדשות" value={unreadCount} tone="red" />
+            <StatBox label="נקראו" value={readCount} tone="green" />
           </div>
         </div>
       </section>
 
       {messageState.text && (
         <div
-          className={`p-4 rounded-2xl font-bold ${
+          className={`rounded-[1.5rem] border-2 px-5 py-3 text-sm font-black ${
             messageState.type === "success"
-              ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
-              : "bg-red-500/10 border border-red-500/30 text-red-400"
+              ? "border-emerald-300/35 bg-emerald-400/15 text-emerald-100"
+              : "border-red-300/35 bg-red-500/15 text-red-100"
           }`}
         >
           {messageState.text}
@@ -121,97 +145,67 @@ export default function MyMessages() {
       )}
 
       {loading ? (
-        <div className="min-h-[50vh] flex items-center justify-center text-white font-bold text-xl">
-          <div className="animate-pulse">טוען הודעות... 💬</div>
-        </div>
+        <LoadingState />
       ) : messages.length === 0 ? (
         <EmptyMessages />
       ) : (
-        <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <aside className="xl:col-span-1 bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
-            <div className="p-4 border-b border-white/10 flex gap-2 overflow-x-auto">
-              <FilterButton
-                label="הכל"
-                isActive={filter === "all"}
-                onClick={() => setFilter("all")}
-              />
+        <section className="grid grid-cols-1 gap-5 xl:grid-cols-[360px_1fr]">
+          <aside
+            className="relative overflow-hidden rounded-[2rem] border-2 border-white/20 bg-slate-950/55 text-white backdrop-blur-xl"
+            style={{
+              boxShadow:
+                "0 24px 75px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
+            }}
+          >
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
 
-              <FilterButton
-                label="לא נקראו"
-                isActive={filter === "unread"}
-                onClick={() => setFilter("unread")}
-              />
+            <div className="relative z-10">
+              <div className="flex gap-2 border-b border-white/10 p-4">
+                <FilterButton
+                  label="הכל"
+                  isActive={filter === "all"}
+                  onClick={() => setFilter("all")}
+                />
 
-              <FilterButton
-                label="נקראו"
-                isActive={filter === "read"}
-                onClick={() => setFilter("read")}
-              />
-            </div>
+                <FilterButton
+                  label="לא נקראו"
+                  isActive={filter === "unread"}
+                  onClick={() => setFilter("unread")}
+                />
 
-            <div className="max-h-[650px] overflow-y-auto">
-              {filteredMessages.length === 0 ? (
-                <div className="p-8 text-center text-gray-400">
-                  אין הודעות מתאימות לסינון הזה.
-                </div>
-              ) : (
-                filteredMessages.map((message) => (
-                  <button
-                    key={message._id}
-                    type="button"
-                    onClick={() => handleOpenMessage(message)}
-                    className={`w-full text-right p-5 border-b border-white/5 hover:bg-white/5 transition-all ${
-                      activeMessage?._id === message._id
-                        ? "bg-yellow-400/10"
-                        : "bg-transparent"
-                    }`}
-                  >
-                    <div className="flex justify-between items-start gap-3">
-                      <div className="min-w-0">
-                        <h3
-                          className={`font-black truncate ${
-                            message.isRead ? "text-gray-300" : "text-white"
-                          }`}
-                        >
-                          {message.title}
-                        </h3>
+                <FilterButton
+                  label="נקראו"
+                  isActive={filter === "read"}
+                  onClick={() => setFilter("read")}
+                />
+              </div>
 
-                        <p className="text-gray-400 text-sm mt-1 line-clamp-2">
-                          {message.body}
-                        </p>
-                      </div>
-
-                      {!message.isRead && (
-                        <span className="w-3 h-3 bg-yellow-400 rounded-full mt-1 shrink-0" />
-                      )}
-                    </div>
-
-                    <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
-                      <span>{getPriorityLabel(message.priority)}</span>
-                      <span>{formatDate(message.createdAt)}</span>
-                    </div>
-
-                    {actionLoadingId === message._id && (
-                      <div className="text-xs text-yellow-400 mt-2">
-                        מסמן כנקרא...
-                      </div>
-                    )}
-                  </button>
-                ))
-              )}
+              <div className="max-h-[560px] overflow-y-auto">
+                {filteredMessages.length === 0 ? (
+                  <div className="p-8 text-center text-sm font-semibold leading-7 text-white/55">
+                    אין הודעות מתאימות לסינון הזה.
+                  </div>
+                ) : (
+                  filteredMessages.map((message) => (
+                    <MessageListItem
+                      key={message._id}
+                      message={message}
+                      isActive={activeMessage?._id === message._id}
+                      isLoading={actionLoadingId === message._id}
+                      onClick={() => handleOpenMessage(message)}
+                    />
+                  ))
+                )}
+              </div>
             </div>
           </aside>
 
-          <main className="xl:col-span-2">
+          <main>
             {!activeMessage ? (
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-12 text-center">
-                <div className="text-6xl mb-4">📨</div>
+              <div className="rounded-[2rem] border-2 border-dashed border-white/20 bg-slate-950/55 p-10 text-center text-white">
+                <h2 className="text-2xl font-black">בחרי הודעה מהרשימה</h2>
 
-                <h2 className="text-2xl font-black mb-2">
-                  בחרי הודעה מהרשימה
-                </h2>
-
-                <p className="text-gray-400">
+                <p className="mt-3 text-sm font-semibold leading-7 text-white/60">
                   תוכן ההודעה יוצג כאן בצורה מלאה.
                 </p>
               </div>
@@ -225,54 +219,136 @@ export default function MyMessages() {
   );
 }
 
-function MessageDetails({ message }) {
+function MessageListItem({ message, isActive, isLoading, onClick }) {
   return (
-    <article className="bg-white/5 border border-white/10 rounded-3xl p-8">
-      <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-        <div>
-          <div className="flex flex-wrap gap-2 mb-4">
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-black border ${getPriorityClass(
-                message.priority
-              )}`}
-            >
-              {getPriorityLabel(message.priority)}
-            </span>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full border-b border-white/8 p-4 text-right transition ${
+        isActive
+          ? "bg-yellow-300/15"
+          : message.isRead
+          ? "bg-transparent hover:bg-white/10"
+          : "bg-red-500/10 hover:bg-red-500/15"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3
+            className={`truncate text-base font-black ${
+              message.isRead ? "text-white/78" : "text-white"
+            }`}
+          >
+            {message.title}
+          </h3>
 
-            <span className="bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-3 py-1 rounded-full text-xs font-bold">
-              {getMessageTypeLabel(message.messageType)}
-            </span>
-
-            {message.isRead ? (
-              <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-bold">
-                נקראה
-              </span>
-            ) : (
-              <span className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1 rounded-full text-xs font-bold">
-                חדשה
-              </span>
-            )}
-          </div>
-
-          <h2 className="text-3xl font-black text-white">{message.title}</h2>
-
-          <p className="text-gray-500 text-sm mt-2">
-            מאת: {message.sender?.username || "מנהל האתר"} ·{" "}
-            {formatDate(message.createdAt)}
+          <p className="mt-1 line-clamp-2 text-sm font-semibold leading-6 text-white/50">
+            {message.body}
           </p>
         </div>
+
+        {!message.isRead && (
+          <span className="mt-1 h-3 w-3 shrink-0 rounded-full bg-yellow-300 shadow-[0_0_14px_rgba(253,224,71,0.55)]" />
+        )}
       </div>
 
-      <div className="bg-slate-950/70 border border-white/10 rounded-3xl p-6 text-gray-200 leading-relaxed whitespace-pre-line">
-        {message.body}
+      <div className="mt-3 flex items-center justify-between gap-3 text-xs font-black text-white/38">
+        <span className={getPriorityTextColor(message.priority)}>
+          {getPriorityLabel(message.priority)}
+        </span>
+
+        <span>{formatDate(message.createdAt)}</span>
       </div>
 
-      {message.readAt && (
-        <p className="text-gray-500 text-sm mt-4">
-          נקראה בתאריך: {formatDate(message.readAt)}
-        </p>
+      {isLoading && (
+        <div className="mt-2 inline-flex items-center gap-2 text-xs font-black text-yellow-100">
+          <SmallSpinner />
+          מסמן כנקרא...
+        </div>
       )}
+    </button>
+  );
+}
+
+function MessageDetails({ message }) {
+  return (
+    <article
+      className="relative overflow-hidden rounded-[2rem] border-2 border-white/20 bg-slate-950/55 p-5 text-white backdrop-blur-xl md:p-6"
+      style={{
+        boxShadow:
+          "0 24px 75px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
+
+      <div className="relative z-10">
+        <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <div className="mb-4 flex flex-wrap gap-2">
+              <span
+                className={`rounded-full border px-3 py-1 text-xs font-black ${getPriorityClass(
+                  message.priority
+                )}`}
+              >
+                {getPriorityLabel(message.priority)}
+              </span>
+
+              <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-xs font-black text-white/65">
+                {getMessageTypeLabel(message.messageType)}
+              </span>
+
+              {message.isRead ? (
+                <span className="rounded-full border border-emerald-300/35 bg-emerald-300/12 px-3 py-1 text-xs font-black text-emerald-100">
+                  נקראה
+                </span>
+              ) : (
+                <span className="rounded-full border border-yellow-300/35 bg-yellow-300/15 px-3 py-1 text-xs font-black text-yellow-100">
+                  חדשה
+                </span>
+              )}
+            </div>
+
+            <h2 className="text-3xl font-black leading-tight text-white">
+              {message.title}
+            </h2>
+
+            <p className="mt-2 text-sm font-bold text-white/45">
+              מאת: {message.sender?.username || "מנהל האתר"} ·{" "}
+              {formatDate(message.createdAt)}
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-[1.6rem] border border-white/12 bg-slate-950/70 p-5 text-base font-semibold leading-8 text-white/75 whitespace-pre-line">
+          {message.body}
+        </div>
+
+        {message.readAt && (
+          <p className="mt-4 text-sm font-bold text-white/40">
+            נקראה בתאריך: {formatDate(message.readAt)}
+          </p>
+        )}
+      </div>
     </article>
+  );
+}
+
+function StatBox({ label, value, tone }) {
+  const tones = {
+    yellow: "border-yellow-300/35 bg-yellow-300/15 text-yellow-100",
+    green: "border-emerald-300/35 bg-emerald-300/12 text-emerald-100",
+    red: "border-red-300/35 bg-red-500/15 text-red-100",
+  };
+
+  return (
+    <div
+      className={`rounded-[1.35rem] border-2 p-3 text-center ${
+        tones[tone] || tones.yellow
+      }`}
+    >
+      <div className="text-2xl font-black">{value}</div>
+      <div className="mt-1 text-xs font-black opacity-75">{label}</div>
+    </div>
   );
 }
 
@@ -281,10 +357,10 @@ function FilterButton({ label, isActive, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`shrink-0 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+      className={`shrink-0 rounded-full border-2 px-4 py-2 text-xs font-black transition ${
         isActive
-          ? "bg-yellow-400 text-slate-950"
-          : "bg-slate-950/60 text-gray-300 hover:bg-white/10"
+          ? "border-yellow-300 bg-yellow-300 text-slate-950 shadow-[0_0_20px_rgba(253,224,71,0.24)]"
+          : "border-white/16 bg-white/10 text-white hover:border-yellow-300/45 hover:bg-white/16"
       }`}
     >
       {label}
@@ -294,13 +370,33 @@ function FilterButton({ label, isActive, onClick }) {
 
 function EmptyMessages() {
   return (
-    <div className="bg-white/5 border border-dashed border-white/10 rounded-3xl p-14 text-center">
-      <div className="text-6xl mb-4">📭</div>
+    <div className="rounded-[2rem] border-2 border-dashed border-white/20 bg-slate-950/55 p-10 text-center text-white">
+      <h2 className="text-2xl font-black">אין הודעות עדיין</h2>
 
-      <h2 className="text-2xl font-black mb-2">אין הודעות עדיין</h2>
-
-      <p className="text-gray-400">כשהמנהל ישלח הודעה, היא תופיע כאן.</p>
+      <p className="mt-3 text-sm font-semibold leading-7 text-white/60">
+        כשהמנהל ישלח הודעה, היא תופיע כאן.
+      </p>
     </div>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="flex min-h-[300px] items-center justify-center">
+      <div className="text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-white/18 bg-white/10">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-yellow-300" />
+        </div>
+
+        <p className="mt-4 text-base font-black text-white">טוען הודעות...</p>
+      </div>
+    </div>
+  );
+}
+
+function SmallSpinner() {
+  return (
+    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-yellow-300" />
   );
 }
 
@@ -316,9 +412,19 @@ function getPriorityLabel(priority) {
 
 function getPriorityClass(priority) {
   const classes = {
-    low: "bg-white/10 text-gray-300 border-white/10",
-    normal: "bg-indigo-500/10 text-indigo-300 border-indigo-500/20",
-    high: "bg-red-500/10 text-red-300 border-red-500/20",
+    low: "border-white/16 bg-white/10 text-white/65",
+    normal: "border-yellow-300/35 bg-yellow-300/15 text-yellow-100",
+    high: "border-red-300/35 bg-red-500/15 text-red-100",
+  };
+
+  return classes[priority] || classes.normal;
+}
+
+function getPriorityTextColor(priority) {
+  const classes = {
+    low: "text-white/42",
+    normal: "text-yellow-100",
+    high: "text-red-100",
   };
 
   return classes[priority] || classes.normal;

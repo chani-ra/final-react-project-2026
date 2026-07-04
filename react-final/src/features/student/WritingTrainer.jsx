@@ -99,186 +99,263 @@ export default function WritingTrainer() {
   };
 
   return (
-    <div className="space-y-7" dir="rtl">
+    <div className="space-y-5" dir="rtl">
       <SmartGuideBackButton />
 
-      <section className="bg-white/5 border border-white/10 rounded-3xl p-7">
-        <div className="flex flex-col lg:flex-row justify-between gap-6">
+      <section
+        className="relative overflow-hidden rounded-[2.2rem] border-2 border-white/25 bg-slate-950/65 p-5 text-white backdrop-blur-xl md:p-6"
+        style={{
+          boxShadow:
+            "0 32px 95px rgba(3,31,61,0.42), inset 0 1px 0 rgba(255,255,255,0.14)",
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
+
+        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 px-3 py-1 rounded-full text-xs font-black mb-3">
-              ✍️ Writing Trainer
+            <div className="mb-3 inline-flex rounded-full border border-yellow-300/45 bg-yellow-300/15 px-4 py-2 text-sm font-black text-yellow-100">
+              writing trainer
             </div>
 
-            <h1 className="text-3xl font-black text-white">
+            <h1
+              className="text-3xl font-black leading-tight text-white md:text-4xl"
+              style={{
+                textShadow:
+                  "3px 3px 0 rgba(184,50,42,0.45), -1px -1px 0 rgba(15,76,117,0.90)",
+              }}
+            >
               מאמן כתיבה באנגלית
             </h1>
 
-            <p className="text-gray-400 mt-2 max-w-2xl leading-relaxed">
-              כתבי פסקה באנגלית, והמערכת תיתן לך ציון, משוב ותיקונים נקודתיים
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-7 text-white/68">
+              כתבי פסקה באנגלית, והמערכת תיתן ציון, משוב ותיקונים נקודתיים
               כדי שתדעי בדיוק מה לשפר.
             </p>
           </div>
 
-          <div className="bg-yellow-400 text-slate-950 px-5 py-4 rounded-2xl font-black h-fit">
-            רמה: {getLevelLabel(studentLevel)}
+          <div className="grid grid-cols-2 gap-3 lg:min-w-[260px]">
+            <StatBox label="רמה" value={getLevelLabel(studentLevel)} tone="yellow" />
+            <StatBox label="מילים" value={wordCount} tone="red" />
           </div>
         </div>
       </section>
 
       {message.text && (
         <div
-          className={`p-4 rounded-2xl font-bold ${
+          className={`rounded-[1.5rem] border-2 px-5 py-3 text-sm font-black ${
             message.type === "success"
-              ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
-              : "bg-red-500/10 border border-red-500/30 text-red-400"
+              ? "border-emerald-300/35 bg-emerald-400/15 text-emerald-100"
+              : "border-red-300/35 bg-red-500/15 text-red-100"
           }`}
         >
           {message.text}
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-7">
-        <section className="xl:col-span-2 bg-slate-900/50 border border-white/10 rounded-3xl p-6">
-          <div className="flex flex-col md:flex-row justify-between gap-4 mb-5">
-            <div>
-              <h2 className="text-xl font-black text-white">
-                כתבי כאן את הפסקה שלך
-              </h2>
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_320px]">
+        <section
+          className="relative overflow-hidden rounded-[2rem] border-2 border-white/20 bg-slate-950/55 p-5 text-white backdrop-blur-xl"
+          style={{
+            boxShadow:
+              "0 24px 75px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
+          }}
+        >
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/8 to-transparent" />
 
-              <p className="text-gray-400 text-sm mt-1">
-                אפשר לכתוב חופשי. הכי טוב להתחיל מ־3–6 משפטים פשוטים.
-              </p>
+          <div className="relative z-10">
+            <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h2 className="text-2xl font-black text-white">
+                  כתבי כאן את הפסקה שלך
+                </h2>
+
+                <p className="mt-1 text-sm font-semibold leading-6 text-white/55">
+                  מומלץ להתחיל מ־3 עד 6 משפטים פשוטים וברורים.
+                </p>
+              </div>
+
+              <div className="rounded-full border border-yellow-300/35 bg-yellow-300/15 px-4 py-2 text-sm font-black text-yellow-100">
+                {wordCount} מילים
+              </div>
             </div>
 
-            <div className="bg-slate-950/60 border border-white/10 rounded-xl px-4 py-2 text-sm font-bold text-gray-300 h-fit">
-              {wordCount} מילים
+            <textarea
+              value={essay}
+              onChange={(e) => setEssay(e.target.value)}
+              rows="9"
+              dir="ltr"
+              placeholder="Example: Today I learned new English words. I want to speak better and feel more confident..."
+              className="w-full resize-none rounded-[1.5rem] border-2 border-white/18 bg-slate-950/70 p-5 text-base font-semibold leading-8 text-white outline-none transition placeholder:text-white/30 focus:border-yellow-300/70 focus:bg-slate-950/80"
+            />
+
+            <div className="mt-4 flex flex-col gap-3 md:flex-row">
+              <button
+                type="button"
+                onClick={handleCheckEssay}
+                disabled={checking || !essay.trim()}
+                className="flex-1 rounded-full border-2 border-white/50 bg-gradient-to-b from-red-400 to-red-700 px-7 py-3.5 text-sm font-black text-white transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 disabled:cursor-not-allowed disabled:opacity-50"
+                style={{
+                  boxShadow:
+                    checking || !essay.trim()
+                      ? "none"
+                      : "0 7px 0 rgba(89,15,20,0.42)",
+                }}
+              >
+                {checking ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <SmallSpinner />
+                    בודק כתיבה...
+                  </span>
+                ) : (
+                  "בדיקת כתיבה"
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleClear}
+                disabled={checking}
+                className="rounded-full border-2 border-white/18 bg-white/10 px-7 py-3.5 text-sm font-black text-white transition hover:bg-white/16 disabled:opacity-60"
+              >
+                ניקוי
+              </button>
             </div>
-          </div>
-
-          <textarea
-            value={essay}
-            onChange={(e) => setEssay(e.target.value)}
-            rows="12"
-            dir="ltr"
-            placeholder="Example: Today I learned new English words. I want to speak better and feel more confident..."
-            className="w-full bg-slate-950 border border-white/10 rounded-2xl p-5 text-white placeholder:text-gray-500 outline-none focus:border-yellow-400 resize-none leading-relaxed"
-          />
-
-          <div className="flex flex-col md:flex-row gap-3 mt-5">
-            <button
-              type="button"
-              onClick={handleCheckEssay}
-              disabled={checking || !essay.trim()}
-              className="flex-1 bg-yellow-400 hover:bg-yellow-300 disabled:bg-yellow-400/50 text-slate-950 font-black py-3 rounded-xl transition-all"
-            >
-              {checking ? "בודק כתיבה..." : "בדקי לי את הכתיבה ✨"}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleClear}
-              disabled={checking}
-              className="bg-white/10 hover:bg-white/20 disabled:opacity-60 text-white font-black py-3 px-6 rounded-xl transition-all"
-            >
-              ניקוי
-            </button>
           </div>
         </section>
 
         <aside className="space-y-5">
-          <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="text-xl font-black text-white mb-2">
-              רעיונות לכתיבה
-            </h2>
+          <section
+            className="relative overflow-hidden rounded-[2rem] border-2 border-white/20 bg-slate-950/55 p-5 text-white backdrop-blur-xl"
+            style={{
+              boxShadow:
+                "0 24px 75px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
+            }}
+          >
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/8 to-transparent" />
 
-            <p className="text-gray-400 text-sm mb-4">
-              לחצי על נושא כדי להתחיל מהר.
-            </p>
+            <div className="relative z-10">
+              <h2 className="text-xl font-black text-white">רעיונות לכתיבה</h2>
 
-            <div className="space-y-3">
-              {SAMPLE_PROMPTS.map((prompt) => (
-                <button
-                  key={prompt.title}
-                  type="button"
-                  onClick={() => handlePromptClick(prompt.text)}
-                  className="w-full text-right bg-slate-950/60 hover:bg-slate-950 border border-white/10 rounded-2xl p-4 transition-all"
-                >
-                  <div className="font-black text-yellow-400">
-                    {prompt.title}
-                  </div>
+              <p className="mt-1 text-sm font-semibold leading-6 text-white/55">
+                לחצי על נושא כדי להתחיל מהר.
+              </p>
 
-                  <div className="text-xs text-gray-400 mt-1" dir="ltr">
-                    {prompt.text}
-                  </div>
-                </button>
-              ))}
+              <div className="mt-4 space-y-3">
+                {SAMPLE_PROMPTS.map((prompt) => (
+                  <button
+                    key={prompt.title}
+                    type="button"
+                    onClick={() => handlePromptClick(prompt.text)}
+                    className="w-full rounded-[1.4rem] border-2 border-white/14 bg-white/10 p-4 text-right transition hover:border-yellow-300/45 hover:bg-white/16"
+                  >
+                    <div className="font-black text-yellow-300">
+                      {prompt.title}
+                    </div>
+
+                    <div
+                      className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-white/50"
+                      dir="ltr"
+                    >
+                      {prompt.text}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </section>
 
-          <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="font-black text-white mb-2">טיפ כתיבה</h2>
+          <section className="rounded-[2rem] border-2 border-red-300/30 bg-red-500/12 p-5 text-white">
+            <h2 className="text-lg font-black text-red-100">טיפ כתיבה</h2>
 
-            <p className="text-gray-400 text-sm leading-relaxed">
-              אל תנסי לכתוב מושלם. כתבי פשוט וברור. אחר כך תני למערכת להראות
-              לך איך לשפר.
+            <p className="mt-2 text-sm font-semibold leading-7 text-white/65">
+              לא צריך לכתוב מושלם מהתחלה. כתבי פשוט, בדקי, ואז שפרי לפי
+              התיקונים.
             </p>
           </section>
         </aside>
       </div>
 
-      {result && (
-        <section className="bg-white/5 border border-white/10 rounded-3xl p-7">
-          <div className="flex flex-col lg:flex-row justify-between gap-6 mb-6">
-            <div>
-              <h2 className="text-2xl font-black text-white">
-                תוצאות בדיקת הכתיבה
-              </h2>
+      {checking && (
+        <section
+          className="relative overflow-hidden rounded-[2rem] border-2 border-yellow-300/35 bg-slate-950/65 p-7 text-center text-white backdrop-blur-xl"
+          style={{
+            boxShadow:
+              "0 24px 75px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
+          }}
+        >
+          <LoadingCircle />
 
-              <p className="text-gray-400 text-sm mt-1">
-                הנה המשוב שהתקבל על הפסקה שלך.
+          <h2 className="mt-5 text-2xl font-black">בודק את הכתיבה שלך</h2>
+
+          <p className="mt-2 text-sm font-semibold leading-7 text-white/60">
+            המערכת מחפשת נקודות חזקות, טעויות לשיפור ותיקונים מתאימים.
+          </p>
+        </section>
+      )}
+
+      {result && !checking && (
+        <section
+          className="relative overflow-hidden rounded-[2rem] border-2 border-white/20 bg-slate-950/55 p-5 text-white backdrop-blur-xl md:p-6"
+          style={{
+            boxShadow:
+              "0 24px 75px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
+          }}
+        >
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/8 to-transparent" />
+
+          <div className="relative z-10">
+            <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-2xl font-black text-white">
+                  תוצאות בדיקת הכתיבה
+                </h2>
+
+                <p className="mt-1 text-sm font-semibold text-white/55">
+                  הנה המשוב שהתקבל על הפסקה שלך.
+                </p>
+              </div>
+
+              <div
+                className={`flex h-24 w-24 flex-col items-center justify-center rounded-[1.7rem] border-2 ${scoreStyle.box}`}
+              >
+                <div className={`text-3xl font-black ${scoreStyle.text}`}>
+                  {result.score}
+                </div>
+
+                <div className="text-xs font-black text-white/45">ציון</div>
+              </div>
+            </div>
+
+            <div className="mb-5 rounded-[1.6rem] border border-yellow-300/25 bg-yellow-300/12 p-5">
+              <div className="mb-2 text-sm font-black text-yellow-100">
+                משוב כללי
+              </div>
+
+              <p className="text-base font-semibold leading-8 text-white/75">
+                {result.generalFeedback}
               </p>
             </div>
 
-            <div
-              className={`w-24 h-24 rounded-3xl flex flex-col items-center justify-center border ${scoreStyle.box}`}
-            >
-              <div className={`text-3xl font-black ${scoreStyle.text}`}>
-                {result.score}
-              </div>
+            <div>
+              <h3 className="mb-4 text-xl font-black text-white">
+                תיקונים והסברים
+              </h3>
 
-              <div className="text-xs text-gray-400">ציון</div>
+              {result.grammarCorrections.length === 0 ? (
+                <div className="rounded-[1.6rem] border-2 border-emerald-300/30 bg-emerald-400/12 p-5 text-sm font-black text-emerald-100">
+                  לא נמצאו תיקונים מיוחדים. יפה מאוד!
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {result.grammarCorrections.map((item, index) => (
+                    <CorrectionCard
+                      key={`${item.mistake || "mistake"}-${index}`}
+                      item={item}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-
-          <div className="bg-slate-950/60 border border-white/10 rounded-3xl p-5 mb-5">
-            <div className="text-sm font-black text-yellow-400 mb-2">
-              משוב כללי
-            </div>
-
-            <p className="text-gray-300 leading-relaxed">
-              {result.generalFeedback}
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-black text-white mb-4">
-              תיקונים והסברים
-            </h3>
-
-            {result.grammarCorrections.length === 0 ? (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 rounded-2xl p-5 font-bold">
-                לא נמצאו תיקונים מיוחדים. יפה מאוד!
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {result.grammarCorrections.map((item, index) => (
-                  <CorrectionCard
-                    key={`${item.mistake || "mistake"}-${index}`}
-                    item={item}
-                  />
-                ))}
-              </div>
-            )}
           </div>
         </section>
       )}
@@ -288,13 +365,13 @@ export default function WritingTrainer() {
 
 function CorrectionCard({ item }) {
   return (
-    <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-5">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+    <div className="rounded-[1.6rem] border-2 border-white/16 bg-white/10 p-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
-          <div className="text-xs font-black text-red-300 mb-1">לפני</div>
+          <div className="mb-1 text-xs font-black text-red-100">לפני</div>
 
           <div
-            className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-200"
+            className="rounded-[1.2rem] border border-red-300/28 bg-red-500/12 p-3 text-sm font-semibold leading-6 text-red-100"
             dir="ltr"
           >
             {item.mistake || "—"}
@@ -302,10 +379,10 @@ function CorrectionCard({ item }) {
         </div>
 
         <div>
-          <div className="text-xs font-black text-emerald-300 mb-1">אחרי</div>
+          <div className="mb-1 text-xs font-black text-emerald-100">אחרי</div>
 
           <div
-            className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 text-emerald-200"
+            className="rounded-[1.2rem] border border-emerald-300/28 bg-emerald-400/12 p-3 text-sm font-semibold leading-6 text-emerald-100"
             dir="ltr"
           >
             {item.correction || "—"}
@@ -314,7 +391,7 @@ function CorrectionCard({ item }) {
       </div>
 
       {item.explanation && (
-        <p className="text-sm text-gray-400 leading-relaxed">
+        <p className="mt-3 text-sm font-semibold leading-7 text-white/58">
           {item.explanation}
         </p>
       )}
@@ -322,24 +399,56 @@ function CorrectionCard({ item }) {
   );
 }
 
+function StatBox({ label, value, tone }) {
+  const tones = {
+    yellow: "border-yellow-300/35 bg-yellow-300/15 text-yellow-100",
+    red: "border-red-300/35 bg-red-500/15 text-red-100",
+  };
+
+  return (
+    <div
+      className={`rounded-[1.35rem] border-2 p-3 text-center ${
+        tones[tone] || tones.yellow
+      }`}
+    >
+      <div className="text-xl font-black">{value}</div>
+      <div className="mt-1 text-xs font-black opacity-75">{label}</div>
+    </div>
+  );
+}
+
+function LoadingCircle() {
+  return (
+    <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full border-2 border-white/18 bg-white/10">
+      <div className="h-11 w-11 animate-spin rounded-full border-4 border-white/20 border-t-yellow-300" />
+    </div>
+  );
+}
+
+function SmallSpinner() {
+  return (
+    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-yellow-300" />
+  );
+}
+
 function getScoreStyle(score = 0) {
   if (score >= 85) {
     return {
-      text: "text-emerald-400",
-      box: "bg-emerald-500/10 border-emerald-500/30",
+      text: "text-emerald-100",
+      box: "border-emerald-300/35 bg-emerald-300/12",
     };
   }
 
   if (score >= 65) {
     return {
-      text: "text-yellow-400",
-      box: "bg-yellow-500/10 border-yellow-500/30",
+      text: "text-yellow-100",
+      box: "border-yellow-300/35 bg-yellow-300/15",
     };
   }
 
   return {
-    text: "text-red-400",
-    box: "bg-red-500/10 border-red-500/30",
+    text: "text-red-100",
+    box: "border-red-300/35 bg-red-500/15",
   };
 }
 

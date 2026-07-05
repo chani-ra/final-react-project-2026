@@ -8,8 +8,8 @@ import {
   getChatConversationById,
   getMyChatConversations,
 } from "../../services/chatService";
-import ChatSidebar from "./components/chat/ChatSidebar";
 import SmartGuideBackButton from "../../components/ui/SmartGuideBackButton";
+import ChatSidebar from "./components/chat/chatSidebar";
 
 export default function Chat() {
   const { user } = useSelector((state) => state.auth);
@@ -126,8 +126,8 @@ export default function Chat() {
     return updatedConversation;
   };
 
-  const handleSend = async (e) => {
-    e.preventDefault();
+  const handleSend = async (event) => {
+    event.preventDefault();
 
     const cleanInput = input.trim();
 
@@ -235,134 +235,180 @@ export default function Chat() {
     <div dir="rtl" className="space-y-5">
       <SmartGuideBackButton />
 
-      <div
-        className={`grid gap-6 h-[calc(100vh-12rem)] ${
-          isSidebarOpen
-            ? "grid-cols-1 xl:grid-cols-[320px_1fr]"
-            : "grid-cols-1"
-        }`}
+      <section
+        className="relative overflow-hidden rounded-[2.2rem] border-2 border-white/25 bg-slate-950/65 p-4 text-white backdrop-blur-xl md:p-5"
+        style={{
+          boxShadow:
+            "0 32px 95px rgba(3,31,61,0.42), inset 0 1px 0 rgba(255,255,255,0.14)",
+        }}
       >
-        <ChatSidebar
-          isOpen={isSidebarOpen}
-          conversations={conversations}
-          activeConversationId={activeConversationId}
-          loadingConversations={loadingConversations}
-          loadingConversationId={loadingConversationId}
-          onNewConversation={handleNewConversation}
-          onOpenConversation={handleOpenConversation}
-          onDeleteConversation={handleDeleteConversation}
-          onCloseSidebar={() => setIsSidebarOpen(false)}
-        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
 
-        <section className="flex flex-col bg-white/5 border border-white/10 rounded-3xl overflow-hidden shadow-xl">
-          <div className="bg-slate-900/80 p-4 border-b border-white/10 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              {!isSidebarOpen && (
-                <button
-                  type="button"
-                  onClick={() => setIsSidebarOpen(true)}
-                  className="bg-white/10 hover:bg-white/20 text-white px-4 py-3 rounded-xl font-black transition-all"
-                  title="פתח היסטוריית שיחות"
-                >
-                  ☰
-                </button>
-              )}
-
-              <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-2xl shadow-lg border border-indigo-400">
-                🤖
+        <div className="relative z-10">
+          <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="mb-3 inline-flex rounded-full border border-red-300/35 bg-red-500/15 px-4 py-2 text-sm font-black text-red-100">
+                בולט AI
               </div>
 
-              <div>
-                <h2 className="text-xl font-black">
-                  {activeConversation?.title || "בולט AI"}
-                </h2>
+              <h1
+                className="text-3xl font-black leading-tight text-white md:text-4xl"
+                style={{
+                  textShadow:
+                    "3px 3px 0 rgba(184,50,42,0.45), -1px -1px 0 rgba(15,76,117,0.90)",
+                }}
+              >
+                מאמן אישי לתרגול אנגלית
+              </h1>
 
-                <p className="text-sm text-emerald-400 flex items-center gap-2 font-medium">
-                  <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                  מחובר ל־AI אמיתי ושומר היסטוריית שיחות
-                </p>
-              </div>
+              <p className="mt-2 max-w-3xl text-sm font-semibold leading-7 text-white/68">
+                אפשר לשאול, לתרגל משפטים, לבקש תיקון, ללמוד מילים ולקבל עזרה
+                שמתאימה לרמה שלך.
+              </p>
             </div>
 
-            <div className="hidden md:block bg-yellow-400 text-slate-950 px-4 py-2 rounded-xl text-sm font-black">
+            <div className="rounded-full border border-yellow-300/35 bg-yellow-300/15 px-4 py-2 text-sm font-black text-yellow-100">
               רמה: {getLevelLabel(userLevel)}
             </div>
           </div>
 
-          <div className="bg-slate-950/60 border-b border-white/10 p-4">
-            <p className="text-gray-400 text-sm mb-3">
-              התחילי מהר עם אחת האפשרויות:
-            </p>
+          <div
+            className={`grid gap-4 xl:h-[560px] ${
+              isSidebarOpen
+                ? "grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)]"
+                : "grid-cols-1"
+            }`}
+          >
+            <ChatSidebar
+              isOpen={isSidebarOpen}
+              conversations={conversations}
+              activeConversationId={activeConversationId}
+              loadingConversations={loadingConversations}
+              loadingConversationId={loadingConversationId}
+              onNewConversation={handleNewConversation}
+              onOpenConversation={handleOpenConversation}
+              onDeleteConversation={handleDeleteConversation}
+              onCloseSidebar={() => setIsSidebarOpen(false)}
+            />
 
-            <div className="flex flex-wrap gap-2">
-              <QuickActionButton
-                label="תרגול שיחה"
-                text="I want to practice a simple English conversation. Please ask me one question at a time."
-                onClick={handleQuickAction}
-              />
+            <section
+              className="flex h-[560px] min-h-0 flex-col overflow-hidden rounded-[1.9rem] border-2 border-white/20 bg-slate-950/55 text-white backdrop-blur-xl"
+              style={{
+                boxShadow:
+                  "0 22px 70px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
+              }}
+            >
+              <div className="flex items-center justify-between gap-4 border-b border-white/12 bg-white/10 p-4">
+                <div className="flex items-center gap-3">
+                  {!isSidebarOpen && (
+                    <button
+                      type="button"
+                      onClick={() => setIsSidebarOpen(true)}
+                      className="rounded-full border-2 border-white/20 bg-white/10 px-4 py-2 text-sm font-black text-white transition hover:bg-white/16"
+                    >
+                      תפריט
+                    </button>
+                  )}
 
-              <QuickActionButton
-                label="תקן לי משפט"
-                text="Please correct this sentence and explain the mistake in Hebrew: "
-                onClick={handleQuickAction}
-              />
+                  <div>
+                    <h2 className="text-xl font-black text-white md:text-2xl">
+                      {activeConversation?.title || "שיחה חדשה עם בולט"}
+                    </h2>
 
-              <QuickActionButton
-                label="לימוד מילים"
-                text="Teach me 5 useful English words for my level and ask me to use one in a sentence."
-                onClick={handleQuickAction}
-              />
+                    <p className="mt-1 flex items-center gap-2 text-xs font-bold text-emerald-200/85">
+                      <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_14px_rgba(110,231,183,0.55)]" />
+                      מחובר ושומר היסטוריית שיחות
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-              <QuickActionButton
-                label="שאל אותי שאלה"
-                text="Ask me one easy English question and wait for my answer."
-                onClick={handleQuickAction}
-              />
-            </div>
+              <div className="border-b border-white/12 bg-slate-950/35 p-3">
+                <p className="mb-2 text-xs font-bold text-white/55">
+                  התחלה מהירה:
+                </p>
+
+                <div className="flex flex-wrap gap-2">
+                  <QuickActionButton
+                    label="תרגול שיחה"
+                    text="I want to practice a simple English conversation. Please ask me one question at a time."
+                    onClick={handleQuickAction}
+                  />
+
+                  <QuickActionButton
+                    label="תקן לי משפט"
+                    text="Please correct this sentence and explain the mistake in Hebrew: "
+                    onClick={handleQuickAction}
+                  />
+
+                  <QuickActionButton
+                    label="לימוד מילים"
+                    text="Teach me 5 useful English words for my level and ask me to use one in a sentence."
+                    onClick={handleQuickAction}
+                  />
+
+                  <QuickActionButton
+                    label="שאל אותי שאלה"
+                    text="Ask me one easy English question and wait for my answer."
+                    onClick={handleQuickAction}
+                  />
+                </div>
+              </div>
+
+              {errorMessage && (
+                <div className="border-b border-red-300/25 bg-red-500/15 px-5 py-3 text-sm font-black text-red-100">
+                  {errorMessage}
+                </div>
+              )}
+
+              <div className="flex-1 space-y-4 overflow-y-auto p-4 scroll-smooth">
+                {messages.map((msg) => (
+                  <ChatBubble key={msg.id} message={msg} />
+                ))}
+
+                {isTyping && <TypingBubble />}
+
+                <div ref={messagesEndRef} />
+              </div>
+
+              <div className="border-t border-white/12 bg-white/10 p-4">
+                <form onSubmit={handleSend} className="flex gap-3">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="כתבי כאן..."
+                    className="flex-1 rounded-full border-2 border-white/18 bg-white/10 px-5 py-3.5 text-base font-bold text-white outline-none transition placeholder:text-white/35 focus:border-yellow-300/70 focus:bg-white/15"
+                    dir="auto"
+                    autoComplete="off"
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={!input.trim() || isTyping}
+                    className="rounded-full border-2 border-white/50 bg-gradient-to-b from-red-400 to-red-700 px-7 py-3.5 text-base font-black text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                    style={{
+                      boxShadow:
+                        !input.trim() || isTyping
+                          ? "none"
+                          : "0 6px 0 rgba(89,15,20,0.42)",
+                    }}
+                  >
+                    {isTyping ? (
+                      <span className="inline-flex items-center gap-2">
+                        <SmallSpinner />
+                        שולח
+                      </span>
+                    ) : (
+                      "שלח"
+                    )}
+                  </button>
+                </form>
+              </div>
+            </section>
           </div>
-
-          {errorMessage && (
-            <div className="bg-red-500/10 border-b border-red-500/20 text-red-300 px-5 py-3 text-sm font-bold">
-              {errorMessage}
-            </div>
-          )}
-
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
-            {messages.map((msg) => (
-              <ChatBubble key={msg.id} message={msg} />
-            ))}
-
-            {isTyping && <TypingBubble />}
-
-            <div ref={messagesEndRef} />
-          </div>
-
-          <div className="p-4 bg-slate-900/80 border-t border-white/10">
-            <form onSubmit={handleSend} className="flex gap-4">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="כתבי כאן באנגלית או בעברית..."
-                className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-3 placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:bg-white/15 transition-all text-sm md:text-base"
-                dir="auto"
-                autoComplete="off"
-              />
-
-              <button
-                type="submit"
-                disabled={!input.trim() || isTyping}
-                className="bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-gray-400 disabled:cursor-not-allowed px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg"
-              >
-                <span className="hidden sm:inline">
-                  {isTyping ? "שולח..." : "שלח"}
-                </span>
-                <span className="text-xl">✈️</span>
-              </button>
-            </form>
-          </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </div>
   );
 }
@@ -373,22 +419,22 @@ function ChatBubble({ message }) {
   return (
     <div className={`flex ${isUser ? "justify-start" : "justify-end"}`}>
       <div
-        className={`max-w-[85%] md:max-w-[65%] p-4 rounded-2xl relative shadow-md ${
+        className={`relative max-w-[88%] rounded-[1.45rem] border-2 p-4 md:max-w-[68%] ${
           isUser
-            ? "bg-yellow-400 text-slate-900 rounded-tr-none"
-            : "bg-slate-800 text-white rounded-tl-none border border-white/10"
+            ? "rounded-tr-sm border-red-300/45 bg-gradient-to-b from-red-400 to-red-700 text-white"
+            : "rounded-tl-sm border-white/18 bg-white/10 text-white"
         }`}
       >
         <p
-          className="font-medium text-sm md:text-base whitespace-pre-wrap leading-relaxed"
+          className="whitespace-pre-wrap text-sm font-semibold leading-7 md:text-base"
           dir="auto"
         >
           {message.text}
         </p>
 
         <span
-          className={`text-[11px] mt-2 block font-bold ${
-            isUser ? "text-slate-700" : "text-gray-400"
+          className={`mt-2 block text-[11px] font-black ${
+            isUser ? "text-white/62" : "text-white/42"
           }`}
         >
           {message.time}
@@ -401,17 +447,17 @@ function ChatBubble({ message }) {
 function TypingBubble() {
   return (
     <div className="flex justify-end">
-      <div className="bg-slate-800 text-white p-5 rounded-2xl rounded-tl-none border border-white/10 flex gap-2 items-center shadow-md">
-        <div
-          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+      <div className="flex items-center gap-2 rounded-[1.45rem] rounded-tl-sm border-2 border-white/18 bg-white/10 p-5 text-white">
+        <span
+          className="h-2 w-2 animate-bounce rounded-full bg-yellow-300"
           style={{ animationDelay: "0ms" }}
         />
-        <div
-          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+        <span
+          className="h-2 w-2 animate-bounce rounded-full bg-yellow-300"
           style={{ animationDelay: "150ms" }}
         />
-        <div
-          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+        <span
+          className="h-2 w-2 animate-bounce rounded-full bg-yellow-300"
           style={{ animationDelay: "300ms" }}
         />
       </div>
@@ -424,18 +470,24 @@ function QuickActionButton({ label, text, onClick }) {
     <button
       type="button"
       onClick={() => onClick(text)}
-      className="bg-white/10 hover:bg-white/20 border border-white/10 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all"
+      className="rounded-full border-2 border-red-300/28 bg-red-500/12 px-4 py-2 text-sm font-black text-red-100 transition hover:border-yellow-300/45 hover:bg-yellow-300/15 hover:text-yellow-100"
     >
       {label}
     </button>
   );
 }
 
+function SmallSpinner() {
+  return (
+    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-yellow-300" />
+  );
+}
+
 function buildWelcomeMessage(user) {
   return {
     id: "welcome-message",
-    text: `היי ${user?.username || user?.name || "תלמידה"}! אני בולט, המאמן האישי שלך לאנגלית. 🤖
-אפשר לכתוב לי באנגלית או בעברית, ואני אעזור לך לתרגל שיחה, להבין מילים, לשפר משפטים ולדבר יותר בביטחון.`,
+    text: `היי ${user?.username || user?.name || "תלמידה"}! אני בולט, המאמן האישי שלך לאנגלית.
+אפשר לכתוב לי באנגלית או בעברית, ואני אעזור לך לתרגל שיחה, להבין מילים, לשפר משפטים ולהתקדם בביטחון.`,
     sender: "ai",
     time: getCurrentTime(),
   };

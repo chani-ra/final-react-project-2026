@@ -1,5 +1,25 @@
 import axiosConfig from "./axiosConfig";
 
+
+export const getAdminDashboardStats = async () => {
+  try {
+    const response = await axiosConfig.get("/admin/stats");
+    return response.data.stats;
+  } catch (error) {
+    throw error.response?.data?.message || "נכשל בטעינת נתוני הדשבורד";
+  }
+};
+
+
+export const updateUserRole = async (userId, role) => {
+  try {
+    const response = await axiosConfig.put(`/users/${userId}/role`, { role });
+    return response.data.user;
+  } catch (error) {
+    throw error.response?.data?.message || "נכשל בעדכון הרשאת המשתמש";
+  }
+
+
 // קבלת כל השירים למנהל
 export const getAllSongsForAdmin = async () => {
   try {

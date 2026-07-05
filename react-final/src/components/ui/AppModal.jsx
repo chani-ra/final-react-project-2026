@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 export default function AppModal({
   isOpen,
@@ -6,11 +7,14 @@ export default function AppModal({
   title,
   subtitle,
   icon,
-  children,
   maxWidth = "max-w-5xl",
+  children,
 }) {
   useEffect(() => {
     if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
     const handleEscape = (event) => {
       if (event.key === "Escape") {
@@ -18,57 +22,52 @@ export default function AppModal({
       }
     };
 
-    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleEscape);
 
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", handleEscape);
     };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[999] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/78 p-3 backdrop-blur-sm md:p-5"
       dir="rtl"
+      onMouseDown={onClose}
     >
-      <button
-        type="button"
-        onClick={onClose}
-        className="absolute inset-0 bg-[#0F4C75]/55 backdrop-blur-sm"
-        aria-label="סגור חלון"
-      />
-
-      <section
-        className={`relative w-full ${maxWidth} max-h-[90vh] overflow-hidden rounded-[2rem] bg-white shadow-2xl border border-white`}
+      <div
+        className={`relative max-h-[92vh] w-full ${maxWidth} overflow-hidden rounded-[2.2rem] border-2 border-white/24 bg-slate-950 text-white shadow-2xl`}
+        style={{
+          boxShadow:
+            "0 34px 110px rgba(0,0,0,0.60), inset 0 1px 0 rgba(255,255,255,0.12)",
+        }}
+        onMouseDown={(event) => event.stopPropagation()}
       >
-        <div className="relative overflow-hidden bg-[#5BBFED] px-6 py-5 text-white">
-          <svg
-            className="absolute inset-0 w-full h-full opacity-25"
-            viewBox="0 0 900 120"
-            preserveAspectRatio="none"
-          >
-            <g fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-              <path d="M0 88 C90 40 160 70 250 35 C335 0 420 50 510 25 C610 -4 680 45 770 20 C835 5 870 22 900 8" />
-              <path d="M0 110 C95 65 155 82 250 55 C350 25 410 75 520 48 C620 25 700 75 795 45 C850 28 875 38 900 26" />
-            </g>
-          </svg>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute -right-24 top-10 h-56 w-56 rounded-full bg-yellow-300/12 blur-3xl" />
+        <div className="pointer-events-none absolute -left-24 bottom-10 h-56 w-56 rounded-full bg-red-500/18 blur-3xl" />
 
-          <div className="relative flex items-start justify-between gap-4">
-            <div className="flex items-center gap-4">
+        <header className="relative z-10 border-b border-white/12 px-5 py-4 md:px-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-3">
               {icon && (
-                <div className="w-14 h-14 rounded-3xl bg-white/22 border border-white/35 flex items-center justify-center shadow-lg">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] border border-yellow-300/35 bg-yellow-300/12 text-yellow-100">
                   {icon}
                 </div>
               )}
 
-              <div>
-                <h2 className="text-2xl md:text-3xl font-black">{title}</h2>
+              <div className="min-w-0">
+                <h2 className="line-clamp-1 text-2xl font-black text-white md:text-3xl">
+                  {title}
+                </h2>
 
                 {subtitle && (
-                  <p className="text-white/85 text-sm mt-1">{subtitle}</p>
+                  <p className="mt-1 line-clamp-1 text-sm font-semibold text-white/52">
+                    {subtitle}
+                  </p>
                 )}
               </div>
             </div>
@@ -76,18 +75,19 @@ export default function AppModal({
             <button
               type="button"
               onClick={onClose}
-              className="w-11 h-11 rounded-2xl bg-white/18 hover:bg-white/28 border border-white/30 flex items-center justify-center text-2xl font-black transition-all"
-              aria-label="סגירה"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-white/16 bg-white/10 text-xl font-black text-white transition hover:border-red-300/45 hover:bg-red-500/20"
+              aria-label="סגירת חלונית"
             >
               ×
             </button>
           </div>
-        </div>
+        </header>
 
-        <div className="max-h-[calc(90vh-96px)] overflow-y-auto bg-[#F3FBFF] p-5 md:p-7">
+        <main className="relative z-10 max-h-[calc(92vh-86px)] overflow-y-auto p-4 md:p-5">
           {children}
-        </div>
-      </section>
-    </div>
+        </main>
+      </div>
+    </div>,
+    document.body
   );
 }

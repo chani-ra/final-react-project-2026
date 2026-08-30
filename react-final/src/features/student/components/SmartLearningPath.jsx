@@ -245,16 +245,19 @@ export default function SmartLearningPath({
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={handleRefreshGuide}
-              disabled={isRefreshing}
-              className="mt-4 w-full rounded-full border-2 border-yellow-300/35 bg-yellow-300/15 px-5 py-3 text-sm font-black text-yellow-100 transition hover:bg-yellow-300/20 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isRefreshing
-                ? "מרעננים את המדריך..."
-                : "רענון המדריך"}
-            </button>
+            {plan.isFallback && (
+              <button
+                type="button"
+                onClick={handleRefreshGuide}
+                disabled={isRefreshing}
+                className="mt-4 w-full rounded-full border-2 border-yellow-300/35 bg-yellow-300/15 px-5 py-3 text-sm font-black text-yellow-100 transition hover:bg-yellow-300/20 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isRefreshing
+                  ? "מנסים שוב..."
+                  : "נסי שוב ליצור מדריך חכם"}
+              </button>
+            )}
+            
           </aside>
 
           <main className="space-y-4">

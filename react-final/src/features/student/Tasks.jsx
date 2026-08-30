@@ -55,6 +55,52 @@ export default function Tasks() {
     return tasks.filter((task) => task.status === activeTab);
   }, [tasks, activeTab]);
 
+  const displayItems = useMemo(() => {
+    const groups = new Map();
+    const items = [];
+
+    filteredTasks.forEach((task) => {
+      const isAiPlanTask =
+        task.source === "ai_coach" ||
+        task.type === "coach_task";
+
+      const groupKey = isAiPlanTask
+        ? task.planGroupId || getLegacyPlanGroupKey(task)
+        : "";
+
+      if (!groupKey) {
+        items.push({
+          kind: "task",
+          key: task._id,
+          task,
+        });
+
+        return;
+      }
+
+      let group = groups.get(groupKey);
+
+      if (!group) {
+        group = {
+          kind: "plan",
+          key: groupKey,
+          title:
+            task.planTitle ||
+            task.coachPlanFocus ||
+            "תוכנית לימוד אישית",
+          tasks: [],
+        };
+
+        groups.set(groupKey, group);
+        items.push(group);
+      }
+
+      group.tasks.push(task);
+    });
+
+    return items;
+  }, [filteredTasks]);
+
   const progressPercent = useMemo(() => {
     if (tasks.length === 0) return 0;
     return Math.round((stats.completed / tasks.length) * 100);
@@ -184,11 +230,10 @@ export default function Tasks() {
 
       {message.text && (
         <div
-          className={`rounded-[1.7rem] border-2 px-5 py-4 text-sm font-black shadow-xl ${
-            message.type === "success"
-              ? "border-emerald-300/35 bg-emerald-400/15 text-emerald-100"
-              : "border-red-300/35 bg-red-500/15 text-red-100"
-          }`}
+          className={`rounded-[1.7rem] border-2 px-5 py-4 text-sm font-black shadow-xl ${message.type === "success"
+            ? "border-emerald-300/35 bg-emerald-400/15 text-emerald-100"
+            : "border-red-300/35 bg-red-500/15 text-red-100"
+            }`}
         >
           {message.text}
         </div>
@@ -229,20 +274,43 @@ export default function Tasks() {
 
           {loading ? (
             <LoadingState />
-          ) : filteredTasks.length === 0 ? (
+          ) : displayItems.length === 0 ? (
             <EmptyTasks activeTab={activeTab} />
           ) : (
             <div className="grid grid-cols-1 gap-4">
-              {filteredTasks.map((task) => (
-                <TaskCard
-                  key={task._id}
-                  task={task}
-                  isLoading={actionLoadingId === task._id}
-                  onComplete={() => handleCompleteTask(task._id)}
-                  onSubmitForReview={() => handleSubmitForReview(task._id)}
-                  onDelete={() => handleDeleteTask(task._id)}
-                />
-              ))}
+              {displayItems.map((item) => {
+                if (item.kind === "plan") {
+                  return (
+                    <PlanTaskGroup
+                      key={item.key}
+                      title={item.title}
+                      tasks={item.tasks}
+                      actionLoadingId={actionLoadingId}
+                      onComplete={handleCompleteTask}
+                      onDelete={handleDeleteTask}
+                    />
+                  );
+                }
+
+                const task = item.task;
+
+                return (
+                  <TaskCard
+                    key={task._id}
+                    task={task}
+                    isLoading={actionLoadingId === task._id}
+                    onComplete={() =>
+                      handleCompleteTask(task._id)
+                    }
+                    onSubmitForReview={() =>
+                      handleSubmitForReview(task._id)
+                    }
+                    onDelete={() =>
+                      handleDeleteTask(task._id)
+                    }
+                  />
+                );
+              })}
             </div>
           )}
         </div>
@@ -250,6 +318,198 @@ export default function Tasks() {
     </div>
   );
 }
+function PlanTaskGroup({
+  title,
+  tasks,
+  actionLoadingId,
+  onComplete,
+  onDelete,
+}) {
+  const firstTask = tasks[0];
+
+  const isSmartGuide =
+    firstTask?.planSource === "smart_guide" ||
+    tasks.some((task) =>
+      task.title?.startsWith("מסלול חכם")
+    );
+
+  const sourceLabel = isSmartGuide
+    ? "המדריך החכם"
+    : "המאמן האישי";
+
+  const totalXP = tasks.reduce(
+    (sum, task) => sum + (task.rewardXP || 0),
+    0
+  );
+
+  return (
+    <section className="overflow-hidden rounded-3xl border border-white/15 bg-white/5">
+      <div className="border-b border-white/10 bg-slate-950/25 p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-3 py-1 text-xs font-black text-yellow-300">
+                {sourceLabel}
+              </span>
+
+              <span className="text-xs text-gray-400">
+                {formatDate(firstTask?.createdAt)}
+              </span>
+            </div>
+
+            <h2 className="mt-3 text-2xl font-black text-white">
+              {title}
+            </h2>
+          </div>
+
+          <div className="text-left">
+            <div className="text-xs font-bold text-gray-400">
+              {tasks.length} שלבים
+            </div>
+
+            <div className="mt-1 text-sm font-black text-yellow-400">
+              +{totalXP} XP
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="divide-y divide-white/10">
+        {tasks.map((task, index) => {
+          const isLoading =
+            actionLoadingId === task._id;
+
+          const smartGuideTitle =
+            task.title?.match(
+              /^מסלול חכם \d+:\s*(.+)$/u
+            )?.[1];
+
+          const isGenericTitle =
+            /^שלב \d+$/u.test(task.title || "") ||
+            /^משימת מאמן \d+$/u.test(
+              task.title || ""
+            ) ||
+            /^משימת Coach \d+$/u.test(
+              task.title || ""
+            );
+
+          const stepTitle =
+            smartGuideTitle ||
+            (isGenericTitle
+              ? `שלב ${index + 1}`
+              : task.title || `שלב ${index + 1}`);
+
+          return (
+            <div
+              key={task._id}
+              className="p-5"
+            >
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div className="flex min-w-0 gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-yellow-400 font-black text-slate-950">
+                    {index + 1}
+                  </div>
+
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-black text-white">
+                      {stepTitle}
+                    </h3>
+
+                    {task.description && (
+                      <p className="mt-2 max-w-4xl text-sm leading-relaxed text-gray-300">
+                        {task.description}
+                      </p>
+                    )}
+
+                    <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+                      <span
+                        className={`rounded-full border px-2.5 py-1 font-black ${getDifficultyColor(
+                          task.difficulty
+                        )}`}
+                      >
+                        {getDifficultyLabel(
+                          task.difficulty
+                        )}
+                      </span>
+
+                      <span className="text-gray-400">
+                        זמן:{" "}
+                        {task.estimatedTime ||
+                          "10 דקות"}
+                      </span>
+
+                      <span className="font-black text-yellow-400">
+                        +{task.rewardXP || 0} XP
+                      </span>
+
+                      {task.dueDate && (
+                        <span className="font-bold text-red-300">
+                          עד:{" "}
+                          {formatDate(task.dueDate)}
+                        </span>
+                      )}
+                    </div>
+
+                    {task.status === "completed" &&
+                      task.feedback && (
+                        <div className="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-300">
+                          <strong>פידבק:</strong>{" "}
+                          {task.feedback}
+                        </div>
+                      )}
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 flex-wrap items-center gap-2 md:flex-col">
+                  {task.status === "pending" && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onComplete(task._id)
+                        }
+                        disabled={isLoading}
+                        className="rounded-xl bg-yellow-500 px-5 py-2.5 text-sm font-black text-slate-900 transition hover:bg-yellow-400 disabled:opacity-60"
+                      >
+                        {isLoading
+                          ? "מסמן..."
+                          : "סמני כבוצע ✓"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onDelete(task._id)
+                        }
+                        disabled={isLoading}
+                        className="text-xs font-bold text-red-300 hover:text-red-200"
+                      >
+                        מחיקה
+                      </button>
+                    </>
+                  )}
+
+                  {task.status === "completed" && (
+                    <span className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm font-black text-emerald-300">
+                      הושלם ✓
+                    </span>
+                  )}
+
+                  {task.status === "review" && (
+                    <span className="rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-4 py-2 text-xs font-black text-indigo-300">
+                      נשלח לבדיקה
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 
 function TaskCard({
   task,
@@ -422,9 +682,8 @@ function StatBox({ label, value, tone }) {
 
   return (
     <div
-      className={`rounded-[1.55rem] border-2 p-4 text-center ${
-        toneClasses[tone] || toneClasses.yellow
-      }`}
+      className={`rounded-[1.55rem] border-2 p-4 text-center ${toneClasses[tone] || toneClasses.yellow
+        }`}
     >
       <div className="text-3xl font-black">{value}</div>
       <div className="mt-1 text-xs font-black opacity-75">{label}</div>
@@ -437,11 +696,10 @@ function TabButton({ label, count, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border-2 px-5 py-3 text-sm font-black transition ${
-        active
-          ? "border-yellow-300 bg-yellow-300 text-slate-950 shadow-[0_0_24px_rgba(253,224,71,0.25)]"
-          : "border-white/16 bg-white/10 text-white hover:border-yellow-300/45 hover:bg-white/16"
-      }`}
+      className={`rounded-full border-2 px-5 py-3 text-sm font-black transition ${active
+        ? "border-yellow-300 bg-yellow-300 text-slate-950 shadow-[0_0_24px_rgba(253,224,71,0.25)]"
+        : "border-white/16 bg-white/10 text-white hover:border-yellow-300/45 hover:bg-white/16"
+        }`}
     >
       {label} ({count})
     </button>
@@ -463,7 +721,7 @@ function SourceBadge({ source, type }) {
 function getSourceConfig(source, type) {
   if (source === "ai_coach" || type === "coach_task") {
     return {
-      label: "coach",
+      label: "מאמן אישי",
       className: "border-yellow-300/35 bg-yellow-300/15 text-yellow-100",
     };
   }
@@ -513,6 +771,24 @@ function getDifficultyLabel(diff) {
   };
 
   return labels[diff] || "רגיל";
+}
+
+function getLegacyPlanGroupKey(task) {
+  if (!task?.coachPlanFocus) {
+    return "";
+  }
+
+  const createdAt = new Date(task.createdAt);
+
+  if (Number.isNaN(createdAt.getTime())) {
+    return `legacy-${task.coachPlanFocus}`;
+  }
+
+  const fiveMinuteBucket = Math.floor(
+    createdAt.getTime() / (5 * 60 * 1000)
+  );
+
+  return `legacy-${task.coachPlanFocus}-${fiveMinuteBucket}`;
 }
 
 function formatDate(date) {

@@ -16,7 +16,6 @@ export default function StudentBrainMap({ user }) {
   const [courseSummary, setCourseSummary] = useState(null);
   const [quizResults, setQuizResults] = useState([]);
 
-  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiMap, setAiMap] = useState(null);
@@ -80,15 +79,9 @@ export default function StudentBrainMap({ user }) {
     });
   }, [level, tasks, dictionaryWords, conversations, courseSummary, quizResults]);
 
-  const currentMap = aiMap || localBrainMap;
-
-  const strongestSkill = useMemo(() => {
-    return getStrongestSkill(currentMap.skills);
-  }, [currentMap.skills]);
-
-  const weakestSkill = useMemo(() => {
-    return getWeakestSkill(currentMap.skills);
-  }, [currentMap.skills]);
+  const currentMap = normalizeBrainMap(aiMap || localBrainMap);
+  const strongestSkill = getStrongestSkill(currentMap.skills);
+  const weakestSkill = getWeakestSkill(currentMap.skills);
 
   const handleUpgradeWithAI = async () => {
     try {
@@ -97,16 +90,16 @@ export default function StudentBrainMap({ user }) {
 
       const brainMap = await generateBrainMapWithAI({
         level,
-        stats: localBrainMap.stats,
-        localSkills: localBrainMap.skills,
+        stats: currentMap.stats,
+        localSkills: currentMap.skills,
         latestConversation: conversations?.[0]?.lastMessage?.text || "",
       });
 
-      setAiMap(normalizeBrainMap(brainMap, localBrainMap));
+      setAiMap(brainMap);
 
       setMessage({
         type: "success",
-        text: "מפת המוח שודרגה בעזרת AI.",
+        text: "הבריין־מאפ שודרג לפי AI.",
       });
     } catch (error) {
       setMessage({
@@ -119,258 +112,179 @@ export default function StudentBrainMap({ user }) {
   };
 
   const handleRecommendedAction = () => {
-    const target = weakestSkill?.key;
+    const key = weakestSkill?.key;
 
-    const paths = {
-      vocabulary: "/dictionary",
-      grammar: "/chat",
-      writing: "/writing",
-      speaking: "/chat",
-      listening: "/courses",
-      confidence: "/chat",
-      courseProgress: "/courses",
-    };
+    if (key === "vocabulary" || key === "reading") {
+      navigate("/dictionary");
+      return;
+    }
 
-    navigate(paths[target] || "/dashboard", {
-      state: { fromSmartPath: true },
-    });
+    if (key === "speaking" || key === "listening") {
+      navigate("/chat");
+      return;
+    }
+
+    if (key === "writing" || key === "grammar") {
+      navigate("/writing");
+      return;
+    }
+
+    navigate("/tasks");
   };
 
   if (loading) {
     return (
-      <section className="bg-white/5 border border-white/10 rounded-3xl p-5">
-        <div className="animate-pulse text-gray-400 font-bold">
-          בונה מפת יכולות חכמה... 🧠
-        </div>
-      </section>
+      <div className="rounded-[2rem] border-2 border-white/18 bg-slate-950/55 p-8 text-center text-white">
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-white/20 border-t-yellow-300" />
+        <p className="mt-4 text-sm font-black text-white/70">
+          טוען נתוני למידה...
+        </p>
+      </div>
     );
   }
 
   return (
-    <section className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="w-full p-5 text-right hover:bg-white/[0.03] transition-all"
-      >
-        <div className="flex flex-col lg:flex-row justify-between gap-5">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-purple-600/20 border border-purple-400/20 flex items-center justify-center text-2xl shrink-0">
-              🧠
+    <section className="space-y-5 text-white" dir="rtl">
+      <div className="rounded-[2rem] border-2 border-white/18 bg-slate-950/55 p-5 shadow-[0_22px_70px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.10)]">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div className="mb-2 inline-flex rounded-full border border-yellow-300/45 bg-yellow-300/15 px-4 py-2 text-xs font-black text-yellow-100">
+              brain map
             </div>
 
-            <div>
-              <div className="text-xs font-black text-purple-300 mb-1">
-                English Brain Map
-              </div>
+            <h2 className="text-3xl font-black text-white">מפת יכולות</h2>
 
-              <h2 className="text-xl font-black text-white">
-                מפת הלמידה החכמה שלך
-              </h2>
-
-              <p className="text-gray-400 text-sm mt-1 leading-relaxed">
-                התחום החזק: {strongestSkill?.label || "עדיין נאסף מידע"} ·
-                לחיזוק: {weakestSkill?.label || "עדיין נאסף מידע"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between lg:justify-end gap-3">
-            <BrainMiniScore value={currentMap.averageScore} />
-
-            <div className="bg-yellow-400 text-slate-950 px-4 py-2 rounded-xl text-sm font-black">
-              {isOpen ? "סגירה ↑" : "פתחי מפה ↓"}
-            </div>
-          </div>
-        </div>
-      </button>
-
-      {isOpen && (
-        <div className="border-t border-white/10 p-5 space-y-5">
-          {message.text && (
-            <div
-              className={`p-4 rounded-2xl font-bold ${
-                message.type === "success"
-                  ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-300"
-                  : "bg-red-500/10 border border-red-500/30 text-red-300"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
-
-          <div className="bg-indigo-500/10 border border-indigo-400/20 rounded-3xl p-4">
-            <p className="text-sm text-indigo-200 leading-relaxed">
-              זו מפת למידה משוערת לפי הפעילות שלך באתר: קורסים, משימות, מילון,
-              שיחות, כתיבה ובחנים. ככל שתשתמשי יותר במערכת — המפה תהיה מדויקת יותר.
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-7 text-white/62">
+              ניתוח אישי של תחומי האנגלית שלך לפי משימות, מילים, קורסים,
+              שיחות ובחנים.
             </p>
           </div>
 
-          <CourseProgressInsight stats={currentMap.stats} />
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={loadData}
+              className="rounded-full border-2 border-white/16 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/16"
+            >
+              רענון נתונים
+            </button>
 
-          <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-5">
-            <BrainVisual skills={currentMap.skills} />
+            <button
+              type="button"
+              onClick={handleUpgradeWithAI}
+              disabled={aiLoading}
+              className="rounded-full border-2 border-yellow-300/50 bg-yellow-300 px-5 py-3 text-sm font-black text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {aiLoading ? "AI מנתח..." : "שדרוג עם AI"}
+            </button>
+          </div>
+        </div>
 
-            <div className="space-y-4">
-              <div className="bg-slate-950/50 border border-white/10 rounded-3xl p-5">
-                <div className="text-xs font-black text-purple-300 mb-1">
-                  ניתוח חכם
-                </div>
+        {message.text && <MessageBox message={message} />}
 
-                <h3 className="text-lg font-black text-white mb-2">
-                  {currentMap.title}
-                </h3>
+        <div className="mt-5 grid gap-3 md:grid-cols-5">
+          <MiniStat label="משימות" value={currentMap.stats.totalTasks} />
+          <MiniStat label="מילים" value={currentMap.stats.totalWords} />
+          <MiniStat label="שיחות" value={currentMap.stats.conversations} />
+          <MiniStat
+            label="קורסים"
+            value={`${currentMap.stats.averageCourseProgress}%`}
+          />
+          <MiniStat
+            label="בחנים"
+            value={`${currentMap.stats.averageQuizScore}%`}
+          />
+        </div>
+      </div>
 
-                <p className="text-gray-300 text-sm leading-relaxed">
-                  {currentMap.summary}
-                </p>
-              </div>
+      <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
+        <BrainVisual skills={currentMap.skills} />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <InsightCard
-                  title="התחום החזק"
-                  value={strongestSkill?.label || "אין מספיק מידע"}
-                  text={strongestSkill?.reason || "המערכת עדיין אוספת נתונים."}
-                  color="emerald"
-                />
+        <div className="space-y-5">
+          <div className="rounded-[2rem] border-2 border-white/18 bg-slate-950/55 p-5 shadow-[0_22px_70px_rgba(3,31,61,0.28),inset_0_1px_0_rgba(255,255,255,0.10)]">
+            <div className="text-xs font-black text-yellow-100">ניתוח חכם</div>
 
-                <InsightCard
-                  title="התחום שכדאי לחזק"
-                  value={weakestSkill?.label || "אין מספיק מידע"}
-                  text={weakestSkill?.reason || "המערכת עדיין אוספת נתונים."}
-                  color="yellow"
-                />
-              </div>
+            <h3 className="mt-1 text-2xl font-black text-white">
+              {currentMap.title}
+            </h3>
 
-              <div className="bg-yellow-400/10 border border-yellow-400/20 rounded-3xl p-5">
-                <h3 className="font-black text-yellow-300 mb-2">
-                  המלצה לפעולה עכשיו
-                </h3>
-
-                <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                  {currentMap.recommendation}
-                </p>
-
-                <div className="flex flex-col md:flex-row gap-3">
-                  <button
-                    type="button"
-                    onClick={handleRecommendedAction}
-                    className="flex-1 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black py-3 rounded-xl transition-all"
-                  >
-                    חזקי את התחום החלש ✨
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleUpgradeWithAI}
-                    disabled={aiLoading}
-                    className="flex-1 bg-white/10 hover:bg-white/20 disabled:opacity-60 text-white font-black py-3 rounded-xl transition-all"
-                  >
-                    {aiLoading ? "AI מנתח..." : "שדרגי עם AI 🧠"}
-                  </button>
-                </div>
-              </div>
-            </div>
+            <p className="mt-3 text-sm font-semibold leading-7 text-white/62">
+              {currentMap.summary}
+            </p>
           </div>
 
-          <SkillBars skills={currentMap.skills} />
+          <div className="grid gap-3 md:grid-cols-2">
+            <InsightCard
+              title="התחום החזק"
+              value={strongestSkill?.label || "אין מספיק מידע"}
+              text={strongestSkill?.reason || "המערכת עדיין אוספת נתונים."}
+              tone="green"
+            />
+
+            <InsightCard
+              title="התחום שכדאי לחזק"
+              value={weakestSkill?.label || "אין מספיק מידע"}
+              text={weakestSkill?.reason || "המערכת עדיין אוספת נתונים."}
+              tone="yellow"
+            />
+          </div>
+
+          <div className="rounded-[2rem] border-2 border-yellow-300/25 bg-yellow-300/12 p-5">
+            <h3 className="text-xl font-black text-yellow-100">
+              המלצה לפעולה עכשיו
+            </h3>
+
+            <p className="mt-2 text-sm font-semibold leading-7 text-white/68">
+              {currentMap.recommendation}
+            </p>
+
+            <button
+              type="button"
+              onClick={handleRecommendedAction}
+              className="mt-4 rounded-full border-2 border-white/50 bg-gradient-to-b from-red-400 to-red-700 px-6 py-3 text-sm font-black text-white shadow-[0_6px_0_rgba(89,15,20,0.42)] transition hover:brightness-110"
+            >
+              חזקי עכשיו את התחום החלש
+            </button>
+          </div>
         </div>
-      )}
+      </div>
+
+      <SkillBars skills={currentMap.skills} />
     </section>
   );
 }
 
-function CourseProgressInsight({ stats }) {
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-      <MiniStat
-        label="ממוצע קורסים"
-        value={`${stats.averageCourseProgress || 0}%`}
-        color="text-yellow-400"
-      />
-
-      <MiniStat
-        label="קורסים פעילים"
-        value={stats.totalCourses || 0}
-        color="text-indigo-300"
-      />
-
-      <MiniStat
-        label="שירים שבוצעו"
-        value={stats.completedSongs || 0}
-        color="text-emerald-300"
-      />
-
-      <MiniStat
-        label="שיעורים שבוצעו"
-        value={stats.completedLessons || 0}
-        color="text-purple-300"
-      />
-
-      <MiniStat
-        label="ממוצע בחנים"
-        value={`${stats.averageQuizScore || 0}%`}
-        color="text-pink-300"
-      />
-    </div>
-  );
-}
-
-function MiniStat({ label, value, color }) {
-  return (
-    <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-4 text-center">
-      <div className={`text-2xl font-black ${color}`}>{value}</div>
-      <div className="text-xs text-gray-400 mt-1">{label}</div>
-    </div>
-  );
-}
-
-function BrainMiniScore({ value }) {
-  return (
-    <div className="bg-slate-950/70 border border-white/10 rounded-xl px-4 py-2 text-center">
-      <div className="text-lg font-black text-white">{value}%</div>
-      <div className="text-[10px] text-gray-400">ממוצע</div>
-    </div>
-  );
-}
-
 function BrainVisual({ skills }) {
-  const top = skills[0] || {};
-  const right = skills[1] || {};
-  const bottomRight = skills[2] || {};
-  const bottom = skills[3] || {};
-  const bottomLeft = skills[4] || {};
-  const left = skills[5] || {};
+  const safeSkills = skills.length ? skills : [];
 
   return (
-    <div className="bg-slate-950/50 border border-white/10 rounded-3xl p-5">
-      <div className="text-center mb-4">
-        <div className="text-xs font-black text-purple-300 mb-1">
-          מוח הלמידה
-        </div>
+    <div className="rounded-[2rem] border-2 border-white/18 bg-slate-950/55 p-5 shadow-[0_22px_70px_rgba(3,31,61,0.28),inset_0_1px_0_rgba(255,255,255,0.10)]">
+      <div className="text-center">
+        <div className="text-xs font-black text-yellow-100">learning brain</div>
 
-        <h3 className="font-black text-white">חלוקה לפי תחומי אנגלית</h3>
+        <h3 className="mt-1 text-xl font-black text-white">
+          חלוקה לפי תחומים
+        </h3>
       </div>
 
-      <div className="relative mx-auto w-72 h-72">
-        <div className="absolute inset-6 rounded-[45%] bg-gradient-to-br from-purple-500/20 to-indigo-500/10 border border-purple-300/20 shadow-inner" />
+      <div className="relative mx-auto mt-5 h-[310px] w-[310px]">
+        <div className="absolute inset-8 rounded-[42%] border border-yellow-300/18 bg-gradient-to-br from-yellow-300/12 via-white/8 to-red-500/12 shadow-inner" />
 
-        <BrainBubble skill={top} className="top-0 left-1/2 -translate-x-1/2" />
-        <BrainBubble skill={right} className="top-16 right-0" />
-        <BrainBubble skill={bottomRight} className="bottom-10 right-5" />
-        <BrainBubble
-          skill={bottom}
-          className="bottom-0 left-1/2 -translate-x-1/2"
-        />
-        <BrainBubble skill={bottomLeft} className="bottom-10 left-5" />
-        <BrainBubble skill={left} className="top-16 left-0" />
+        <BrainBubble skill={safeSkills[0]} className="left-1/2 top-0 -translate-x-1/2" />
+        <BrainBubble skill={safeSkills[1]} className="right-0 top-16" />
+        <BrainBubble skill={safeSkills[2]} className="bottom-10 right-5" />
+        <BrainBubble skill={safeSkills[3]} className="bottom-0 left-1/2 -translate-x-1/2" />
+        <BrainBubble skill={safeSkills[4]} className="bottom-10 left-5" />
+        <BrainBubble skill={safeSkills[5]} className="left-0 top-16" />
 
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-24 h-24 rounded-full bg-slate-950 border border-white/10 flex flex-col items-center justify-center shadow-xl">
-            <div className="text-3xl">🧠</div>
+          <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full border-2 border-white/16 bg-slate-950 text-center shadow-xl">
+            <div className="text-2xl font-black text-yellow-100">
+              {averageSkillScore(safeSkills)}%
+            </div>
 
-            <div className="text-[10px] text-gray-400 font-bold mt-1">
-              English
+            <div className="mt-1 text-[10px] font-black text-white/45">
+              ממוצע
             </div>
           </div>
         </div>
@@ -380,11 +294,11 @@ function BrainVisual({ skills }) {
 }
 
 function BrainBubble({ skill, className }) {
-  const score = Number(skill?.score) || 0;
+  const score = clampScore(skill?.score);
 
   return (
     <div
-      className={`absolute w-24 h-24 rounded-3xl border flex flex-col items-center justify-center text-center p-2 ${getScoreBubbleClass(
+      className={`absolute flex h-24 w-24 flex-col items-center justify-center rounded-[1.4rem] border p-2 text-center shadow-lg ${getBubbleClass(
         score
       )} ${className}`}
     >
@@ -392,17 +306,17 @@ function BrainBubble({ skill, className }) {
         {skill?.label || "תחום"}
       </div>
 
-      <div className="text-xl font-black mt-1">{score}%</div>
+      <div className="mt-1 text-xl font-black">{score}%</div>
     </div>
   );
 }
 
 function SkillBars({ skills }) {
   return (
-    <div className="bg-slate-950/50 border border-white/10 rounded-3xl p-5">
-      <h3 className="font-black text-white mb-4">פירוט לפי תחומים</h3>
+    <div className="rounded-[2rem] border-2 border-white/18 bg-slate-950/55 p-5 shadow-[0_22px_70px_rgba(3,31,61,0.28),inset_0_1px_0_rgba(255,255,255,0.10)]">
+      <h3 className="text-xl font-black text-white">פירוט לפי מיומנויות</h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
         {skills.map((skill) => (
           <SkillBar key={skill.key} skill={skill} />
         ))}
@@ -415,20 +329,22 @@ function SkillBar({ skill }) {
   const score = clampScore(skill.score);
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-      <div className="flex justify-between items-center mb-2 gap-4">
+    <div className="rounded-[1.4rem] border border-white/10 bg-white/8 p-4">
+      <div className="mb-2 flex items-start justify-between gap-4">
         <div>
           <h4 className="font-black text-white">{skill.label}</h4>
 
-          <p className="text-xs text-gray-400 mt-1">{skill.reason}</p>
+          <p className="mt-1 text-xs font-semibold leading-5 text-white/45">
+            {skill.reason}
+          </p>
         </div>
 
-        <span className="text-lg font-black text-yellow-400">{score}%</span>
+        <span className="text-lg font-black text-yellow-100">{score}%</span>
       </div>
 
-      <div className="h-2 bg-slate-950 rounded-full overflow-hidden">
+      <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
         <div
-          className={`h-full rounded-full ${getScoreBarClass(score)}`}
+          className={getBarClass(score)}
           style={{ width: `${score}%` }}
         />
       </div>
@@ -436,19 +352,43 @@ function SkillBar({ skill }) {
   );
 }
 
-function InsightCard({ title, value, text, color }) {
-  const colorClass =
-    color === "emerald"
-      ? "border-emerald-500/20 text-emerald-300"
-      : "border-yellow-500/20 text-yellow-300";
+function InsightCard({ title, value, text, tone }) {
+  const className =
+    tone === "green"
+      ? "border-emerald-300/30 bg-emerald-300/12 text-emerald-100"
+      : "border-yellow-300/30 bg-yellow-300/12 text-yellow-100";
 
   return (
-    <div className={`bg-slate-950/50 border rounded-3xl p-5 ${colorClass}`}>
-      <div className="text-xs font-black opacity-80 mb-1">{title}</div>
+    <div className={`rounded-[1.6rem] border p-5 ${className}`}>
+      <div className="text-xs font-black opacity-80">{title}</div>
 
-      <h3 className="text-lg font-black text-white">{value}</h3>
+      <h3 className="mt-1 text-xl font-black text-white">{value}</h3>
 
-      <p className="text-sm text-gray-400 mt-2 leading-relaxed">{text}</p>
+      <p className="mt-2 text-sm font-semibold leading-7 text-white/62">
+        {text}
+      </p>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }) {
+  return (
+    <div className="rounded-[1.2rem] border border-white/12 bg-white/8 p-4 text-center">
+      <div className="text-2xl font-black text-white">{value}</div>
+      <div className="mt-1 text-xs font-black text-white/45">{label}</div>
+    </div>
+  );
+}
+
+function MessageBox({ message }) {
+  const className =
+    message.type === "success"
+      ? "border-emerald-300/35 bg-emerald-300/12 text-emerald-100"
+      : "border-red-300/35 bg-red-500/15 text-red-100";
+
+  return (
+    <div className={`mt-4 rounded-[1.2rem] border px-4 py-3 text-sm font-black ${className}`}>
+      {message.text}
     </div>
   );
 }
@@ -461,329 +401,203 @@ function buildLocalBrainMap({
   courseSummary,
   quizResults,
 }) {
-  const totalWords = dictionaryWords.length;
-  const masteredWords = dictionaryWords.filter((word) => word.mastered).length;
-
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(
-    (task) => task.status === "completed"
-  ).length;
-
-  const conversationsCount = conversations.length;
-  const latestConversationText =
-    conversations?.[0]?.lastMessage?.text?.toLowerCase() || "";
-
+  const completedTasks = tasks.filter((task) => task.status === "completed");
+  const masteredWords = dictionaryWords.filter((word) => word.mastered);
   const courseStats = extractCourseStats(courseSummary);
   const quizStats = extractQuizStats(quizResults);
 
-  const grammarSignal =
-    latestConversationText.includes("grammar") ||
-    latestConversationText.includes("past") ||
-    latestConversationText.includes("perfect") ||
-    latestConversationText.includes("דקדוק") ||
-    latestConversationText.includes("עבר") ||
-    latestConversationText.includes("הווה");
-
-  const vocabularyScore = calculateVocabularyScore(totalWords, masteredWords);
-
-  const taskCompletionScore = calculatePercent(completedTasks, totalTasks, 45);
-
-  const courseProgressScore = courseStats.averageCourseProgress || 35;
-
-  const quizScore =
-    quizStats.totalQuizResults > 0 ? quizStats.averageQuizScore : 45;
-
-  const conversationScore = Math.min(90, 30 + conversationsCount * 10);
-
-  const listeningScore = clampScore(
-    Math.round(
-      courseStats.completedSongs > 0
-        ? 45 + courseStats.completedSongs * 10 + courseProgressScore * 0.25
-        : 30 + courseProgressScore * 0.25
-    )
+  const vocabularyScore = calculatePercent(
+    masteredWords.length,
+    dictionaryWords.length,
+    45
   );
 
-  const grammarScore = clampScore(
-    Math.round(
-      quizStats.totalQuizResults > 0
-        ? (quizScore + taskCompletionScore + courseProgressScore) / 3
-        : grammarSignal
-        ? (conversationScore + taskCompletionScore + courseProgressScore) / 3
-        : (taskCompletionScore + courseProgressScore) / 2
-    )
-  );
-
-  const writingScore = clampScore(
-    Math.round(
-      (taskCompletionScore +
-        grammarScore +
-        Math.min(85, 35 + courseStats.completedExercises * 10) +
-        quizScore) /
-        4
-    )
-  );
-
-  const speakingScore = conversationScore;
-
-  const confidenceScore = clampScore(
-    Math.round(
-      (conversationScore +
-        taskCompletionScore +
-        vocabularyScore +
-        courseProgressScore +
-        quizScore) /
-        5
-    )
-  );
+  const taskScore = calculatePercent(completedTasks.length, tasks.length, 45);
+  const conversationScore = clampScore(35 + conversations.length * 10);
+  const quizScore = quizStats.averageQuizScore || 45;
+  const courseScore = courseStats.averageCourseProgress || 40;
 
   const skills = [
     {
       key: "vocabulary",
       label: "אוצר מילים",
       score: vocabularyScore,
-      reason:
-        totalWords > 0
-          ? `יש לך ${totalWords} מילים במילון, ומתוכן ${masteredWords} מסומנות כיודעת.`
-          : "עדיין אין מספיק מילים במילון האישי.",
-      path: "/dictionary",
+      reason: `נמדד לפי ${dictionaryWords.length} מילים במילון האישי.`,
     },
     {
       key: "grammar",
       label: "דקדוק",
-      score: grammarScore,
-      reason:
-        quizStats.totalQuizResults > 0
-          ? `הציון משלב גם ${quizStats.totalQuizResults} תוצאות בחנים, עם ממוצע ${quizStats.averageQuizScore}%.`
-          : grammarSignal
-          ? "בשיחות האחרונות עלה נושא דקדוקי, והציון משלב גם משימות והתקדמות קורסים."
-          : "הציון מבוסס על משימות, התקדמות בקורסים ופעילות כללית.",
-      path: "/chat",
-    },
-    {
-      key: "writing",
-      label: "כתיבה",
-      score: writingScore,
-      reason:
-        courseStats.completedExercises > 0 || quizStats.totalQuizResults > 0
-          ? `הציון משלב משימות, ${courseStats.completedExercises} תרגילים ו-${quizStats.totalQuizResults} בחנים.`
-          : "הציון מבוסס כרגע על משימות ודקדוק. בהמשך יתחבר גם להיסטוריית מאמן הכתיבה.",
-      path: "/writing",
+      score: clampScore(Math.round((quizScore + taskScore) / 2)),
+      reason: "נמדד לפי בחנים ומשימות שבוצעו.",
     },
     {
       key: "speaking",
       label: "דיבור",
-      score: speakingScore,
-      reason:
-        conversationsCount > 0
-          ? `יש לך ${conversationsCount} שיחות עם בולט.`
-          : "עדיין לא נעשו מספיק תרגולי שיחה עם בולט.",
-      path: "/chat",
+      score: conversationScore,
+      reason: `נמדד לפי ${conversations.length} שיחות עם הצ׳אט הלימודי.`,
+    },
+    {
+      key: "writing",
+      label: "כתיבה",
+      score: clampScore(Math.round((taskScore + quizScore) / 2)),
+      reason: "נמדד לפי משימות כתיבה ותרגול.",
+    },
+    {
+      key: "reading",
+      label: "קריאה",
+      score: clampScore(Math.round((courseScore + vocabularyScore) / 2)),
+      reason: "נמדד לפי התקדמות בקורסים ואוצר מילים.",
     },
     {
       key: "listening",
-      label: "שמיעה",
-      score: listeningScore,
-      reason:
-        courseStats.completedSongs > 0
-          ? `סומנו ${courseStats.completedSongs} שירים כהושלמו בקורסים.`
-          : "עדיין לא סומנו מספיק שירים או האזנות בקורסים.",
-      path: "/courses",
-    },
-    {
-      key: "confidence",
-      label: "ביטחון",
-      score: confidenceScore,
-      reason:
-        quizStats.totalQuizResults > 0
-          ? `הציון משלב ביצוע משימות, התקדמות בקורסים, מילון, צ׳אט ותוצאות בחנים. ממוצע הבחנים שלך הוא ${quizStats.averageQuizScore}%.`
-          : "הציון משלב ביצוע משימות, התקדמות בקורסים, מילון ושימוש בצ׳אט.",
-      path: "/chat",
+      label: "האזנה",
+      score: clampScore(courseStats.completedSongs ? 50 + courseStats.completedSongs * 8 : 38),
+      reason: "נמדד לפי שירים ותרגולי האזנה בקורסים.",
     },
   ];
-
-  const averageScore = Math.round(
-    skills.reduce((sum, skill) => sum + skill.score, 0) / skills.length
-  );
 
   const weakest = getWeakestSkill(skills);
 
   return {
-    title: "מפת למידה משוערת לפי פעילות אמיתית",
-    summary:
-      "המפה משלבת נתונים מהמילון, משימות, שיחות עם בולט, התקדמות בקורסים ותוצאות בחנים. היא אינה מבחן רמה רשמי, אלא תמונת מצב חכמה של הלמידה שלך.",
-    recommendation: getRecommendationByWeakestSkill(weakest?.key),
+    title: "מפת יכולות אישית",
+    summary: `המפה נבנתה לפי הנתונים שנאספו במערכת וברמת ${getLevelLabel(
+      level
+    )}. היא מציגה תמונת מצב כללית של ההתקדמות שלך.`,
+    recommendation: weakest
+      ? `כדאי להתמקד עכשיו ב${weakest.label}, כי זה התחום עם הציון הנמוך ביותר כרגע.`
+      : "כדאי להמשיך לתרגל בקביעות כדי לאסוף עוד נתונים.",
     skills,
-    averageScore,
     stats: {
-      totalWords,
-      masteredWords,
-      totalTasks,
-      completedTasks,
-      conversationsCount,
-      level,
-      ...courseStats,
-      ...quizStats,
+      totalTasks: tasks.length,
+      completedTasks: completedTasks.length,
+      totalWords: dictionaryWords.length,
+      masteredWords: masteredWords.length,
+      conversations: conversations.length,
+      averageCourseProgress: courseStats.averageCourseProgress,
+      averageQuizScore: quizStats.averageQuizScore,
+    },
+  };
+}
+
+function normalizeBrainMap(map) {
+  const safeSkills = Array.isArray(map?.skills) ? map.skills : [];
+
+  return {
+    title: map?.title || "מפת יכולות אישית",
+    summary: map?.summary || "המערכת בנתה תמונת מצב לפי הנתונים הקיימים.",
+    recommendation:
+      map?.recommendation || "כדאי להמשיך לתרגל בקביעות ולחזק תחום אחד בכל פעם.",
+    skills: safeSkills.map((skill, index) => ({
+      key: skill.key || `skill-${index}`,
+      label: skill.label || "תחום",
+      score: clampScore(skill.score),
+      reason: skill.reason || "הציון מבוסס על נתוני הלמידה במערכת.",
+    })),
+    stats: {
+      totalTasks: Number(map?.stats?.totalTasks || 0),
+      completedTasks: Number(map?.stats?.completedTasks || 0),
+      totalWords: Number(map?.stats?.totalWords || 0),
+      masteredWords: Number(map?.stats?.masteredWords || 0),
+      conversations: Number(map?.stats?.conversations || 0),
+      averageCourseProgress: Number(map?.stats?.averageCourseProgress || 0),
+      averageQuizScore: Number(map?.stats?.averageQuizScore || 0),
     },
   };
 }
 
 function extractCourseStats(courseSummary) {
-  const progressList = Array.isArray(courseSummary?.progressList)
-    ? courseSummary.progressList
-    : [];
-
-  const completedLessons = progressList.reduce(
-    (sum, item) => sum + safeLength(item.completedLessons),
-    0
-  );
-
-  const completedSongs = progressList.reduce(
-    (sum, item) => sum + safeLength(item.completedSongs),
-    0
-  );
-
-  const completedExercises = progressList.reduce(
-    (sum, item) => sum + safeLength(item.completedExercises),
-    0
-  );
-
-  const completedQuizzes = progressList.reduce(
-    (sum, item) => sum + safeLength(item.completedQuizzes),
-    0
-  );
-
   return {
-    totalCourses: courseSummary?.totalCourses || 0,
-    completedCourses: courseSummary?.completedCourses || 0,
-    averageCourseProgress: courseSummary?.averageProgress || 0,
-    completedLessons,
-    completedSongs,
-    completedExercises,
-    completedQuizzes,
+    averageCourseProgress: Number(
+      courseSummary?.averageProgress ||
+        courseSummary?.averageCourseProgress ||
+        courseSummary?.progress ||
+        0
+    ),
+    completedSongs: Number(courseSummary?.completedSongs || 0),
   };
 }
 
-function extractQuizStats(quizResults = []) {
-  const safeResults = Array.isArray(quizResults) ? quizResults : [];
+function extractQuizStats(quizResults) {
+  if (!Array.isArray(quizResults) || quizResults.length === 0) {
+    return { averageQuizScore: 0 };
+  }
 
-  const totalQuizResults = safeResults.length;
+  const sum = quizResults.reduce((total, item) => {
+    const score = Number(item.score || 0);
+    const totalQuestions = Number(item.totalQuestions || item.total || 100);
 
-  const passedQuizzes = safeResults.filter((result) => result.passed).length;
+    if (!totalQuestions) return total;
 
-  const averageQuizScore =
-    totalQuizResults > 0
-      ? Math.round(
-          safeResults.reduce(
-            (sum, result) => sum + (Number(result.percentage) || 0),
-            0
-          ) / totalQuizResults
-        )
-      : 0;
-
-  const latestQuizScore =
-    totalQuizResults > 0
-      ? Number(safeResults[0]?.percentage) || averageQuizScore
-      : 0;
+    return total + Math.round((score / totalQuestions) * 100);
+  }, 0);
 
   return {
-    totalQuizResults,
-    passedQuizzes,
-    averageQuizScore,
-    latestQuizScore,
+    averageQuizScore: Math.round(sum / quizResults.length),
   };
 }
 
-function normalizeBrainMap(aiMap, localMap) {
-  const safeSkills =
-    Array.isArray(aiMap?.skills) && aiMap.skills.length > 0
-      ? aiMap.skills.map((skill) => ({
-          key: skill.key,
-          label: skill.label,
-          score: clampScore(skill.score),
-          reason: skill.reason || "ניתוח AI לפי נתוני הלמידה שלך.",
-        }))
-      : localMap.skills;
-
-  const averageScore = Math.round(
-    safeSkills.reduce((sum, skill) => sum + skill.score, 0) / safeSkills.length
-  );
-
-  return {
-    title: "מפת יכולות משודרגת עם AI",
-    summary: aiMap?.summary || localMap.summary,
-    recommendation: aiMap?.recommendation || localMap.recommendation,
-    skills: safeSkills,
-    averageScore,
-    stats: localMap.stats,
-  };
-}
-
-function calculateVocabularyScore(totalWords, masteredWords) {
-  if (totalWords === 0) return 30;
-
-  const masteryPart = calculatePercent(masteredWords, totalWords, 0);
-  const sizeBonus = Math.min(25, totalWords * 3);
-
-  return clampScore(Math.round(masteryPart * 0.75 + sizeBonus));
-}
-
-function calculatePercent(done, total, fallback = 0) {
+function calculatePercent(value, total, fallback) {
   if (!total) return fallback;
-  return clampScore(Math.round((done / total) * 100));
+  return clampScore(Math.round((value / total) * 100));
 }
 
 function clampScore(value) {
-  const number = Number(value) || 0;
-  return Math.max(0, Math.min(100, Math.round(number)));
+  const number = Number(value);
+
+  if (Number.isNaN(number)) return 0;
+  if (number < 0) return 0;
+  if (number > 100) return 100;
+
+  return Math.round(number);
 }
 
-function safeLength(value) {
-  return Array.isArray(value) ? value.length : 0;
+function getStrongestSkill(skills) {
+  if (!Array.isArray(skills) || skills.length === 0) return null;
+
+  return [...skills].sort((a, b) => clampScore(b.score) - clampScore(a.score))[0];
 }
 
-function getStrongestSkill(skills = []) {
-  if (!skills.length) return null;
-  return [...skills].sort((a, b) => b.score - a.score)[0];
+function getWeakestSkill(skills) {
+  if (!Array.isArray(skills) || skills.length === 0) return null;
+
+  return [...skills].sort((a, b) => clampScore(a.score) - clampScore(b.score))[0];
 }
 
-function getWeakestSkill(skills = []) {
-  if (!skills.length) return null;
-  return [...skills].sort((a, b) => a.score - b.score)[0];
+function averageSkillScore(skills) {
+  if (!Array.isArray(skills) || skills.length === 0) return 0;
+
+  const sum = skills.reduce((total, skill) => total + clampScore(skill.score), 0);
+
+  return Math.round(sum / skills.length);
 }
 
-function getRecommendationByWeakestSkill(key) {
-  const recommendations = {
-    vocabulary:
-      "כדאי להוסיף 3 מילים חדשות למילון ולכתוב משפט אחד עם כל מילה.",
-    grammar:
-      "כדאי לפתוח את בולט ולבקש ממנו להסביר נושא דקדוקי אחד עם תרגול קצר.",
-    writing:
-      "כדאי לכתוב פסקה קצרה במאמן הכתיבה ולקבל משוב על המשפטים שלך.",
-    speaking:
-      "כדאי לפתוח שיחה קצרה עם בולט ולענות באנגלית אפילו במשפטים פשוטים.",
-    listening:
-      "כדאי להיכנס לקורס, להאזין לשיר אחד ולסמן אותו כהושלם.",
-    confidence:
-      "כדאי לתרגל שיחה קצרה עם בולט ולסמן משימה אחת כבוצעה.",
-  };
-
-  return recommendations[key] || "כדאי לבחור משימה אחת קטנה ולבצע אותה היום.";
-}
-
-function getScoreBubbleClass(score) {
+function getBubbleClass(score) {
   if (score >= 75) {
-    return "bg-emerald-500/20 border-emerald-500/30 text-emerald-200";
+    return "border-emerald-300/35 bg-emerald-300/18 text-emerald-100";
   }
 
   if (score >= 50) {
-    return "bg-yellow-500/20 border-yellow-500/30 text-yellow-100";
+    return "border-yellow-300/35 bg-yellow-300/18 text-yellow-100";
   }
 
-  return "bg-red-500/20 border-red-500/30 text-red-100";
+  return "border-red-300/35 bg-red-500/18 text-red-100";
 }
 
-function getScoreBarClass(score) {
-  if (score >= 75) return "bg-emerald-400";
-  if (score >= 50) return "bg-yellow-400";
-  return "bg-red-400";
+function getBarClass(score) {
+  if (score >= 75) return "h-full rounded-full bg-emerald-300";
+  if (score >= 50) return "h-full rounded-full bg-yellow-300";
+  return "h-full rounded-full bg-red-400";
+}
+
+function getLevelLabel(level) {
+  const labels = {
+    beginner: "מתחילים",
+    intermediate: "בינוני",
+    advanced: "מתקדמים",
+    מתחילים: "מתחילים",
+    בינוני: "בינוני",
+    מתקדמים: "מתקדמים",
+  };
+
+  return labels[level] || level || "לא צוין";
 }

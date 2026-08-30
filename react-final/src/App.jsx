@@ -54,14 +54,12 @@ export default function App() {
       <Toaster position="top-center" reverseOrder={false} />
       <Introduce />     
        <Routes>
-        {/* דפים ציבוריים */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* דפים מוגנים */}
         <Route element={<MainLayout />}>
-          {/* משותף לכל התפקידים */}
+          
           <Route path="/messages" element={<MyMessages />} />
 
           {/* תלמיד */}

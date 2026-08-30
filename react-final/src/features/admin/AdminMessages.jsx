@@ -1,22 +1,23 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  getAllUsersForAdmin,
   getAdminSentMessages,
+  getAllUsersForAdmin,
   sendAdminMessage,
 } from "../../services/adminService";
 import AppConfirmModal from "../../components/AppConfirmModal";
 
+const emptyForm = {
+  targetType: "all",
+  targetUser: "",
+  title: "",
+  body: "",
+  priority: "normal",
+};
+
 export default function AdminMessages() {
   const [users, setUsers] = useState([]);
   const [sentMessages, setSentMessages] = useState([]);
-
-  const [form, setForm] = useState({
-    targetType: "all",
-    targetUser: "",
-    title: "",
-    body: "",
-    priority: "normal",
-  });
+  const [form, setForm] = useState(emptyForm);
 
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -28,7 +29,6 @@ export default function AdminMessages() {
     text: "",
   });
 
-  // טעינת משתמשים והיסטוריית הודעות
   const loadData = async () => {
     try {
       setLoading(true);
@@ -52,14 +52,34 @@ export default function AdminMessages() {
     loadData();
   }, []);
 
+  const counts = useMemo(() => {
+    return {
+      all: users.length,
+      students: users.filter(
+        (user) => user.role === "student" || user.role === "user"
+      ).length,
+      teachers: users.filter((user) => user.role === "teacher").length,
+      admins: users.filter((user) => user.role === "admin").length,
+    };
+  }, [users]);
+
   const singleUserOptions = useMemo(() => {
     return users.map((user) => ({
       id: user._id || user.id,
-      label: `${user.username || "ללא שם"} - ${
-        user.email || "ללא מייל"
-      } (${getRoleLabel(user.role)})`,
+      label: `${user.username || "ללא שם"} - ${user.email || "ללא מייל"} (${getRoleLabel(
+        user.role
+      )})`,
     }));
   }, [users]);
+
+  const recipientCount = useMemo(() => {
+    if (form.targetType === "all") return counts.all;
+    if (form.targetType === "students") return counts.students;
+    if (form.targetType === "teachers") return counts.teachers;
+    if (form.targetType === "admins") return counts.admins;
+    if (form.targetType === "single") return form.targetUser ? 1 : 0;
+    return 0;
+  }, [form.targetType, form.targetUser, counts]);
 
   const updateField = (field, value) => {
     setForm((prev) => ({
@@ -68,46 +88,21 @@ export default function AdminMessages() {
     }));
   };
 
-  const getTargetCount = () => {
-    if (form.targetType === "all") return users.length;
-
-    if (form.targetType === "students") {
-      return users.filter(
-        (user) => user.role === "student" || user.role === "user"
-      ).length;
-    }
-
-    if (form.targetType === "teachers") {
-      return users.filter((user) => user.role === "teacher").length;
-    }
-
-    if (form.targetType === "admins") {
-      return users.filter((user) => user.role === "admin").length;
-    }
-
-    if (form.targetType === "single") {
-      return form.targetUser ? 1 : 0;
-    }
-
-    return 0;
-  };
-
   const validateForm = () => {
-    if (!form.title.trim()) return "כותרת הודעה חובה";
-    if (!form.body.trim()) return "תוכן הודעה חובה";
+    if (!form.title.trim()) return "חובה למלא כותרת הודעה";
+    if (!form.body.trim()) return "חובה למלא תוכן הודעה";
 
     if (form.targetType === "single" && !form.targetUser) {
       return "בחרי משתמש לקבלת הודעה אישית";
     }
 
-    if (getTargetCount() === 0) {
+    if (recipientCount === 0) {
       return "לא נמצאו נמענים מתאימים";
     }
 
     return "";
   };
 
-  // פתיחת חלון אישור יפה לפני שליחה
   const openSendConfirmModal = () => {
     const validationError = validateForm();
 
@@ -119,7 +114,7 @@ export default function AdminMessages() {
     setConfirmModal({
       isOpen: true,
       title: "אישור שליחת הודעה",
-      text: `האם לשלוח את ההודעה ל-${getTargetCount()} נמענים?`,
+      text: `ההודעה תישלח ל-${recipientCount} נמענים. להמשיך?`,
     });
   };
 
@@ -133,7 +128,6 @@ export default function AdminMessages() {
     });
   };
 
-  // שליחת הודעה אחרי אישור במודל
   const handleSendMessage = async () => {
     try {
       setSending(true);
@@ -152,22 +146,11 @@ export default function AdminMessages() {
 
       setMessage({
         type: "success",
-        text: `ההודעה נשלחה בהצלחה ל-${response.count} נמענים`,
+        text: `ההודעה נשלחה בהצלחה ל-${response.count || recipientCount} נמענים`,
       });
 
-      setForm({
-        targetType: "all",
-        targetUser: "",
-        title: "",
-        body: "",
-        priority: "normal",
-      });
-
-      setConfirmModal({
-        isOpen: false,
-        title: "",
-        text: "",
-      });
+      setForm(emptyForm);
+      closeConfirmModal();
 
       await loadData();
     } catch (error) {
@@ -178,24 +161,53 @@ export default function AdminMessages() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl" dir="rtl">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          💬 הודעות ופידבקים
-        </h1>
+    <div className="space-y-5" dir="rtl">
+      <section
+        className="relative overflow-hidden rounded-[2.1rem] border-2 border-white/25 bg-slate-950/65 p-5 text-white backdrop-blur-xl md:p-6"
+        style={{
+          boxShadow:
+            "0 32px 95px rgba(3,31,61,0.42), inset 0 1px 0 rgba(255,255,255,0.14)",
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
 
-        <p className="text-gray-400 mt-1">
-          שליחת הודעות מערכת לכל המשתמשים, לתלמידים, למורים, למנהלים או
-          למשתמש בודד.
-        </p>
-      </div>
+        <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="mb-3 inline-flex rounded-full border border-red-300/35 bg-red-500/15 px-4 py-2 text-sm font-black text-red-100">
+              admin messages
+            </div>
+
+            <h1
+              className="text-3xl font-black leading-tight text-white md:text-4xl"
+              style={{
+                textShadow:
+                  "3px 3px 0 rgba(184,50,42,0.45), -1px -1px 0 rgba(15,76,117,0.90)",
+              }}
+            >
+              הודעות מערכת
+            </h1>
+
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-7 text-white/68">
+              שליחת הודעות לכל המשתמשים, לקבוצות לפי תפקיד, או למשתמש בודד.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={loadData}
+            className="w-fit rounded-full border-2 border-yellow-300/50 bg-yellow-300/15 px-6 py-3 text-sm font-black text-yellow-100 transition hover:bg-yellow-300/25"
+          >
+            רענון הודעות
+          </button>
+        </div>
+      </section>
 
       {message.text && (
         <div
-          className={`p-4 rounded-2xl font-bold ${
+          className={`rounded-[1.5rem] border-2 px-5 py-3 text-sm font-black ${
             message.type === "success"
-              ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400"
-              : "bg-red-500/10 border border-red-500/30 text-red-400"
+              ? "border-emerald-300/35 bg-emerald-400/15 text-emerald-100"
+              : "border-red-300/35 bg-red-500/15 text-red-100"
           }`}
         >
           {message.text}
@@ -203,187 +215,32 @@ export default function AdminMessages() {
       )}
 
       {loading ? (
-        <div className="min-h-[40vh] flex items-center justify-center text-white font-bold text-xl">
-          <div className="animate-pulse">טוען מערכת הודעות... 💬</div>
-        </div>
+        <LoadingState />
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <section className="xl:col-span-2 bg-white/5 border border-white/10 p-8 rounded-3xl space-y-5">
-            <h2 className="text-2xl font-black text-white">
-              שליחת הודעה חדשה
-            </h2>
+        <>
+          <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_300px]">
+            <MessageFormPanel
+              form={form}
+              recipientCount={recipientCount}
+              singleUserOptions={singleUserOptions}
+              sending={sending}
+              updateField={updateField}
+              openSendConfirmModal={openSendConfirmModal}
+            />
 
-            <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">
-                נמענים
-              </label>
-
-              <select
-                value={form.targetType}
-                onChange={(e) => {
-                  updateField("targetType", e.target.value);
-                  updateField("targetUser", "");
-                }}
-                className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-yellow-400"
-              >
-                <option value="all">לכל המשתמשים</option>
-                <option value="students">לתלמידים בלבד</option>
-                <option value="teachers">למורים בלבד</option>
-                <option value="admins">למנהלים בלבד</option>
-                <option value="single">משתמש ספציפי</option>
-              </select>
-
-              <p className="text-gray-400 text-xs mt-2">
-                מספר נמענים משוער: {getTargetCount()}
-              </p>
-            </div>
-
-            {form.targetType === "single" && (
-              <div>
-                <label className="block text-sm font-bold text-gray-300 mb-2">
-                  בחירת משתמש
-                </label>
-
-                <select
-                  value={form.targetUser}
-                  onChange={(e) => updateField("targetUser", e.target.value)}
-                  className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-yellow-400"
-                >
-                  <option value="">בחרי משתמש...</option>
-
-                  {singleUserOptions.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">
-                עדיפות
-              </label>
-
-              <select
-                value={form.priority}
-                onChange={(e) => updateField("priority", e.target.value)}
-                className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-yellow-400"
-              >
-                <option value="low">נמוכה</option>
-                <option value="normal">רגילה</option>
-                <option value="high">גבוהה</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">
-                כותרת ההודעה
-              </label>
-
-              <input
-                type="text"
-                value={form.title}
-                onChange={(e) => updateField("title", e.target.value)}
-                placeholder="לדוגמה: עדכון חשוב במערכת"
-                className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-yellow-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-gray-300 mb-2">
-                תוכן ההודעה
-              </label>
-
-              <textarea
-                rows="6"
-                value={form.body}
-                onChange={(e) => updateField("body", e.target.value)}
-                placeholder="כתבי כאן את הודעת המערכת..."
-                className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-yellow-400"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={openSendConfirmModal}
-              disabled={sending}
-              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-black px-8 py-4 rounded-xl shadow-lg hover:scale-[1.01] transition-transform w-full disabled:opacity-60"
-            >
-              {sending ? "שולח הודעה..." : "שלח הודעה 🚀"}
-            </button>
+            <RecipientsSummary counts={counts} recipientCount={recipientCount} />
           </section>
 
-          <aside className="bg-white/5 border border-white/10 rounded-3xl p-6 h-fit">
-            <h2 className="text-xl font-black mb-4">📊 תקציר נמענים</h2>
-
-            <div className="space-y-3">
-              <MiniStat label="כל המשתמשים" value={users.length} />
-
-              <MiniStat
-                label="תלמידים"
-                value={
-                  users.filter(
-                    (user) => user.role === "student" || user.role === "user"
-                  ).length
-                }
-              />
-
-              <MiniStat
-                label="מורים"
-                value={users.filter((user) => user.role === "teacher").length}
-              />
-
-              <MiniStat
-                label="מנהלים"
-                value={users.filter((user) => user.role === "admin").length}
-              />
-            </div>
-          </aside>
-        </div>
+          <MessagesHistory sentMessages={sentMessages} />
+        </>
       )}
-
-      <section className="bg-white/5 border border-white/10 rounded-3xl p-6">
-        <h2 className="text-2xl font-black mb-5">
-          📨 הודעות שנשלחו לאחרונה
-        </h2>
-
-        {sentMessages.length === 0 ? (
-          <p className="text-gray-400">עדיין לא נשלחו הודעות.</p>
-        ) : (
-          <div className="space-y-3">
-            {sentMessages.slice(0, 10).map((item) => (
-              <div
-                key={item._id}
-                className="bg-slate-950/60 border border-white/10 rounded-2xl p-4"
-              >
-                <div className="flex flex-col md:flex-row justify-between gap-3">
-                  <div>
-                    <h3 className="font-black text-white">{item.title}</h3>
-
-                    <p className="text-gray-400 text-sm mt-1 line-clamp-2">
-                      {item.body}
-                    </p>
-                  </div>
-
-                  <div className="text-left text-sm text-gray-400">
-                    <div>{getTargetLabel(item.targetType)}</div>
-                    <div>{formatDate(item.createdAt)}</div>
-                    <div>{item.recipients?.length || 0} נמענים</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
 
       <AppConfirmModal
         isOpen={confirmModal.isOpen}
         title={confirmModal.title}
         text={confirmModal.text}
         type="warning"
-        confirmText="כן, שלח הודעה"
+        confirmText="כן, שלח"
         cancelText="ביטול"
         isLoading={sending}
         onConfirm={handleSendMessage}
@@ -393,11 +250,341 @@ export default function AdminMessages() {
   );
 }
 
-function MiniStat({ label, value }) {
+function MessageFormPanel({
+  form,
+  recipientCount,
+  singleUserOptions,
+  sending,
+  updateField,
+  openSendConfirmModal,
+}) {
   return (
-    <div className="flex justify-between items-center bg-slate-950/60 border border-white/10 rounded-2xl p-4">
-      <span className="text-gray-300 font-bold">{label}</span>
-      <span className="text-2xl font-black text-yellow-400">{value}</span>
+    <section
+      className="relative overflow-hidden rounded-[2rem] border-2 border-white/20 bg-slate-950/55 p-5 text-white backdrop-blur-xl md:p-6"
+      style={{
+        boxShadow:
+          "0 24px 75px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/8 to-transparent" />
+
+      <div className="relative z-10 space-y-5">
+        <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="text-2xl font-black text-white">שליחת הודעה חדשה</h2>
+            <p className="mt-1 text-sm font-semibold text-white/55">
+              מספר נמענים לפי הבחירה הנוכחית: {recipientCount}
+            </p>
+          </div>
+
+          <span className="w-fit rounded-full border border-yellow-300/35 bg-yellow-300/15 px-4 py-2 text-xs font-black text-yellow-100">
+            {getPriorityLabel(form.priority)}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Field label="נמענים">
+            <select
+              value={form.targetType}
+              onChange={(event) => {
+                updateField("targetType", event.target.value);
+                updateField("targetUser", "");
+              }}
+              className="admin-input"
+            >
+              <option value="all">כל המשתמשים</option>
+              <option value="students">תלמידים בלבד</option>
+              <option value="teachers">מורים בלבד</option>
+              <option value="admins">מנהלים בלבד</option>
+              <option value="single">משתמש ספציפי</option>
+            </select>
+          </Field>
+
+          <Field label="עדיפות">
+            <select
+              value={form.priority}
+              onChange={(event) => updateField("priority", event.target.value)}
+              className="admin-input"
+            >
+              <option value="low">נמוכה</option>
+              <option value="normal">רגילה</option>
+              <option value="high">גבוהה</option>
+            </select>
+          </Field>
+        </div>
+
+        {form.targetType === "single" && (
+          <Field label="בחירת משתמש">
+            <select
+              value={form.targetUser}
+              onChange={(event) => updateField("targetUser", event.target.value)}
+              className="admin-input"
+            >
+              <option value="">בחרי משתמש...</option>
+
+              {singleUserOptions.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
+
+        <Field label="כותרת ההודעה">
+          <input
+            type="text"
+            value={form.title}
+            onChange={(event) => updateField("title", event.target.value)}
+            placeholder="לדוגמה: עדכון חשוב במערכת"
+            className="admin-input"
+          />
+        </Field>
+
+        <Field label="תוכן ההודעה">
+          <textarea
+            rows={6}
+            value={form.body}
+            onChange={(event) => updateField("body", event.target.value)}
+            placeholder="כתבי כאן את הודעת המערכת..."
+            className="admin-input resize-none leading-7"
+          />
+        </Field>
+
+        <button
+          type="button"
+          onClick={openSendConfirmModal}
+          disabled={sending}
+          className="w-full rounded-full border-2 border-white/50 bg-gradient-to-b from-red-400 to-red-700 px-7 py-3.5 text-base font-black text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+          style={{
+            boxShadow: sending ? "none" : "0 6px 0 rgba(89,15,20,0.42)",
+          }}
+        >
+          {sending ? "שולח הודעה..." : "שליחת הודעה"}
+        </button>
+      </div>
+
+      <style>
+        {`
+          .admin-input {
+            width: 100%;
+            border-radius: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.16);
+            background: rgba(2, 6, 23, 0.62);
+            padding: 0.8rem 1rem;
+            color: white;
+            outline: none;
+            font-weight: 700;
+            transition: 0.2s ease;
+          }
+
+          .admin-input::placeholder {
+            color: rgba(255, 255, 255, 0.35);
+          }
+
+          .admin-input:focus {
+            border-color: rgba(253, 224, 71, 0.72);
+            background: rgba(255, 255, 255, 0.12);
+          }
+
+          .admin-input option {
+            background: #020617;
+            color: white;
+          }
+        `}
+      </style>
+    </section>
+  );
+}
+
+function RecipientsSummary({ counts, recipientCount }) {
+  return (
+    <aside
+      className="relative overflow-hidden rounded-[2rem] border-2 border-white/20 bg-slate-950/55 p-5 text-white backdrop-blur-xl"
+      style={{
+        boxShadow:
+          "0 24px 75px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/8 to-transparent" />
+
+      <div className="relative z-10">
+        <h2 className="text-xl font-black text-white">תקציר נמענים</h2>
+
+        <div className="mt-4 space-y-3">
+          <SummaryLine label="כל המשתמשים" value={counts.all} tone="blue" />
+          <SummaryLine label="תלמידים" value={counts.students} tone="yellow" />
+          <SummaryLine label="מורים" value={counts.teachers} tone="red" />
+          <SummaryLine label="מנהלים" value={counts.admins} tone="green" />
+        </div>
+
+        <div className="mt-5 rounded-[1.4rem] border-2 border-yellow-300/35 bg-yellow-300/15 p-4 text-center text-yellow-100">
+          <div className="text-xs font-black opacity-75">נבחרו לשליחה</div>
+          <div className="mt-1 text-4xl font-black">{recipientCount}</div>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function MessagesHistory({ sentMessages }) {
+  return (
+    <section
+      className="relative overflow-hidden rounded-[2rem] border-2 border-white/20 bg-slate-950/55 p-5 text-white backdrop-blur-xl md:p-6"
+      style={{
+        boxShadow:
+          "0 24px 75px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/8 to-transparent" />
+
+      <div className="relative z-10">
+        <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="text-2xl font-black text-white">
+              הודעות שנשלחו לאחרונה
+            </h2>
+
+            <p className="mt-1 text-sm font-semibold text-white/55">
+              מוצגות עד 10 ההודעות האחרונות שנשלחו מהמערכת.
+            </p>
+          </div>
+        </div>
+
+        {sentMessages.length === 0 ? (
+          <div className="rounded-[1.6rem] border-2 border-dashed border-white/18 bg-white/8 p-8 text-center">
+            <h3 className="text-xl font-black text-white">
+              עדיין לא נשלחו הודעות
+            </h3>
+
+            <p className="mt-2 text-sm font-semibold text-white/55">
+              לאחר שליחת הודעה, היא תופיע כאן.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-[1.6rem] border-2 border-white/14 bg-slate-950/45">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[850px] text-right">
+                <thead>
+                  <tr className="border-b border-white/12 bg-white/10 text-xs font-black text-white/62">
+                    <th className="px-4 py-4">כותרת</th>
+                    <th className="px-4 py-4">תוכן</th>
+                    <th className="px-4 py-4">יעד</th>
+                    <th className="px-4 py-4">עדיפות</th>
+                    <th className="px-4 py-4">נמענים</th>
+                    <th className="px-4 py-4">תאריך</th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-white/8 text-sm">
+                  {sentMessages.slice(0, 10).map((item) => (
+                    <tr key={item._id} className="transition hover:bg-white/8">
+                      <td className="px-4 py-4 font-black text-white">
+                        {item.title || "ללא כותרת"}
+                      </td>
+
+                      <td className="max-w-[260px] px-4 py-4 text-white/62">
+                        <span className="line-clamp-2">
+                          {item.body || "ללא תוכן"}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-4 text-white/62">
+                        {getTargetLabel(item.targetType)}
+                      </td>
+
+                      <td className="px-4 py-4">
+                        <PriorityBadge priority={item.priority} />
+                      </td>
+
+                      <td className="px-4 py-4 text-white/62">
+                        {item.recipients?.length || item.count || 0}
+                      </td>
+
+                      <td className="px-4 py-4 text-white/55">
+                        {formatDate(item.createdAt)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function Field({ label, children }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-black text-white/65">
+        {label}
+      </span>
+
+      {children}
+    </label>
+  );
+}
+
+function SummaryLine({ label, value, tone }) {
+  const tones = {
+    yellow: "border-yellow-300/35 bg-yellow-300/15 text-yellow-100",
+    red: "border-red-300/35 bg-red-500/15 text-red-100",
+    green: "border-emerald-300/35 bg-emerald-300/12 text-emerald-100",
+    blue: "border-sky-300/35 bg-sky-300/12 text-sky-100",
+  };
+
+  return (
+    <div
+      className={`flex items-center justify-between rounded-[1.2rem] border px-4 py-3 ${
+        tones[tone] || tones.yellow
+      }`}
+    >
+      <span className="text-sm font-black opacity-75">{label}</span>
+      <span className="text-2xl font-black">{value}</span>
+    </div>
+  );
+}
+
+function PriorityBadge({ priority }) {
+  const config = {
+    low: {
+      label: "נמוכה",
+      className: "border-sky-300/35 bg-sky-300/12 text-sky-100",
+    },
+    normal: {
+      label: "רגילה",
+      className: "border-yellow-300/35 bg-yellow-300/15 text-yellow-100",
+    },
+    high: {
+      label: "גבוהה",
+      className: "border-red-300/35 bg-red-500/15 text-red-100",
+    },
+  };
+
+  const item = config[priority] || config.normal;
+
+  return (
+    <span
+      className={`rounded-full border px-3 py-1 text-xs font-black ${item.className}`}
+    >
+      {item.label}
+    </span>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="flex min-h-[360px] items-center justify-center" dir="rtl">
+      <div className="text-center text-white">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-white/18 bg-white/10">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-yellow-300" />
+        </div>
+
+        <p className="mt-4 text-base font-black">טוען הודעות...</p>
+      </div>
     </div>
   );
 }
@@ -422,7 +609,17 @@ function getTargetLabel(targetType) {
     single: "משתמש בודד",
   };
 
-  return labels[targetType] || targetType;
+  return labels[targetType] || targetType || "לא ידוע";
+}
+
+function getPriorityLabel(priority) {
+  const labels = {
+    low: "עדיפות נמוכה",
+    normal: "עדיפות רגילה",
+    high: "עדיפות גבוהה",
+  };
+
+  return labels[priority] || "עדיפות רגילה";
 }
 
 function formatDate(date) {

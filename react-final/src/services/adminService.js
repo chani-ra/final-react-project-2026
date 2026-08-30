@@ -18,6 +18,8 @@ export const updateUserRole = async (userId, role) => {
   } catch (error) {
     throw error.response?.data?.message || "נכשל בעדכון הרשאת המשתמש";
   }
+};
+
 
 
 // קבלת כל השירים למנהל

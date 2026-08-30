@@ -103,6 +103,7 @@ export default function AICoachCard({ user }) {
 
       const plan = await generateCoachPlan(note.trim());
 
+
       setCurrentPlan(plan);
       setNote("");
 
@@ -148,17 +149,25 @@ export default function AICoachCard({ user }) {
     try {
       setSavingTasks(true);
       setMessage({ type: "", text: "" });
+      const planTitle =
+        planToShow?.focus || "תוכנית אישית מהמאמן";
 
       const tasks = steps.map((step, index) => ({
-        title: `משימת מאמן ${index + 1}`,
+        title: `שלב ${index + 1}`,
         description: step,
         type: "coach_task",
         source: "ai_coach",
         difficulty: "Easy",
         estimatedTime: "10 דקות",
         rewardXP: 50,
-        coachPlanFocus: planToShow.focus || "תוכנית אישית",
+        coachPlanFocus: planTitle,
       }));
+
+      await createManyTasks({
+        tasks,
+        coachPlanFocus: planTitle,
+        planTitle,
+      });
 
       await createManyTasks({
         tasks,
@@ -367,18 +376,16 @@ function PlanCard({
               key={`${step}-${index}`}
               type="button"
               onClick={() => studyMode && onToggleStep(index)}
-              className={`flex w-full items-start gap-3 rounded-[1.25rem] border p-4 text-right transition ${
-                done
+              className={`flex w-full items-start gap-3 rounded-[1.25rem] border p-4 text-right transition ${done
                   ? "border-emerald-300/35 bg-emerald-300/12"
                   : "border-white/10 bg-white/8 hover:bg-white/12"
-              } ${studyMode ? "cursor-pointer" : "cursor-default"}`}
+                } ${studyMode ? "cursor-pointer" : "cursor-default"}`}
             >
               <span
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black ${
-                  done
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-black ${done
                     ? "bg-emerald-300 text-slate-950"
                     : "bg-yellow-300 text-slate-950"
-                }`}
+                  }`}
               >
                 {done ? "✓" : index + 1}
               </span>

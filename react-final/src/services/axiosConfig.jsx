@@ -12,7 +12,6 @@ const instance = axios.create({
 let isRefreshing = false;
 let failedQueue = [];
 
-// מפעיל מחדש בקשות שחיכו בזמן שה-token התחדש
 const processQueue = (error, token = null) => {
   failedQueue.forEach((request) => {
     if (error) {
@@ -25,7 +24,6 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// ניקוי נתוני התחברות במקרה שגם refreshToken כבר לא תקין
 const clearAuthStorage = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");

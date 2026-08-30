@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 const roleOptions = [
   { value: "student", label: "תלמיד" },
@@ -107,11 +108,27 @@ function RoleConfirmModal({
   onConfirm,
   onCancel,
 }) {
-  return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 p-4">
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 p-4"
+      dir="rtl"
+    >
       <div
-        className="w-full max-w-md rounded-[2rem] border-2 border-white/20 bg-slate-950 p-6 text-white shadow-2xl"
-        dir="rtl"
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-[2rem] border-2 border-white/20 bg-slate-950 p-6 text-white shadow-2xl"
+        style={{
+          boxShadow:
+            "0 30px 100px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.10)",
+        }}
       >
         <div className="mb-4 rounded-full border border-red-300/30 bg-red-500/15 px-4 py-2 text-center text-sm font-black text-red-100">
           שינוי הרשאה
@@ -138,6 +155,9 @@ function RoleConfirmModal({
             onClick={onConfirm}
             disabled={isLoading}
             className="flex-1 rounded-full border-2 border-white/50 bg-gradient-to-b from-red-400 to-red-700 px-5 py-3 text-sm font-black text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+            style={{
+              boxShadow: isLoading ? "none" : "0 6px 0 rgba(89,15,20,0.42)",
+            }}
           >
             {isLoading ? "מעדכן..." : "אישור שינוי"}
           </button>
@@ -152,7 +172,8 @@ function RoleConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

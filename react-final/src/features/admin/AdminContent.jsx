@@ -110,7 +110,7 @@ export default function AdminContent() {
             </h1>
 
             <p className="mt-2 max-w-3xl text-sm font-semibold leading-7 text-white/68">
-              ניהול תכנים שמופיעים באתר, כולל בחירת שיר שבועי מתוך השירים
+              ניהול התוכן שמופיע באתר, כולל בחירת שיר שבועי מתוך השירים
               שהועלו למערכת.
             </p>
           </div>
@@ -173,9 +173,20 @@ export default function AdminContent() {
 
             <div className="flex flex-wrap gap-2">
               <MiniCounter label="סה״כ" value={stats.total} tone="blue" />
-              <MiniCounter label="ציבוריים" value={stats.publicSongs} tone="yellow" />
+
+              <MiniCounter
+                label="ציבוריים"
+                value={stats.publicSongs}
+                tone="yellow"
+              />
+
               <MiniCounter label="טיוטות" value={stats.draftSongs} tone="red" />
-              <MiniCounter label="שבועי" value={stats.weeklySongs} tone="green" />
+
+              <MiniCounter
+                label="שבועי"
+                value={stats.weeklySongs}
+                tone="green"
+              />
             </div>
           </div>
 
@@ -186,7 +197,7 @@ export default function AdminContent() {
               ) : songs.length === 0 ? (
                 <EmptyContent />
               ) : (
-                <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_360px]">
+                <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_360px]">
                   <SongsTable
                     songs={songs}
                     selectedSongId={selectedSongId}
@@ -232,11 +243,11 @@ function SongsTable({
   onSetWeeklySong,
 }) {
   return (
-    <div className="overflow-hidden rounded-[1.7rem] border-2 border-white/14 bg-slate-950/45">
-      <div className="overflow-x-auto">
+    <div className="h-[540px] overflow-hidden rounded-[1.7rem] border-2 border-white/14 bg-slate-950/45">
+      <div className="h-full overflow-auto">
         <table className="w-full min-w-[850px] text-right">
-          <thead>
-            <tr className="border-b border-white/12 bg-white/10 text-xs font-black text-white/62">
+          <thead className="sticky top-0 z-20">
+            <tr className="border-b border-white/12 bg-slate-950 text-xs font-black text-white/62">
               <th className="px-4 py-4">שם השיר</th>
               <th className="px-4 py-4">נושא</th>
               <th className="px-4 py-4">רמה</th>
@@ -336,8 +347,9 @@ function SongsTable({
 function SelectedSongPanel({ song, actionLoadingId, onSetWeeklySong }) {
   if (!song) {
     return (
-      <aside className="rounded-[1.7rem] border-2 border-white/14 bg-slate-950/45 p-5 text-white">
+      <aside className="sticky top-5 h-[540px] self-start overflow-y-auto rounded-[1.7rem] border-2 border-white/14 bg-slate-950/45 p-4 text-white">
         <h2 className="text-xl font-black">בחרי שיר</h2>
+
         <p className="mt-2 text-sm font-semibold text-white/55">
           לאחר בחירת שיר בטבלה, הפרטים שלו יוצגו כאן.
         </p>
@@ -349,67 +361,63 @@ function SelectedSongPanel({ song, actionLoadingId, onSetWeeklySong }) {
 
   return (
     <aside
-      className="relative overflow-hidden rounded-[1.7rem] border-2 border-white/18 bg-slate-950/55 p-5 text-white"
+      className="sticky top-5 h-[540px] self-start overflow-y-auto rounded-[1.7rem] border-2 border-white/18 bg-slate-950/55 p-4 text-white"
       style={{
         boxShadow:
           "0 18px 55px rgba(3,31,61,0.24), inset 0 1px 0 rgba(255,255,255,0.10)",
       }}
     >
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/8 to-transparent" />
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-black leading-tight text-white">
+            {song.title || "שיר ללא שם"}
+          </h2>
 
-      <div className="relative z-10">
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-2xl font-black text-white">
-              {song.title || "שיר ללא שם"}
-            </h2>
-
-            <p className="mt-1 text-sm font-semibold text-white/48">
-              {song.theme || "ללא נושא"} · {getLevelLabel(song.level)}
-            </p>
-          </div>
-
-          {song.isWeeklySong && (
-            <span className="rounded-full border border-yellow-300/45 bg-yellow-300 px-3 py-1 text-xs font-black text-slate-950">
-              שבועי
-            </span>
-          )}
+          <p className="mt-1 text-xs font-semibold text-white/48">
+            {song.theme || "ללא נושא"} · {getLevelLabel(song.level)}
+          </p>
         </div>
 
-        <div className="space-y-3">
-          <InfoLine label="מורה" value={song.uploadedBy?.username || "לא ידוע"} />
-          <InfoLine label="מלחין" value={song.composer || "לא צוין"} />
-          <InfoLine label="סטטוס" value={song.isPublic ? "ציבורי" : "טיוטה"} />
-        </div>
-
-        <div className="mt-5">
-          <CustomAudioPlayer
-            src={`http://localhost:3000/songs/song/${song._id}/stream`}
-            title={song.title || song.theme || "שיר לימודי"}
-            subtitle={`בדיקת האזנה למנהל · ${getLevelLabel(song.level)}`}
-            allowDownload={false}
-          />
-        </div>
-
-        <button
-          type="button"
-          onClick={() => onSetWeeklySong(song._id)}
-          disabled={isLoading || song.isWeeklySong}
-          className="mt-5 w-full rounded-full border-2 border-white/50 bg-gradient-to-b from-red-400 to-red-700 px-6 py-3 text-sm font-black text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-55"
-          style={{
-            boxShadow:
-              isLoading || song.isWeeklySong
-                ? "none"
-                : "0 6px 0 rgba(89,15,20,0.42)",
-          }}
-        >
-          {isLoading
-            ? "מעדכן..."
-            : song.isWeeklySong
-            ? "זה שיר השבוע הנוכחי"
-            : "קבע כשיר השבוע"}
-        </button>
+        {song.isWeeklySong && (
+          <span className="rounded-full border border-yellow-300/45 bg-yellow-300 px-3 py-1 text-xs font-black text-slate-950">
+            שבועי
+          </span>
+        )}
       </div>
+
+      <div className="space-y-2.5">
+        <InfoLine label="מורה" value={song.uploadedBy?.username || "לא ידוע"} />
+        <InfoLine label="מלחין" value={song.composer || "לא צוין"} />
+        <InfoLine label="סטטוס" value={song.isPublic ? "ציבורי" : "טיוטה"} />
+      </div>
+
+      <div className="mt-4 rounded-[1.2rem] border border-white/12 bg-slate-950/40 p-2">
+        <CustomAudioPlayer
+          src={`http://localhost:3000/songs/song/${song._id}/stream`}
+          title={song.title || song.theme || "שיר לימודי"}
+          subtitle={`בדיקת האזנה למנהל · ${getLevelLabel(song.level)}`}
+          allowDownload={false}
+        />
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onSetWeeklySong(song._id)}
+        disabled={isLoading || song.isWeeklySong}
+        className="mt-4 w-full rounded-full border-2 border-white/50 bg-gradient-to-b from-red-400 to-red-700 px-5 py-3 text-sm font-black text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-55"
+        style={{
+          boxShadow:
+            isLoading || song.isWeeklySong
+              ? "none"
+              : "0 6px 0 rgba(89,15,20,0.42)",
+        }}
+      >
+        {isLoading
+          ? "מעדכן..."
+          : song.isWeeklySong
+          ? "זה שיר השבוע הנוכחי"
+          : "קבע כשיר השבוע"}
+      </button>
     </aside>
   );
 }
@@ -468,9 +476,9 @@ function StatusBadge({ isPublic }) {
 
 function InfoLine({ label, value }) {
   return (
-    <div className="flex items-center justify-between rounded-[1.15rem] border border-white/10 bg-slate-950/45 px-4 py-3">
+    <div className="flex items-center justify-between rounded-[1rem] border border-white/10 bg-slate-950/45 px-3 py-2.5">
       <span className="text-xs font-black text-white/40">{label}</span>
-      <span className="text-sm font-bold text-white/72">{value}</span>
+      <span className="text-xs font-bold text-white/72">{value}</span>
     </div>
   );
 }

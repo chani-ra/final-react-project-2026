@@ -257,7 +257,11 @@ export default function SmartLearningPath({
                   : "נסי שוב ליצור מדריך חכם"}
               </button>
             )}
-            
+            {!plan.isFallback && (
+              <p className="mt-4 text-xs font-semibold text-white/40">
+                התוכנית נשמרת להיום ומתעדכנת אוטומטית מחר.
+              </p>
+            )}
           </aside>
 
           <main className="space-y-4">

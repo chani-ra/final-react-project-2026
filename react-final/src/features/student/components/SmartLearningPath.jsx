@@ -6,7 +6,10 @@ import React, {
 
 import { useNavigate } from "react-router-dom";
 
-import { getTodayDailyGuide } from "../../../services/dailyGuideService";
+import {
+  getTodayDailyGuide,
+  refreshTodayDailyGuide,
+} from "../../../services/dailyGuideService";
 
 const actionRoutes = {
   OPEN_CHAT: "/chat",
@@ -43,6 +46,9 @@ export default function SmartLearningPath({
 
   const [isLoading, setIsLoading] =
     useState(true);
+
+  const [isRefreshing, setIsRefreshing] =
+    useState(false);
 
   const [error, setError] =
     useState("");
@@ -101,6 +107,46 @@ export default function SmartLearningPath({
       isMounted = false;
     };
   }, [fallbackPlan]);
+
+  async function handleRefreshGuide() {
+    try {
+      setIsRefreshing(true);
+      setError("");
+
+      const response =
+        await refreshTodayDailyGuide();
+
+      const guide = response?.guide;
+
+      if (!guide) {
+        throw new Error(
+          "Refreshed Daily Guide was not returned"
+        );
+      }
+
+      const normalizedGuide =
+        normalizeDailyGuide(guide);
+
+      setDailyPlan(normalizedGuide);
+
+      if (normalizedGuide.isFallback) {
+        setError(
+          "ה-AI אינו זמין כרגע, לכן נשארה תוכנית חלופית."
+        );
+      }
+    } catch (error) {
+      console.error(
+        "❌ Daily Guide refresh error:",
+        error
+      );
+
+      setError(
+        "לא הצלחנו לרענן את המדריך כרגע."
+      );
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -184,6 +230,31 @@ export default function SmartLearningPath({
                 {getLevelLabel(level)}
               </div>
             </div>
+
+            {plan.isFallback && (
+              <div className="mt-3 rounded-[1.2rem] border border-orange-300/25 bg-orange-300/10 p-4">
+                <div className="text-xs font-black text-orange-100">
+                  תוכנית חלופית
+                </div>
+
+                <p className="mt-1 text-xs font-semibold leading-6 text-white/55">
+                  כרגע מוצגת תוכנית בטוחה
+                  שאינה מבוססת על ניתוח AI
+                  מלא.
+                </p>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleRefreshGuide}
+              disabled={isRefreshing}
+              className="mt-4 w-full rounded-full border-2 border-yellow-300/35 bg-yellow-300/15 px-5 py-3 text-sm font-black text-yellow-100 transition hover:bg-yellow-300/20 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isRefreshing
+                ? "מרעננים את המדריך..."
+                : "רענון המדריך"}
+            </button>
           </aside>
 
           <main className="space-y-4">
@@ -348,37 +419,26 @@ function buildFallbackPlan({
       steps: [
         {
           title: "חזרה על מילים",
-
           description:
             "בחרי 5 מילים מהמילון האישי וקראי אותן בקול.",
-
           action:
             "OPEN_DICTIONARY",
-
           estimatedMinutes: 5,
         },
-
         {
           title: "משפטים קצרים",
-
           description:
             "כתבי משפט אחד לכל מילה כדי שהמילה לא תישאר רק תרגום.",
-
           action:
             "OPEN_WRITING",
-
           estimatedMinutes: 5,
         },
-
         {
           title: "שימוש בדיבור",
-
           description:
             "נסי להשתמש בשתי מילים בתוך שיחה קצרה עם הצ׳אט.",
-
           action:
             "OPEN_CHAT",
-
           estimatedMinutes: 5,
         },
       ],
@@ -390,6 +450,7 @@ function buildFallbackPlan({
         "עוד תרגול קטן היום הוא עוד צעד קדימה.",
 
       estimatedMinutes: 15,
+      isFallback: true,
     },
 
     {
@@ -400,37 +461,26 @@ function buildFallbackPlan({
       steps: [
         {
           title: "בחירת נושא",
-
           description:
             "בחרי נושא אחד פשוט וכתבי עליו 4 משפטים באנגלית.",
-
           action:
             "OPEN_WRITING",
-
           estimatedMinutes: 6,
         },
-
         {
           title: "בדיקת ניסוח",
-
           description:
             "בדקי האם בכל משפט יש נושא ופועל ברורים.",
-
           action:
             "OPEN_WRITING",
-
           estimatedMinutes: 6,
         },
-
         {
           title: "שיפור קטן",
-
           description:
             "בחרי משפט אחד ושפרי אותו עם מילה מדויקת יותר.",
-
           action:
             "OPEN_DICTIONARY",
-
           estimatedMinutes: 6,
         },
       ],
@@ -442,6 +492,7 @@ function buildFallbackPlan({
         "לא צריך לכתוב הרבה כדי להשתפר — צריך לכתוב באופן עקבי.",
 
       estimatedMinutes: 18,
+      isFallback: true,
     },
 
     {
@@ -452,37 +503,26 @@ function buildFallbackPlan({
       steps: [
         {
           title: "שיחה קצרה",
-
           description:
             "פתחי שיחה עם הצ׳אט ועני במשפטים קצרים.",
-
           action:
             "OPEN_CHAT",
-
           estimatedMinutes: 5,
         },
-
         {
           title: "חזרה בקול",
-
           description:
             "בחרי 3 תשובות טובות וקראי אותן בקול.",
-
           action:
             "OPEN_CHAT",
-
           estimatedMinutes: 4,
         },
-
         {
           title: "שיפור ניסוח",
-
           description:
             "שפרי תשובה אחת והפכי אותה לטבעית יותר.",
-
           action:
             "OPEN_WRITING",
-
           estimatedMinutes: 5,
         },
       ],
@@ -494,6 +534,7 @@ function buildFallbackPlan({
         "כל תשובה שאת מצליחה לנסח מחזקת את הביטחון שלך.",
 
       estimatedMinutes: 14,
+      isFallback: true,
     },
   ];
 
@@ -535,7 +576,6 @@ function getLevelLabel(level) {
     beginner: "מתחילים",
     intermediate: "בינוני",
     advanced: "מתקדמים",
-
     מתחילים: "מתחילים",
     בינוני: "בינוני",
     מתקדמים: "מתקדמים",

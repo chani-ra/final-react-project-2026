@@ -327,6 +327,12 @@ function PlanTaskGroup({
 }) {
   const firstTask = tasks[0];
 
+  const [isOpen, setIsOpen] = useState(false);
+
+  const completedCount = tasks.filter(
+    (task) => task.status === "completed"
+  ).length;
+
   const isSmartGuide =
     firstTask?.planSource === "smart_guide" ||
     tasks.some((task) =>
@@ -362,20 +368,30 @@ function PlanTaskGroup({
             </h2>
           </div>
 
-          <div className="text-left">
-            <div className="text-xs font-bold text-gray-400">
-              {tasks.length} שלבים
+          <div className="flex items-center gap-4">
+            <div className="text-left">
+              <div className="text-xs font-bold text-gray-400">
+                {completedCount}/{tasks.length} הושלמו
+              </div>
+
+              <div className="mt-1 text-sm font-black text-yellow-400">
+                +{totalXP} XP
+              </div>
             </div>
 
-            <div className="mt-1 text-sm font-black text-yellow-400">
-              +{totalXP} XP
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsOpen((prev) => !prev)}
+              className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-black text-white transition hover:bg-white/20"
+            >
+              {isOpen ? "סגרי ▲" : "פתחי ▼"}
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="divide-y divide-white/10">
-        {tasks.map((task, index) => {
+      {isOpen && (
+        <div className="divide-y divide-white/10">        {tasks.map((task, index) => {
           const isLoading =
             actionLoadingId === task._id;
 
@@ -505,7 +521,8 @@ function PlanTaskGroup({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -772,7 +789,6 @@ function getDifficultyLabel(diff) {
 
   return labels[diff] || "רגיל";
 }
-
 function getLegacyPlanGroupKey(task) {
   if (!task?.coachPlanFocus) {
     return "";
@@ -784,11 +800,11 @@ function getLegacyPlanGroupKey(task) {
     return `legacy-${task.coachPlanFocus}`;
   }
 
-  const fiveMinuteBucket = Math.floor(
-    createdAt.getTime() / (5 * 60 * 1000)
+  const fiveSecondBucket = Math.floor(
+    createdAt.getTime() / (5 * 1000)
   );
 
-  return `legacy-${task.coachPlanFocus}-${fiveMinuteBucket}`;
+  return `legacy-${task.coachPlanFocus}-${fiveSecondBucket}`;
 }
 
 function formatDate(date) {

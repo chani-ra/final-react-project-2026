@@ -1,4 +1,7 @@
 import axios from "axios";
+import { store } from "../redux/store";
+import { logoutUser } from "../redux/slices/authSlice";
+import { clearAuthStorage, getSessionVersion } from "./authSession";
 
 // כתובת השרת במקום אחד בלבד
 const rawApiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -31,16 +34,15 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-const clearAuthStorage = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("userRole");
-  localStorage.removeItem("user");
+const invalidateSession = () => {
+  clearAuthStorage();
+  store.dispatch(logoutUser());
 };
 
 // שומר הסף שמוסיף את הטוקן אוטומטית לכל בקשה
 instance.interceptors.request.use(
   (config) => {
+    config._authSessionVersion = getSessionVersion();
     const token = localStorage.getItem("token");
 
     if (token) {
@@ -61,6 +63,12 @@ instance.interceptors.response.use(
     const originalRequest = error.config;
     const status = error.response?.status;
 
+    // Responses from a previous login must not affect a newer session.
+    if (originalRequest?._authSessionVersion !== undefined &&
+      originalRequest._authSessionVersion !== getSessionVersion()) {
+      return Promise.reject(error);
+    }
+
     const isAuthEndpoint =
       originalRequest?.url?.includes("/users/login") ||
       originalRequest?.url?.includes("/users/register") ||
@@ -74,7 +82,7 @@ instance.interceptors.response.use(
     const refreshToken = localStorage.getItem("refreshToken");
 
     if (!refreshToken) {
-      clearAuthStorage();
+      invalidateSession();
       return Promise.reject(error);
     }
 
@@ -84,6 +92,9 @@ instance.interceptors.response.use(
         failedQueue.push({ resolve, reject });
       })
         .then((newToken) => {
+          if (originalRequest._authSessionVersion !== getSessionVersion()) {
+            throw new Error("Session changed while waiting for token refresh");
+          }
           originalRequest.headers = originalRequest.headers || {};
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
 
@@ -96,7 +107,7 @@ instance.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      
+
       const response = await axios.post(apiUrl("/users/refresh-token"), {
         refreshToken,
       });
@@ -106,6 +117,11 @@ instance.interceptors.response.use(
 
       if (!newToken) {
         throw new Error("השרת לא החזיר token חדש");
+      }
+
+      // Do not resurrect an old session after a manual logout or new login.
+      if (localStorage.getItem("refreshToken") !== refreshToken) {
+        throw new Error("Session changed during token refresh");
       }
 
       localStorage.setItem("token", newToken);
@@ -122,7 +138,13 @@ instance.interceptors.response.use(
       return instance(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError, null);
-      clearAuthStorage();
+      // Keep the session on network/server errors so the user can retry.
+      const invalidRefresh = [400, 401, 403].includes(refreshError.response?.status) ||
+        refreshError.message === "השרת לא החזיר token חדש";
+
+      if (invalidRefresh && localStorage.getItem("refreshToken") === refreshToken) {
+        invalidateSession();
+      }
 
       return Promise.reject(refreshError);
     } finally {

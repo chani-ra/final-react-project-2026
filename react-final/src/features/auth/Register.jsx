@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { registerUser as registerAction } from "../../redux/slices/authSlice";
 import { registerNewUser } from "../../services/authService";
+import { getHomePathForRole, saveAuthSession } from "../../services/authSession";
 import { useRegister } from "./userRegister";
 import skyJourneyBackground from "../../assets/sky-journey-background.svg";
 
@@ -89,20 +90,9 @@ export default function Register() {
       const payload = buildRegisterPayload();
       const data = await registerNewUser(payload);
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("refreshToken", data.refreshToken || "");
-      localStorage.setItem("userRole", data.user.role);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      dispatch(registerAction(data.user));
-
-      if (data.user.role === "admin") {
-        navigate("/admin/dashboard");
-      } else if (data.user.role === "teacher") {
-        navigate("/teacher/dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      const user = saveAuthSession(data.user, data.token, data.refreshToken);
+      dispatch(registerAction(user));
+      navigate(getHomePathForRole(user.role));
     } catch (error) {
       setServerError(error.toString());
     } finally {

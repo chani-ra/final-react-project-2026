@@ -47,9 +47,7 @@ export default function ReviewsSection() {
     message: "",
   });
 
-  const actuallyLoggedIn = Boolean(
-    isAuthenticated || user || localStorage.getItem("token")
-  );
+  const actuallyLoggedIn = Boolean(isAuthenticated && user);
 
   const loadReviews = async () => {
     try {

@@ -8,9 +8,7 @@ export default function Home() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
-  const isLoggedIn = Boolean(
-    isAuthenticated || user || localStorage.getItem("token")
-  );
+  const isLoggedIn = Boolean(isAuthenticated && user);
 
   const goToUserArea = () => {
     if (user?.role === "teacher") {

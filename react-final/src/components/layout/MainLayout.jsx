@@ -2,6 +2,7 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { logoutUser } from "../../redux/slices/authSlice";
+import { clearAuthStorage, getHomePathForRole } from "../../services/authSession";
 import MessageBell from "./MessageBell";
 import skyJourneyBackground from "../../assets/sky-journey-background.svg";
 
@@ -15,23 +16,12 @@ export default function MainLayout() {
   if (!user) return null;
 
   const handleLogout = () => {
+    clearAuthStorage();
     dispatch(logoutUser());
     navigate("/");
   };
 
-  const goToHomeByRole = () => {
-    if (user.role === "teacher") {
-      navigate("/teacher/dashboard");
-      return;
-    }
-
-    if (user.role === "admin") {
-      navigate("/admin/dashboard");
-      return;
-    }
-
-    navigate("/dashboard");
-  };
+  const goToHomeByRole = () => navigate(getHomePathForRole(user.role));
 
   const getNavLinks = () => {
     const homeLink = { name: "דף הבית", path: "/" };

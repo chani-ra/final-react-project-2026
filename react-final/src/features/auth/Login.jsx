@@ -4,24 +4,8 @@ import { useNavigate } from "react-router-dom";
 
 import { loginUser as loginAction } from "../../redux/slices/authSlice";
 import { loginUser } from "../../services/authService";
+import { getHomePathForRole, saveAuthSession } from "../../services/authSession";
 import skyJourneyBackground from "../../assets/sky-journey-background.svg";
-
-const normalizeUser = (rawUser) => {
-  if (!rawUser) return null;
-
-  const normalizedId = rawUser.id || rawUser._id || rawUser.userId;
-
-  return {
-    ...rawUser,
-    id: normalizedId,
-    _id: rawUser._id || normalizedId,
-    username: rawUser.username || rawUser.name || "משתמש",
-    role: rawUser.role,
-    favoriteHobbies: rawUser.favoriteHobbies || [],
-    expectations: rawUser.expectations || [],
-    englishLevel: rawUser.englishLevel || "beginner",
-  };
-};
 
 export default function Login() {
   const dispatch = useDispatch();
@@ -40,38 +24,9 @@ export default function Login() {
 
     try {
       const data = await loginUser(email, password);
-      const normalizedUser = normalizeUser(data.user);
-
-      console.group("Login Debug");
-      console.log("Full server response:", data);
-      console.log("Raw user from server:", data.user);
-      console.log("Normalized user:", normalizedUser);
-      console.log("User ID:", normalizedUser?.id);
-      console.log("User role:", normalizedUser?.role);
-      console.groupEnd();
-
-      if (!normalizedUser?.id) {
-        throw new Error("התחברות הצליחה, אבל השרת לא החזיר מזהה משתמש");
-      }
-
-      if (!normalizedUser?.role) {
-        throw new Error("התחברות הצליחה, אבל השרת לא החזיר תפקיד משתמש");
-      }
-
-      dispatch(loginAction(normalizedUser));
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("refreshToken", data.refreshToken || "");
-      localStorage.setItem("userRole", normalizedUser.role);
-      localStorage.setItem("user", JSON.stringify(normalizedUser));
-
-      if (normalizedUser.role === "admin") {
-        navigate("/admin/dashboard");
-      } else if (normalizedUser.role === "teacher") {
-        navigate("/teacher/dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      const user = saveAuthSession(data.user, data.token, data.refreshToken);
+      dispatch(loginAction(user));
+      navigate(getHomePathForRole(user.role));
     } catch (err) {
       console.error("Login error:", err);
       setError(typeof err === "string" ? err : err.message || "שגיאה בהתחברות");

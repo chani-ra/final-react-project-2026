@@ -1,14 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const storedUser = localStorage.getItem("user")
-  ? JSON.parse(localStorage.getItem("user"))
-  : null;
-
-const storedToken = localStorage.getItem("token");
+const hasStoredSession = Boolean(
+  localStorage.getItem("token") || localStorage.getItem("refreshToken")
+);
 
 const initialState = {
-  user: storedUser,
-  isAuthenticated: !!storedToken,
+  user: null,
+  isAuthenticated: false,
+  status: hasStoredSession ? "checking" : "guest",
 };
 
 const authSlice = createSlice({
@@ -18,25 +17,41 @@ const authSlice = createSlice({
     registerUser: (state, action) => {
       state.user = action.payload;
       state.isAuthenticated = true;
+      state.status = "authenticated";
     },
-
     loginUser: (state, action) => {
       state.user = action.payload;
       state.isAuthenticated = true;
+      state.status = "authenticated";
     },
-
+    restoreSession: (state, action) => {
+      state.user = action.payload;
+      state.isAuthenticated = true;
+      state.status = "authenticated";
+    },
+    retrySessionCheck: (state) => {
+      state.status = "checking";
+    },
+    sessionCheckFailed: (state) => {
+      state.status = "error";
+      state.user = null;
+      state.isAuthenticated = false;
+    },
     logoutUser: (state) => {
       state.user = null;
       state.isAuthenticated = false;
-
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("userRole");
-      localStorage.removeItem("user");
+      state.status = "guest";
     },
   },
 });
 
-export const { registerUser, loginUser, logoutUser } = authSlice.actions;
+export const {
+  registerUser,
+  loginUser,
+  restoreSession,
+  retrySessionCheck,
+  sessionCheckFailed,
+  logoutUser,
+} = authSlice.actions;
 
 export default authSlice.reducer;

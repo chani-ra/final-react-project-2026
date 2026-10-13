@@ -1,4 +1,18 @@
 import axiosConfig from "./axiosConfig";
+import { clearAuthStorage } from "./authSession";
+
+let currentUserRequest = null;
+
+export const getCurrentUser = () => {
+  if (!currentUserRequest) {
+    currentUserRequest = axiosConfig.get("/users/profile")
+      .then((response) => response.data.user)
+      .finally(() => {
+        currentUserRequest = null;
+      });
+  }
+  return currentUserRequest;
+};
 
 export const loginUser = async (email, password) => {
   try {
@@ -48,9 +62,4 @@ export const refreshAccessToken = async () => {
   }
 };
 
-export const clearAuthStorage = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("userRole");
-  localStorage.removeItem("user");
-};
+export { clearAuthStorage };

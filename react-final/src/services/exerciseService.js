@@ -11,9 +11,9 @@ export const getExerciseById = async (exerciseId) => {
 };
 
 // סימון תרגיל כהושלם עבור תלמיד
-export const markExerciseCompleted = async (exerciseId) => {
+export const markExerciseCompleted = async (exerciseId, courseId) => {
   try {
-    const response = await axiosConfig.post(`/exercises/${exerciseId}/complete`);
+    const response = await axiosConfig.post(`/exercises/${exerciseId}/complete`, { courseId });
     return response.data;
   } catch (error) {
     throw error.response?.data?.message || "נכשל בסימון התרגיל כהושלם";
@@ -68,4 +68,26 @@ export const generateExerciseWithAI = async (aiData) => {
   } catch (error) {
     throw error.response?.data?.message || "נכשל ביצירת תרגיל בעזרת AI";
   }
+};
+export const submitExerciseAnswers = async (
+  exerciseId,
+  courseId,
+  answers
+) => {
+  const { data } = await axiosConfig.post(
+    "/exercises/" + exerciseId + "/submit",
+    { courseId, answers }
+  );
+  return data;
+};
+
+export const getLatestExerciseSubmission = async (
+  exerciseId,
+  courseId
+) => {
+  const { data } = await axiosConfig.get(
+    "/exercises/" + exerciseId + "/submission",
+    { params: { courseId } }
+  );
+  return data.attempt;
 };

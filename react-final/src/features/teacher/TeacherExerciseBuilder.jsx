@@ -18,6 +18,9 @@ export default function TeacherExerciseBuilder() {
   const [mode, setMode] = useState("manual");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [questionDrafts, setQuestionDrafts] = useState([]);
+  const [aiCount, setAiCount] = useState(4);
+  const [aiFormat, setAiFormat] = useState("auto");
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const [form, setForm] = useState({
@@ -57,36 +60,40 @@ export default function TeacherExerciseBuilder() {
     });
   };
 
-  const normalizeAIExercise = (data) => {
-    const aiExercise =
-      data.exercise || data.generatedExercise || data.data || data;
+  const normalizeAIExercise = (payload) => {
+    const data =
+      payload?.data ||
+      payload?.generatedExercise ||
+      payload?.exercise ||
+      payload;
 
-    if (Array.isArray(aiExercise)) {
-      const instructionsText = aiExercise
-        .map((item, index) => {
-          return `${index + 1}. Complete the sentence:
+    const raw = Array.isArray(data)
+      ? data
+      : data?.questions;
 
-${item.sentence || ""}
+    if (!Array.isArray(raw) || !raw.length) {
+      throw Error("ה־AI לא החזיר שאלות");
+    }
 
-Hint: ${item.hint || "No hint provided"}`;
-        })
-        .join("\n\n--------------------\n\n");
+    const questions = raw.map((item) => ({
+      prompt: String(
+        item.sentence || item.question || ""
+      ).trim(),
+      answer: String(item.correctAnswer || "").trim(),
+      explanation: String(item.hint || ""),
+      mode: data.format === "open" ? "flexible" : "exact",
+    }));
 
-      return {
-        title: form.title || "Fill in the blanks exercise",
-        description: "Complete the missing words in the sentences.",
-        instructions: instructionsText,
-      };
+    if (questions.some((q) => !q.prompt || !q.answer)) {
+      throw Error("חסרה שאלה או תשובת דוגמה");
     }
 
     return {
-      title: aiExercise.title || form.title || "תרגיל באנגלית",
-      description: aiExercise.description || "תרגיל שנוצר בעזרת AI",
+      title: data.title || form.title || "English exercise",
+      description: data.description || "",
       instructions:
-        aiExercise.instructions ||
-        aiExercise.content ||
-        aiExercise.text ||
-        "קראי את ההוראות ועני על התרגיל.",
+        data.instructions || "עני על השאלות באנגלית.",
+      questions,
     };
   };
 
@@ -105,6 +112,8 @@ Hint: ${item.hint || "No hint provided"}`;
 
       const aiData = {
         prompt: form.aiPrompt || form.title,
+        questionCount: aiCount,
+        questionFormat: aiFormat,
         topic: form.title,
         level: form.level,
         category: form.category,
@@ -127,6 +136,7 @@ Hint: ${item.hint || "No hint provided"}`;
         instructions: normalizedExercise.instructions,
       }));
 
+      setQuestionDrafts(normalizedExercise.questions);
       setMode("manual");
 
       setMessage({
@@ -144,6 +154,18 @@ Hint: ${item.hint || "No hint provided"}`;
     if (!form.title.trim()) return "כותרת תרגיל חובה.";
     if (!form.instructions.trim()) return "הוראות התרגיל חובה.";
 
+    if (form.aiPrompt.trim() && !questionDrafts.length) {
+      return "יש ליצור שאלות בעזרת AI לפני שמירה.";
+    }
+
+    if (
+      questionDrafts.some(
+        (q) => !q.prompt.trim() || !q.answer.trim()
+      )
+    ) {
+      return "חובה למלא את השאלות ותשובות הדוגמה.";
+    }
+
     if (Number(form.targetAgeMin) > Number(form.targetAgeMax)) {
       return "גיל מינימלי לא יכול להיות גדול מגיל מקסימלי.";
     }
@@ -152,6 +174,14 @@ Hint: ${item.hint || "No hint provided"}`;
   };
 
   const handleSaveExercise = async () => {
+    // ENGLISHWISE_NO_EMPTY_AI_EXERCISE
+    if (form.aiPrompt.trim() && !questionDrafts.length) {
+      setMessage({
+        type: "error",
+        text: "אי אפשר לשמור: לא נוצרו שאלות. צרי שוב בעזרת AI.",
+      });
+      return;
+    }
     const validationError = validateForm();
 
     if (validationError) {
@@ -183,6 +213,18 @@ Hint: ${item.hint || "No hint provided"}`;
         isPublic: form.isPublic,
         createdByAI: Boolean(form.aiPrompt.trim()),
         aiPrompt: form.aiPrompt.trim(),
+        ...(questionDrafts.length
+          ? {
+              questions: questionDrafts.map(
+                (q) => q.prompt.trim()
+              ),
+              answerKey: questionDrafts.map((q) => ({
+                answer: q.answer.trim(),
+                explanation: q.explanation,
+                mode: q.mode,
+              })),
+            }
+          : {}),
       };
 
       await createExercise(payload);
@@ -263,6 +305,10 @@ Hint: ${item.hint || "No hint provided"}`;
                   updateField={updateField}
                   isGenerating={isGenerating}
                   onGenerate={handleGenerateWithAI}
+                  aiCount={aiCount}
+                  onCount={setAiCount}
+                  aiFormat={aiFormat}
+                  onFormat={setAiFormat}
                 />
               )}
 
@@ -304,6 +350,83 @@ Hint: ${item.hint || "No hint provided"}`;
                     rows={9}
                     placeholder="כאן יופיעו ההוראות לתלמידה. אם יצרת בעזרת AI, השדה הזה יתמלא אוטומטית."
                   />
+
+                  {questionDrafts.length > 0 && (
+                    <section className="rounded-[1.6rem] border border-[#ffd439]/30 bg-[#082844]/70 p-4">
+                      <h3 className="mb-3 text-lg font-bold text-[#ffe89a]">
+                        שאלות ותשובות לדוגמה — למורה בלבד
+                      </h3>
+
+                      <div className="space-y-3">
+                        {questionDrafts.map((q, i) => (
+                          <div
+                            key={i}
+                            className="rounded-xl border border-white/20 bg-[#123c6b]/65 p-3"
+                          >
+                            <label className="text-sm font-bold">
+                              שאלה {i + 1}
+                            </label>
+
+                            <textarea
+                              dir="auto"
+                              rows={2}
+                              value={q.prompt}
+                              onChange={(e) =>
+                                setQuestionDrafts((drafts) =>
+                                  drafts.map((item, j) =>
+                                    j === i
+                                      ? { ...item, prompt: e.target.value }
+                                      : item
+                                  )
+                                )
+                              }
+                              className="mt-1 mb-2 w-full rounded-lg bg-[#061f36] p-2 text-white"
+                            />
+
+                            <label className="text-sm font-bold">
+                              תשובה נכונה / תשובת דוגמה
+                            </label>
+
+                            <input
+                              dir="auto"
+                              value={q.answer}
+                              onChange={(e) =>
+                                setQuestionDrafts((drafts) =>
+                                  drafts.map((item, j) =>
+                                    j === i
+                                      ? { ...item, answer: e.target.value }
+                                      : item
+                                  )
+                                )
+                              }
+                              className="mt-1 mb-2 w-full rounded-lg bg-[#061f36] p-2 text-white"
+                            />
+
+                            <label className="text-sm font-bold">
+                              הסבר (לא חובה)
+                            </label>
+
+                            <input
+                              value={q.explanation}
+                              onChange={(e) =>
+                                setQuestionDrafts((drafts) =>
+                                  drafts.map((item, j) =>
+                                    j === i
+                                      ? {
+                                          ...item,
+                                          explanation: e.target.value,
+                                        }
+                                      : item
+                                  )
+                                )
+                              }
+                              className="mt-1 w-full rounded-lg bg-[#061f36] p-2 text-white"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
 
                   <TextArea
                     label="חומרי עזר"
@@ -423,7 +546,7 @@ function ModeButton({ active, title, subtitle, label, onClick }) {
   );
 }
 
-function AIBox({ aiPrompt, updateField, isGenerating, onGenerate }) {
+function AIBox({ aiPrompt, updateField, isGenerating, onGenerate, aiCount, onCount, aiFormat, onFormat }) {
   return (
     <section className="mb-6 rounded-[2rem] border-2 border-[#ffd439]/28 bg-[#ffd439]/12 p-5">
       <SectionTitle
@@ -438,6 +561,34 @@ function AIBox({ aiPrompt, updateField, isGenerating, onGenerate }) {
         rows={5}
         placeholder="לדוגמה: צור תרגיל אוצר מילים לרמת מתחילים בנושא ספורט"
       />
+
+      <div className="mb-4 mt-3 flex flex-wrap gap-3">
+        <label className="text-sm font-bold">
+          מספר שאלות
+          <input
+            type="number"
+            min="1"
+            max="20"
+            value={aiCount}
+            onChange={(e) => onCount(Number(e.target.value))}
+            className="mt-1 block w-24 rounded-lg bg-[#061f36] p-2"
+          />
+        </label>
+
+        <label className="text-sm font-bold">
+          סוג שאלות
+          <select
+            value={aiFormat}
+            onChange={(e) => onFormat(e.target.value)}
+            className="mt-1 block rounded-lg bg-[#061f36] p-2"
+          >
+            <option value="auto">לפי הבקשה</option>
+            <option value="open">פתוחות</option>
+            <option value="fill">השלמה</option>
+            <option value="multiple">אמריקאיות</option>
+          </select>
+        </label>
+      </div>
 
       <button
         type="button"

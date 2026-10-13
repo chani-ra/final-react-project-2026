@@ -1,42 +1,24 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   getExerciseById,
-  markExerciseCompleted,
+  submitExerciseAnswers,
+  getLatestExerciseSubmission,
 } from "../../services/exerciseService";
 import AppFeedbackModal from "../../components/ui/AppFeedbackModal";
 import ExerciseWorkspace from "./components/exercise/ExerciseWorkspace";
 import ExerciseSidebar from "./components/exercise/ExerciseSidebar";
-
-function formatInstructionsText(text) {
-  if (!text) return "";
-
-  return text
-    .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
-    .replace(/\s*(\d+\.)\s*/g, "\n$1 ")
-    .replace(/\s*([א-ת]\.)\s*/g, "\n$1 ")
-    .replace(/\n{2,}/g, "\n")
-    .trim();
-}
-
-function getInstructionLines(text) {
-  const formatted = formatInstructionsText(text);
-
-  if (!formatted) return [];
-
-  return formatted
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
+import { parseExercisePrompts } from "./components/exercise/parseExercisePrompts";
 
 export default function ExerciseView() {
   const { exerciseId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const courseId = searchParams.get("courseId");
 
   const [exercise, setExercise] = useState(null);
-  const [answer, setAnswer] = useState("");
+  const [answers, setAnswers] = useState({});
+  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -50,6 +32,28 @@ export default function ExerciseView() {
 
       const data = await getExerciseById(exerciseId);
       setExercise(data.exercise || data);
+      setAnswers({});
+      setResult(null);
+
+      if (courseId) {
+        try {
+          const previous = await getLatestExerciseSubmission(
+            exerciseId,
+            courseId
+          );
+
+          if (previous) {
+            setAnswers(
+              Object.fromEntries(
+                previous.answers.map((a, i) => [i, a.answer])
+              )
+            );
+            setResult(previous);
+          }
+        } catch (error) {
+          console.error("Could not restore answers:", error);
+        }
+      }
     } catch (error) {
       setMessage({ type: "error", text: error.toString() });
     } finally {
@@ -61,24 +65,87 @@ export default function ExerciseView() {
     loadExercise();
   }, [exerciseId]);
 
-  const instructionsText = useMemo(() => {
-    return formatInstructionsText(
-      exercise?.instructions ||
-        "1. קראי את ההנחיות.\n2. כתבי תשובה קצרה וברורה.\n3. סמני את התרגיל כהושלם."
-    );
+  const { intro, prompts } = useMemo(() => {
+    const fromDatabase = Array.isArray(exercise?.questions)
+      ? exercise.questions
+          .map((item) =>
+            typeof item === "string"
+              ? item
+              : item?.prompt || item?.sentence || item?.question || ""
+          )
+          .map((q) => String(q).trim())
+          .filter(Boolean)
+      : [];
+
+    if (fromDatabase.length) {
+      return {
+        intro: exercise.instructions || "",
+        prompts: fromDatabase,
+      };
+    }
+
+    // Support old exercises with numbered questions in instructions.
+    const legacy = parseExercisePrompts(exercise?.instructions);
+    const numbered =
+      /(?:^|\n)\s*(?:\d{1,2}|[א-ת])[.)]\s+/.test(
+        exercise?.instructions || ""
+      );
+
+    if (numbered || !exercise?.createdByAI) {
+      return legacy;
+    }
+
+    // Never display introductory instructions as a fake question.
+    return {
+      intro: exercise?.instructions || "",
+      prompts: [],
+    };
   }, [exercise]);
 
-  const instructionLines = useMemo(() => {
-    return getInstructionLines(instructionsText);
-  }, [instructionsText]);
+  const handleAnswerChange = (index, value) => {
+    if (result || saving) return;
+    setAnswers((previous) => ({ ...previous, [index]: value }));
+    setResult(null);
+  };
 
   const handleCompleteExercise = async () => {
+    // ENGLISHWISE_QUESTIONS_REQUIRED
+    if (!prompts.length) {
+      setMessage({
+        type: "error",
+        text: "לתרגיל הזה לא נשמרו שאלות. יש ליצור תרגיל חדש עם שאלות.",
+      });
+      return;
+    }
+    if (result || saving) return;
+    if (!courseId) {
+      setMessage({
+        type: "error",
+        text: "כדי לשמור התקדמות, פתחי את התרגיל מתוך הקורס שלך.",
+      });
+      return;
+    }
+
     try {
       setSaving(true);
       setMessage({ type: "", text: "" });
 
-      await markExerciseCompleted(exerciseId);
-      setSuccessOpen(true);
+      if (prompts.some((_, index) => !answers[index]?.trim())) {
+        setMessage({
+          type: "error",
+          text: "מלאי תשובה לכל שאלה לפני השליחה.",
+        });
+        return;
+      }
+
+      const response = await submitExerciseAnswers(
+        exerciseId,
+        courseId,
+        prompts.map((_, index) => answers[index])
+      );
+
+      setResult(response.attempt);
+      setMessage({ type: "success", text: response.message });
     } catch (error) {
       setMessage({ type: "error", text: error.toString() });
     } finally {
@@ -204,12 +271,24 @@ export default function ExerciseView() {
             </div>
           )}
 
+          {!prompts.length && (
+            <p
+              className="mb-4 rounded-xl border border-red-300/40 bg-red-500/15 p-4 font-bold text-white"
+              role="alert"
+            >
+              לתרגיל הזה לא נשמרו שאלות. המורה צריכה ליצור אותו מחדש.
+            </p>
+          )}
+
+          {/* ENGLISHWISE_OLD_EXERCISE_WARNING */}
           <div className="grid gap-4 xl:grid-cols-[1.72fr_0.58fr]">
             <ExerciseWorkspace
-              answer={answer}
-              setAnswer={setAnswer}
+              answers={answers}
+              result={result}
+              onAnswerChange={handleAnswerChange}
               saving={saving}
-              instructionLines={instructionLines}
+              intro={intro}
+              prompts={prompts}
               onComplete={handleCompleteExercise}
               onClose={handleClose}
             />

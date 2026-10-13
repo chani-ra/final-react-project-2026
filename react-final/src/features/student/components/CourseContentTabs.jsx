@@ -552,7 +552,7 @@ function openItem({ activeTab, item, courseId, navigate, openSongPanel }) {
   }
 
   if (activeTab === "exercises") {
-    navigate(`/exercise/${item._id}`);
+    navigate(`/exercise/${item._id}?courseId=${encodeURIComponent(courseId)}`);
     return;
   }
 

@@ -66,6 +66,7 @@ export default function App() {
           <Route path="/dashboard" element={<StudentDashboard />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/course/:courseId" element={<CourseDetails />} />
+              <Route path="/lesson/:lessonId" element={<LessonView mode="student" />} />
           <Route
             path="/create-personal-course"
             element={<CreatePersonalCourse />}

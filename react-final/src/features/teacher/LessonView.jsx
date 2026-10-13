@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosConfig, { apiUrl } from "../../services/axiosConfig";
 
-export default function LessonView() {
+export default function LessonView({ mode = "teacher" }) {
+  const isTeacherPreview = mode === "teacher";
   const { lessonId } = useParams();
   const navigate = useNavigate();
 
@@ -16,11 +17,14 @@ export default function LessonView() {
       setLoading(true);
       setError("");
 
-      const response = await axiosConfig.get(`/lessons/manage/${lessonId}`);
+      const endpoint = isTeacherPreview
+        ? `/lessons/manage/${lessonId}`
+        : `/lessons/${lessonId}`;
+      const response = await axiosConfig.get(endpoint);
       const lessonData = response.data?.lesson || response.data;
 
       setLesson(lessonData);
-      setPreviewToken(response.data?.previewToken || "");
+      setPreviewToken(isTeacherPreview ? response.data?.previewToken || "" : "");
     } catch (err) {
       console.error("שגיאה בטעינת השיעור:", err);
 
@@ -47,13 +51,16 @@ export default function LessonView() {
   }, [lessonId]);
 
   const videoSrc = useMemo(() => {
-    if (!lesson || !previewToken) return "";
+    if (!lesson?.videoFileName) return "";
 
     const id = lesson._id || lessonId;
+    if (!isTeacherPreview) return apiUrl(`/lessons/${id}/stream`);
+    if (!previewToken) return "";
+
     return apiUrl(
       `/lessons/manage/${id}/stream?token=${encodeURIComponent(previewToken)}`
     );
-  }, [lesson, lessonId, previewToken]);
+  }, [lesson, lessonId, isTeacherPreview, previewToken]);
 
   const handleClose = () => {
     navigate(-1);

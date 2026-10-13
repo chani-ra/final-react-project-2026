@@ -542,7 +542,7 @@ function getItemType(activeTab) {
 
 function openItem({ activeTab, item, courseId, navigate, openSongPanel }) {
   if (activeTab === "lessons") {
-    navigate(`/teacher/lesson/${item._id}`);
+    navigate(`/lesson/${item._id}`);
     return;
   }
 

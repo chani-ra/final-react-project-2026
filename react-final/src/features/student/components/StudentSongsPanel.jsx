@@ -1,3 +1,4 @@
+import { apiUrl } from "../../../services/axiosConfig";
 import React, { useEffect, useRef, useState } from "react";
 
 export default function StudentSongsPanel({ songs = [], getLevelLabel }) {
@@ -169,7 +170,7 @@ export default function StudentSongsPanel({ songs = [], getLevelLabel }) {
 
               <audio
                 ref={audioRef}
-                src={`http://localhost:3000/songs/song/${activeSong._id}/stream`}
+                src={apiUrl(`/songs/song/${activeSong._id}/stream`)}
                 onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
                 onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
                 onEnded={() => setIsPlaying(false)}

@@ -1,3 +1,4 @@
+import { apiUrl } from "../../services/axiosConfig";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   getAllSongsForAdmin,
@@ -393,7 +394,7 @@ function SelectedSongPanel({ song, actionLoadingId, onSetWeeklySong }) {
 
       <div className="mt-4 rounded-[1.2rem] border border-white/12 bg-slate-950/40 p-2">
         <CustomAudioPlayer
-          src={`http://localhost:3000/songs/song/${song._id}/stream`}
+          src={apiUrl(`/songs/song/${song._id}/stream`)}
           title={song.title || song.theme || "שיר לימודי"}
           subtitle={`בדיקת האזנה למנהל · ${getLevelLabel(song.level)}`}
           allowDownload={false}

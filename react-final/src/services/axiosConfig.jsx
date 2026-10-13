@@ -1,7 +1,14 @@
 import axios from "axios";
 
 // כתובת השרת במקום אחד בלבד
-export const API_BASE_URL = "http://localhost:3000";
+const rawApiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+export const API_BASE_URL = rawApiBaseUrl.replace(/\/+$/, "");
+
+export const apiUrl = (path = "") => {
+  if (!path) return API_BASE_URL;
+  return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+};
 
 // יצירת מופע האקסיוס עם כתובת השרת
 const instance = axios.create({
@@ -90,7 +97,7 @@ instance.interceptors.response.use(
 
     try {
       
-      const response = await axios.post(`${API_BASE_URL}/users/refresh-token`, {
+      const response = await axios.post(apiUrl("/users/refresh-token"), {
         refreshToken,
       });
 

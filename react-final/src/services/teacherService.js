@@ -1,20 +1,4 @@
-import axios from "axios";
-
-const API_URL = "http://localhost:3000";
-
-const axiosConfig = axios.create({
-  baseURL: API_URL,
-});
-
-axiosConfig.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
+import axiosConfig from "./axiosConfig";
 
 /**
  * 1. משיכת נתונים ללוח הבקרה של מורה
@@ -190,7 +174,7 @@ export const askAIHelper = async (message) => {
  */
 export const createQuiz = async (quizData) => {
   try {
-    const response = await axiosConfig.post("/quizzes/create", quizData);
+    const response = await axiosConfig.post("/quizzes", quizData);
     return response.data;
   } catch (error) {
     throw error.response?.data?.message || "נכשל ביצירת הבוחן במערכת";

@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
-
-const API_BASE = "http://localhost:3000";
+import axiosConfig, { apiUrl } from "../../services/axiosConfig";
 
 export default function LessonView() {
   const { lessonId } = useParams();
   const navigate = useNavigate();
 
   const [lesson, setLesson] = useState(null);
+  const [previewToken, setPreviewToken] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -17,16 +16,17 @@ export default function LessonView() {
       setLoading(true);
       setError("");
 
-      const response = await axios.get(`${API_BASE}/lessons/${lessonId}`);
+      const response = await axiosConfig.get(`/lessons/manage/${lessonId}`);
       const lessonData = response.data?.lesson || response.data;
 
       setLesson(lessonData);
+      setPreviewToken(response.data?.previewToken || "");
     } catch (err) {
       console.error("שגיאה בטעינת השיעור:", err);
 
       if (err?.code === "ERR_NETWORK") {
         setError(
-          "לא הצלחתי להתחבר לשרת. בדקי שהשרת של Node פעיל על http://localhost:3000"
+          "לא הצלחתי להתחבר לשרת. בדקי שהשרת פעיל ושהכתובת מוגדרת נכון."
         );
       } else {
         setError(
@@ -47,22 +47,13 @@ export default function LessonView() {
   }, [lessonId]);
 
   const videoSrc = useMemo(() => {
-    if (!lesson) return "";
+    if (!lesson || !previewToken) return "";
 
-    if (lesson.videoUrl?.startsWith("http")) {
-      return lesson.videoUrl;
-    }
-
-    if (lesson.videoUrl) {
-      return `${API_BASE}${lesson.videoUrl}`;
-    }
-
-    if (lesson.videoFileName || lesson._id) {
-      return `${API_BASE}/lessons/${lesson._id || lessonId}/stream`;
-    }
-
-    return "";
-  }, [lesson, lessonId]);
+    const id = lesson._id || lessonId;
+    return apiUrl(
+      `/lessons/manage/${id}/stream?token=${encodeURIComponent(previewToken)}`
+    );
+  }, [lesson, lessonId, previewToken]);
 
   const handleClose = () => {
     navigate(-1);

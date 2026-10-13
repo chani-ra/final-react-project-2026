@@ -1,5 +1,5 @@
 import React from "react";
-import { API_BASE_URL } from "../../../services/axiosConfig";
+import { apiUrl } from "../../../services/axiosConfig";
 
 export default function TeacherContentCard({
   item,
@@ -24,7 +24,7 @@ export default function TeacherContentCard({
   const isSong = type === "song";
 
   const songUrl = isSong
-    ? `${API_BASE_URL}/songs/song/${item._id}/stream`
+    ? apiUrl(`/songs/song/${item._id}/stream`)
     : "";
 
   return (

@@ -24,7 +24,7 @@ import Dictionary from "./features/student/Dictionary";
 import WritingTrainer from "./features/student/WritingTrainer";
 
 // teacher components
-import TeacherDashboard from "./features/teacher/TeacherDashboard";
+import TeacherDashboard from "./features/teacher/TeacherDashBoard";
 import TeacherStudents from "./features/teacher/TeacherStudents";
 import TeacherCreate from "./features/teacher/TeacherCreate";
 import TeacherExerciseBuilder from "./features/teacher/TeacherExerciseBuilder";

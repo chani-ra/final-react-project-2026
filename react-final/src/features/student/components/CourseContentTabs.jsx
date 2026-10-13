@@ -1,3 +1,4 @@
+import { apiUrl } from "../../../services/axiosConfig";
 import React, { useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -409,7 +410,7 @@ function SongPlayerPanel({
 
           <div className="rounded-[2rem] border border-white/22 bg-white/8 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]">
             <CustomAudioPlayer
-              src={`http://localhost:3000/songs/song/${activeSong._id}/stream`}
+              src={apiUrl(`/songs/song/${activeSong._id}/stream`)}
               title={activeSong.title || activeSong.theme || "שיר לימודי"}
               subtitle={`תרגול האזנה · ${getLevelLabel(activeSong.level)}`}
               allowDownload={true}

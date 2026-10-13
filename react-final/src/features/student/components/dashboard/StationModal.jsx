@@ -1,3 +1,4 @@
+import { apiUrl } from "../../../../services/axiosConfig";
 import React from "react";
 
 import AppModal from "../../../../components/ui/AppModal";
@@ -100,7 +101,7 @@ function WeeklySongModalContent({ weeklySong, loading, error }) {
       </div>
 
       <CustomAudioPlayer
-        src={`http://localhost:3000/songs/song/${weeklySong._id}/stream`}
+        src={apiUrl(`/songs/song/${weeklySong._id}/stream`)}
         title={weeklySong.title || weeklySong.theme || "שיר השבוע"}
         subtitle={`תרגול האזנה · ${getLevelLabel(weeklySong.level)}`}
         allowDownload={false}

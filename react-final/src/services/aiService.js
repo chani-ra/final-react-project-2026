@@ -87,21 +87,6 @@ export const generateQuizWithAI = async ({
   }
 };
 
-// שמירת תוצאת בוחן אצל התלמידה המחוברת
-export const saveQuizResult = async ({ topic, score, totalQuestions }) => {
-  try {
-    const response = await axiosConfig.post("/ai/quiz-result", {
-      topic,
-      score,
-      totalQuestions,
-    });
-
-    return response.data;
-  } catch (error) {
-    throw error.response?.data?.message || "נכשל בשמירת תוצאת הבוחן";
-  }
-};
-
 // בדיקת חיבור / פסקה באנגלית
 export const checkEssayWithAI = async ({ text, studentLevel }) => {
   try {

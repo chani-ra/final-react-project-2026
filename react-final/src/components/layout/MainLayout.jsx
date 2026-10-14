@@ -24,7 +24,7 @@ export default function MainLayout() {
 
   return (
     <div
-      className="relative min-h-screen overflow-x-hidden bg-[#55b9ef] text-white"
+      className="relative min-h-screen overflow-x-clip bg-[#55b9ef] text-white"
       dir="rtl"
     >
       <div

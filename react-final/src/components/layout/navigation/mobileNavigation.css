@@ -1,0 +1,24 @@
+@keyframes ew-mobile-nav-enter {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes ew-mobile-nav-dim {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ew-mobile-nav-panel {
+  animation: ew-mobile-nav-enter 240ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+.ew-mobile-nav-scrim {
+  animation: ew-mobile-nav-dim 200ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ew-mobile-nav-panel,
+  .ew-mobile-nav-scrim {
+    animation: none;
+  }
+}

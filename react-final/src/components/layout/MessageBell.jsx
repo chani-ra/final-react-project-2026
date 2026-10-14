@@ -78,7 +78,7 @@ export default function MessageBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 mt-3 w-80 bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden z-50">
+        <div className="absolute left-0 mt-3 w-[min(20rem,calc(100vw-1.5rem))] bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden z-50">
           <div className="p-4 border-b border-white/10">
             <div className="flex justify-between items-center">
               <h3 className="font-black text-white">הודעות</h3>

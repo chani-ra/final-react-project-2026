@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const useRegister = (totalSteps) => {
+  const timer = useRef(null);
+
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoadingPath, setIsLoadingPath] = useState(false);
 
@@ -22,7 +28,7 @@ export const useRegister = (totalSteps) => {
     if (currentStep === 6) {
       setIsLoadingPath(true);
 
-      setTimeout(() => {
+      timer.current = setTimeout(() => {
         setIsLoadingPath(false);
         setCurrentStep(7);
       }, 1800);

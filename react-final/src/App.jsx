@@ -1,4 +1,4 @@
-import React from "react";
+import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
@@ -11,36 +11,47 @@ import Login from "./features/auth/Login";
 import Introduce from "./components/Introduce";
 
 // shared components
-import MyMessages from "./features/shared/messages/MyMessages";
+const MyMessages = lazy(() => import("./features/shared/messages/MyMessages"));
 
 // student components
-import StudentDashboard from "./features/student/StudentDashboard";
-import Tasks from "./features/student/Tasks";
-import Chat from "./features/student/Chat";
-import Courses from "./features/student/Courses";
-import CourseDetails from "./features/student/CourseDetails";
-import CreatePersonalCourse from "./features/student/CreatePersonalCourse";
-import ExerciseView from "./features/student/ExerciseView";
-import QuizView from "./features/student/QuizView";
-import Dictionary from "./features/student/Dictionary";
-import WritingTrainer from "./features/student/WritingTrainer";
+const StudentDashboard = lazy(() => import("./features/student/StudentDashboard"));
+const Tasks = lazy(() => import("./features/student/Tasks"));
+const Chat = lazy(() => import("./features/student/Chat"));
+const Courses = lazy(() => import("./features/student/Courses"));
+const CourseDetails = lazy(() => import("./features/student/CourseDetails"));
+const CreatePersonalCourse = lazy(() => import("./features/student/CreatePersonalCourse"));
+const ExerciseView = lazy(() => import("./features/student/ExerciseView"));
+const QuizView = lazy(() => import("./features/student/QuizView"));
+const Dictionary = lazy(() => import("./features/student/Dictionary"));
+const WritingTrainer = lazy(() => import("./features/student/WritingTrainer"));
 
 // teacher components
-import TeacherDashboard from "./features/teacher/TeacherDashBoard";
-import TeacherStudents from "./features/teacher/TeacherStudents";
-import TeacherCreate from "./features/teacher/TeacherCreate";
-import TeacherExerciseBuilder from "./features/teacher/TeacherExerciseBuilder";
-import TeacherLibrary from "./features/teacher/TeacherLibrary";
-import TeacherGrading from "./features/teacher/TeacherGrading";
-import LessonView from "./features/teacher/LessonView";
-import TeacherQuizBuilder from "./features/teacher/TeacherQuizBuilder";
+const TeacherDashboard = lazy(() => import("./features/teacher/TeacherDashBoard"));
+const TeacherStudents = lazy(() => import("./features/teacher/TeacherStudents"));
+const TeacherCreate = lazy(() => import("./features/teacher/TeacherCreate"));
+const TeacherExerciseBuilder = lazy(() => import("./features/teacher/TeacherExerciseBuilder"));
+const TeacherLibrary = lazy(() => import("./features/teacher/TeacherLibrary"));
+const TeacherGrading = lazy(() => import("./features/teacher/TeacherGrading"));
+const LessonView = lazy(() => import("./features/teacher/LessonView"));
+const TeacherQuizBuilder = lazy(() => import("./features/teacher/TeacherQuizBuilder"));
 
 // admin components
-import AdminDashboard from "./features/admin/AdminDashboard";
-import AdminUsers from "./features/admin/AdminUsers";
-import AdminContent from "./features/admin/AdminContent";
-import AdminMessages from "./features/admin/AdminMessages";
-import AdminReviews from "./features/admin/AdminReviews";
+const AdminDashboard = lazy(() => import("./features/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("./features/admin/AdminUsers"));
+const AdminContent = lazy(() => import("./features/admin/AdminContent"));
+const AdminMessages = lazy(() => import("./features/admin/AdminMessages"));
+const AdminReviews = lazy(() => import("./features/admin/AdminReviews"));
+
+function RouteLoading() {
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center px-6" role="status" aria-live="polite">
+      <div className="flex items-center gap-3 rounded-2xl bg-slate-900/60 px-5 py-3 text-sm text-white shadow-lg backdrop-blur-sm">
+        <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true" />
+        <span>טוען את העמוד...</span>
+      </div>
+    </div>
+  );
+}
 
 const AdminSettings = () => (
   <div className="p-6">
@@ -56,7 +67,8 @@ export default function App() {
       <Toaster position="top-center" reverseOrder={false} />
       <Introduce />
       <SessionBootstrap />
-      <Routes>
+      <Suspense fallback={<RouteLoading />}>
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -112,7 +124,8 @@ export default function App() {
             </Route>
           </Route>
         </Route>
-      </Routes>
+        </Routes>
+      </Suspense>
     </Router>
   );
 }

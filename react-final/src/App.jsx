@@ -24,6 +24,7 @@ const ExerciseView = lazy(() => import("./features/student/ExerciseView"));
 const QuizView = lazy(() => import("./features/student/QuizView"));
 const Dictionary = lazy(() => import("./features/student/Dictionary"));
 const WritingTrainer = lazy(() => import("./features/student/WritingTrainer"));
+const LearningStudio = lazy(() => import("./features/student/learning/LearningStudio"));
 
 // teacher components
 const TeacherDashboard = lazy(() => import("./features/teacher/TeacherDashBoard"));
@@ -41,6 +42,7 @@ const AdminUsers = lazy(() => import("./features/admin/AdminUsers"));
 const AdminContent = lazy(() => import("./features/admin/AdminContent"));
 const AdminMessages = lazy(() => import("./features/admin/AdminMessages"));
 const AdminReviews = lazy(() => import("./features/admin/AdminReviews"));
+const AdminLearningHistory = lazy(() => import("./features/admin/AdminLearningHistory"));
 
 function RouteLoading() {
   return (
@@ -81,6 +83,7 @@ export default function App() {
               {/* תלמיד */}
               <Route path="/dashboard" element={<StudentDashboard />} />
               <Route path="/courses" element={<Courses />} />
+              <Route path="/courses/ai-lesson" element={<LearningStudio />} />
               <Route path="/course/:courseId" element={<CourseDetails />} />
               <Route path="/lesson/:lessonId" element={<LessonView mode="student" />} />
               <Route
@@ -120,6 +123,7 @@ export default function App() {
               <Route path="/admin/content" element={<AdminContent />} />
               <Route path="/admin/messages" element={<AdminMessages />} />
               <Route path="/admin/reviews" element={<AdminReviews />} />
+              <Route path="/admin/learning" element={<AdminLearningHistory />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
           </Route>

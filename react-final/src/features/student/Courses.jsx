@@ -203,6 +203,11 @@ export default function Courses() {
               </TabButton>
             </div>
 
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="button" onClick={() => navigate("/courses/ai-lesson")}
+                className="rounded-full border border-yellow-200/60 bg-yellow-300/15 px-5 py-3 text-sm font-black text-yellow-100 transition hover:bg-yellow-300/25">
+                ✨ שיעור AI לפי בקשה
+              </button>
             <button
               type="button"
               onClick={() => navigate("/create-personal-course")}
@@ -213,6 +218,7 @@ export default function Courses() {
             >
               יצירת קורס חדש
             </button>
+            </div>
           </div>
 
           {activeTab === "recommended" && recommendedLoading ? (

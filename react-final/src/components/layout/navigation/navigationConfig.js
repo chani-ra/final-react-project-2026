@@ -32,6 +32,7 @@ export function getNavLinks(role) {
 
         { name: "נתוני מערכת", path: "/admin/dashboard" },
         { name: "ניהול משתמשים", path: "/admin/users" },
+        { name: "שיעורי AI", path: "/admin/learning" },
         { name: "מאגר תוכן", path: "/admin/content" },
         { name: "שליחת הודעות", path: "/admin/messages" },
         { name: "ההודעות שלי", path: "/messages" },
@@ -43,7 +44,7 @@ export function getNavLinks(role) {
     const priorities = {
       student: ['/dashboard', '/courses', '/tasks', '/writing', '/dictionary', '/chat', '/messages', '/create-personal-course', '/'],
       teacher: ['/teacher/dashboard', '/teacher/students', '/teacher/library', '/teacher/create', '/teacher/exercises/create', '/teacher/grading', '/messages', '/'],
-      admin: ['/admin/dashboard', '/admin/users', '/admin/content', '/admin/messages', '/admin/reviews', '/admin/settings', '/messages', '/'],
+      admin: ['/admin/dashboard', '/admin/users', '/admin/learning', '/admin/content', '/admin/messages', '/admin/reviews', '/admin/settings', '/messages', '/'],
     };
     const order = priorities[role] || [];
     return [...(menus[role] || menus.student)].sort((a, b) => {

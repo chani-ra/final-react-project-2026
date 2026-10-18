@@ -1,5 +1,5 @@
-import TeacherExerciseBuilderView from "./components/TeacherExerciseBuilderView.jsx";
-import { useTeacherExerciseBuilder } from "./hooks/useTeacherExerciseBuilder.js";
+import TeacherExerciseBuilderView from "./exerciseBuilder/TeacherExerciseBuilderView.jsx";
+import { useTeacherExerciseBuilder } from "./exerciseBuilder/useTeacherExerciseBuilder.js";
 
 export default function TeacherExerciseBuilder() {
   const builder = useTeacherExerciseBuilder();

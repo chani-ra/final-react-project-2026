@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import SmartGuideBackButton from "../../components/ui/SmartGuideBackButton";
-import ChatSidebar from "./components/chat/chatSidebar";
+import ChatSidebar from "./chat/ChatSidebar";
 import useChat from "./chat/useChat.js";
 import { getLevelLabel } from "./chat/chatModel.js";
 import { ChatBubble, TypingBubble, QuickActionButton, SmallSpinner } from "./chat/ChatComponents.jsx";

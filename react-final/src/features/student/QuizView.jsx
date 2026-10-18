@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getQuizById, submitQuiz } from "../../services/quizService";
 import AppFeedbackModal from "../../components/ui/AppFeedbackModal";
-import QuizQuestionCard from "./components/quiz/QuizQuestionCard";
+import QuizQuestionCard from "./quiz/QuizQuestionCard";
 
 export default function QuizView() {
   const { quizId } = useParams();

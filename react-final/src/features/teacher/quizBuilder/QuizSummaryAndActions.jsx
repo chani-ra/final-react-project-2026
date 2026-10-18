@@ -1,5 +1,5 @@
 import React from "react";
-import { InfoRow } from "../ui/TeacherInfoBlocks";
+import { InfoRow } from "../components/ui/TeacherInfoBlocks";
 import { getLevelLabel, getCategoryLabel, getQuizTypeLabel } from "./quizBuilder.utils";
 
 export function ActionButtons({

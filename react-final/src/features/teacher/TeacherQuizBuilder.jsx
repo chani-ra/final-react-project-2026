@@ -10,21 +10,21 @@ import {
 } from "./components/ui/TeacherInfoBlocks";
 
 
-import { getCleanOptions } from "./components/quiz/quizBuilder.utils";
+import { getCleanOptions } from "./quizBuilder/quizBuilder.utils";
 import {
   TeacherQuizHeader,
   InstructionBox,
   QuizDetailsSection,
   QuizSettingsSection,
   PublishSection,
-} from "./components/quiz/QuizFormSections";
+} from "./quizBuilder/QuizFormSections";
 import {
   ActionButtons,
   QuizSideSummary,
-} from "./components/quiz/QuizSummaryAndActions";
+} from "./quizBuilder/QuizSummaryAndActions";
 import {
   QuestionEditorList,
-} from "./components/quiz/QuizQuestionEditor";
+} from "./quizBuilder/QuizQuestionEditor";
 
 const emptyQuestion = {
   question: "",

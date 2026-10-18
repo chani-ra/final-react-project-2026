@@ -1,6 +1,6 @@
-import { BasicFields, LessonFields, SongFields, ExerciseFields, QuizFields, ClassificationFields, PublishBox } from "./edit/EditContentFields.jsx";
-import { ModalHeader, ActionButtons, EditSummary } from "./edit/EditContentChrome.jsx";
-import { getModalTitle, updateEditField, updateEditQuestion, updateEditOption, removeEditQuestion } from "./edit/editContentModel.js";
+import { BasicFields, LessonFields, SongFields, ExerciseFields, QuizFields, ClassificationFields, PublishBox } from "./EditContentFields.jsx";
+import { ModalHeader, ActionButtons, EditSummary } from "./EditContentChrome.jsx";
+import { getModalTitle, updateEditField, updateEditQuestion, updateEditOption, removeEditQuestion } from "./editContentModel.js";
 
 export default function EditContentModal({ editType, editForm, setEditForm, actionLoadingId, editingItemId, onClose, onSave }) {
   const isSaving = actionLoadingId === editingItemId;

@@ -7,9 +7,9 @@ import {
   getLatestExerciseSubmission,
 } from "../../services/exerciseService";
 import AppFeedbackModal from "../../components/ui/AppFeedbackModal";
-import ExerciseWorkspace from "./components/exercise/ExerciseWorkspace";
-import ExerciseSidebar from "./components/exercise/ExerciseSidebar";
-import { parseExercisePrompts } from "./components/exercise/parseExercisePrompts";
+import ExerciseWorkspace from "./exercise/ExerciseWorkspace";
+import ExerciseSidebar from "./exercise/ExerciseSidebar";
+import { parseExercisePrompts } from "./exercise/parseExercisePrompts";
 
 export default function ExerciseView() {
   const { exerciseId } = useParams();

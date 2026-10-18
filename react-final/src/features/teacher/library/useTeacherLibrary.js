@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import useMessageNotice from "../../../components/ui/useMessageNotice.js";
 import { useNotices } from "../../../components/ui/NoticeProvider";
-import { libraryApi } from "../library/libraryApi";
+import { libraryApi } from "./libraryApi";
 import {
   EMPTY_LIBRARY,
   TYPE_LABELS,
@@ -9,8 +9,8 @@ import {
   buildUpdatePayload,
   getEditForm,
   getLibraryView,
-} from "../library/libraryModel";
-import { getEmptyEditForm } from "../components/library/libraryUtils";
+} from "./libraryModel";
+import { getEmptyEditForm } from "./libraryUtils";
 
 const NO_MESSAGE = { type: "", text: "" };
 

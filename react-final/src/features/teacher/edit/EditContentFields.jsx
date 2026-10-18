@@ -1,4 +1,4 @@
-import { SectionTitle, TextInput, TextArea, SelectInput } from "../ui/TeacherFormFields";
+import { SectionTitle, TextInput, TextArea, SelectInput } from "../components/ui/TeacherFormFields";
 import { categoryOptions, levelOptions, quizTypeOptions, getTypeLabel } from "./editContentModel.js";
 
 export function BasicFields({ editType, editForm, updateField }) {

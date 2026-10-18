@@ -1,5 +1,5 @@
 import useMessageNotice from "../../../components/ui/useMessageNotice.js";
-import SmartContentFields from "./SmartContentFields";
+import SmartContentFields from "../components/SmartContentFields";
 
 const exerciseTypeOptions = [
   { value: "practice", label: "תרגול" },

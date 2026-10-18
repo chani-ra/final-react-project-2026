@@ -1,6 +1,6 @@
 import React from "react";
-import { SectionTitle, TextInput, TextArea, SelectInput } from "../ui/TeacherFormFields";
-import { MiniInfoCard } from "../ui/TeacherInfoBlocks";
+import { SectionTitle, TextInput, TextArea, SelectInput } from "../components/ui/TeacherFormFields";
+import { MiniInfoCard } from "../components/ui/TeacherInfoBlocks";
 
 const quizTypeOptions = [
   { value: "grammar", label: "דקדוק" },

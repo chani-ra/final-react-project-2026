@@ -1,4 +1,4 @@
-import { getEmptyEditForm } from "../components/library/libraryUtils.js";
+import { getEmptyEditForm } from "./libraryUtils.js";
 
 export const EMPTY_LIBRARY = {
   lessons: [],

@@ -1,13 +1,13 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import TeacherContentCard from "./components/TeacherContentCard";
-import EditContentModal from "./components/EditContentModal";
+import TeacherContentCard from "./library/TeacherContentCard";
+import EditContentModal from "./edit/EditContentModal";
 import {
   LibraryHeader, StatsGrid, TabsBar,
   QuizLibraryCard, EmptyState, HeaderLines,
-} from "./components/library/TeacherLibrarySections";
-import useTeacherLibrary from "./hooks/useTeacherLibrary";
+} from "./library/TeacherLibrarySections";
+import useTeacherLibrary from "./library/useTeacherLibrary";
 
 export default function TeacherLibrary() {
   const { user } = useSelector((state) => state.auth);

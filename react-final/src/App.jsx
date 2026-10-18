@@ -12,7 +12,7 @@ import Login from "./features/auth/Login";
 import Introduce from "./components/Introduce";
 
 // shared components
-const MyMessages = lazy(() => import("./features/shared/messages/MyMessages"));
+const MyMessages = lazy(() => import("./features/general/messages/MyMessages"));
 
 // student components
 const StudentDashboard = lazy(() => import("./features/student/StudentDashboard"));

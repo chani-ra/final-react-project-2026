@@ -1,4 +1,4 @@
-import { InfoRow } from "../ui/TeacherInfoBlocks";
+import { InfoRow } from "../components/ui/TeacherInfoBlocks";
 import { getTypeLabel, getLevelLabel, getCategoryLabel, getQuizTypeLabel } from "./editContentModel.js";
 
 export function ModalHeader({ title, editType, onClose }) {

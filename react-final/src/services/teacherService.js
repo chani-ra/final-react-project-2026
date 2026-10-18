@@ -182,3 +182,8 @@ export const createQuiz = async (quizData) => {
 };
 
 export default axiosConfig;
+/** Students enrolled in courses belonging to the authenticated teacher. */
+export const getTeacherStudents = async () => {
+  const response = await axiosConfig.get("/courses/teacher/students");
+  return response.data.students || [];
+};

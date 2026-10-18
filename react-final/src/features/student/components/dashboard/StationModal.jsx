@@ -7,7 +7,7 @@ import StudentBrainMap from "../StudentBrainMap";
 import AICoachCard from "../AICoachCard";
 import CustomAudioPlayer from "../../../../components/CustomAudioPlayer";
 
-import { getStationIcon, MusicIcon } from "./dashboardIcons";
+import { getStationIcon, MusicIcon } from "../../../general/dashboard/dashboardIcons";
 
 export default function StationModal({
   activeStation,

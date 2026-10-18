@@ -60,3 +60,12 @@ test("active links match valid paths only", () => {
     false
   );
 });
+
+test("final desktop and mobile navigation order is single-source", () => {
+  const expectedAdmin = ["/admin/dashboard", "/admin/users", "/admin/content", "/admin/messages", "/admin/reviews", "/admin/settings", "/messages", "/", "/admin/learning"];
+  assert.deepEqual(getNavLinks("admin").map(link => link.path), expectedAdmin);
+  for (const role of ["student", "teacher", "admin"]) {
+    const links = getNavLinks(role);
+    assert.equal(new Set(links.map(link => link.path)).size, links.length);
+  }
+});

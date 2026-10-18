@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 import { getTeacherDashboardData } from "../../services/teacherService";
 
-import JourneyMap from "../student/components/dashboard/JourneyMap";
+import JourneyMap from "../general/dashboard/JourneyMap";
 import AppModal from "../../components/ui/AppModal";
 
 export default function TeacherDashboard() {

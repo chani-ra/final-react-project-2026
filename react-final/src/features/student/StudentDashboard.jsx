@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { getWeeklySong } from "../../services/songService";
 
 import DashboardHeader from "./components/dashboard/DashboardHeader";
-import JourneyMap from "./components/dashboard/JourneyMap";
+import JourneyMap from "../general/dashboard/JourneyMap";
 import StationModal from "./components/dashboard/StationModal";
 
 export default function StudentDashboard() {

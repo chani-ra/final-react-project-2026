@@ -1,5 +1,5 @@
 import React from "react";
-import { UserIcon } from "./dashboardIcons";
+import { UserIcon } from "../../../general/dashboard/dashboardIcons";
 
 export default function DashboardHeader({
   name,

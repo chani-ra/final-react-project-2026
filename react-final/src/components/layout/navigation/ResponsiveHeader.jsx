@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import MessageBell from '../MessageBell';
 import MobileNavDrawer from './MobileNavDrawer';
 import NavGlyph from './NavGlyph';
-import { prioritizeNavLinks } from './navOrder';
 import { getNavLinks, getRoleLabel, isNavActive } from './navigationConfig';
 
 
@@ -13,7 +12,7 @@ export default function ResponsiveHeader({ user, onHome, onLogout }) {
   const trigger = useRef(null);
   const [open, setOpen] = useState(false);
   const language = 'he';
-  const links = prioritizeNavLinks(getNavLinks(user.role, language), user.role);
+  const links = getNavLinks(user.role, language);
   const name = user.username || user.name || 'משתמשת';
   const close = useCallback(() => {
     setOpen(false);

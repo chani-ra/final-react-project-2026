@@ -1,3 +1,4 @@
+import useMessageNotice from "../../components/ui/useMessageNotice.js";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
@@ -22,6 +23,7 @@ export default function ExerciseView() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  useMessageNotice(message);
   const [successOpen, setSuccessOpen] = useState(false);
   const [materialsOpen, setMaterialsOpen] = useState(false);
 
@@ -259,17 +261,6 @@ export default function ExerciseView() {
             </p>
           </header>
 
-          {message.text && (
-            <div
-              className={`mb-4 rounded-[1.5rem] px-5 py-4 text-sm font-black shadow-[0_12px_32px_rgba(3,31,61,0.16)] ${
-                message.type === "success"
-                  ? "border border-emerald-300/28 bg-emerald-400/14 text-emerald-100"
-                  : "border border-red-300/30 bg-red-500/16 text-red-100"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
 
           {!prompts.length && (
             <p

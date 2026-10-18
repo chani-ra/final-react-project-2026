@@ -1,3 +1,4 @@
+import useMessageNotice from "../../components/ui/useMessageNotice.js";
 import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +22,7 @@ export default function TeacherDashboard() {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: "", text: "" });
+  useMessageNotice(message);
   const [activeStation, setActiveStation] = useState(null);
 
   const teacherId = user?._id || user?.id;
@@ -239,17 +241,6 @@ function TeacherDashboardHeader({
         </button>
       </div>
 
-      {message?.text && (
-        <div
-          className={`mt-4 rounded-[1.3rem] px-4 py-3 text-sm font-black shadow-sm ${
-            message.type === "success"
-              ? "border border-emerald-300/35 bg-emerald-400/18 text-emerald-50"
-              : "border border-red-300/35 bg-red-500/18 text-red-50"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
     </div>
   );
 }

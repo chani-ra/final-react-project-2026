@@ -1,3 +1,4 @@
+import useMessageNotice from "../../components/ui/useMessageNotice";
 import React, { useEffect, useMemo, useState } from "react";
 import { getDictionaryHelper } from "../../services/aiService";
 import {
@@ -26,6 +27,7 @@ export default function Dictionary() {
   const [saving, setSaving] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
+  useMessageNotice(message);
 
   const loadWords = async () => {
     try {
@@ -244,17 +246,7 @@ export default function Dictionary() {
         </div>
       </section>
 
-      {message.text && (
-        <div
-          className={`rounded-[1.5rem] border-2 px-5 py-3 text-sm font-black ${
-            message.type === "success"
-              ? "border-emerald-300/35 bg-emerald-400/15 text-emerald-100"
-              : "border-red-300/35 bg-red-500/15 text-red-100"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
+
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[360px_1fr]">
         <section

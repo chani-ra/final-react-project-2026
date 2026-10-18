@@ -1,3 +1,4 @@
+import { useNotices } from "../../components/ui/NoticeProvider";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { sendConversationMessage } from "../../services/aiService";
@@ -24,6 +25,10 @@ export default function Chat() {
   const [loadingConversationId, setLoadingConversationId] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const notices = useNotices();
+  useEffect(() => {
+    if (errorMessage) notices.error(errorMessage, "בעיה בשיחה");
+  }, [errorMessage, notices]);
 
   const messagesEndRef = useRef(null);
 
@@ -354,12 +359,6 @@ export default function Chat() {
                   />
                 </div>
               </div>
-
-              {errorMessage && (
-                <div className="border-b border-red-300/25 bg-red-500/15 px-5 py-3 text-sm font-black text-red-100">
-                  {errorMessage}
-                </div>
-              )}
 
               <div className="flex-1 space-y-4 overflow-y-auto p-4 scroll-smooth">
                 {messages.map((msg) => (

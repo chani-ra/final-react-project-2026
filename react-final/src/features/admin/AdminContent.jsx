@@ -1,3 +1,4 @@
+import useMessageNotice from "../../components/ui/useMessageNotice";
 import { apiUrl } from "../../services/axiosConfig";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -14,6 +15,7 @@ export default function AdminContent() {
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
+  useMessageNotice(message);
 
   const loadSongs = async () => {
     try {
@@ -126,17 +128,7 @@ export default function AdminContent() {
         </div>
       </section>
 
-      {message.text && (
-        <div
-          className={`rounded-[1.5rem] border-2 px-5 py-3 text-sm font-black ${
-            message.type === "success"
-              ? "border-emerald-300/35 bg-emerald-400/15 text-emerald-100"
-              : "border-red-300/35 bg-red-500/15 text-red-100"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
+
 
       <section
         className="relative overflow-hidden rounded-[2rem] border-2 border-white/20 bg-slate-950/55 p-4 text-white backdrop-blur-xl md:p-5"

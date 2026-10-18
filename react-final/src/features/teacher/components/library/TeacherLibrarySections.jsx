@@ -98,19 +98,6 @@ function HeaderActionButton({ title, subtitle, icon, onClick }) {
   );
 }
 
-export function MessageBox({ message }) {
-  return (
-    <div
-      className={`mb-5 rounded-[1.5rem] px-5 py-4 text-sm font-bold shadow-[0_12px_32px_rgba(3,31,61,0.16)] ${message.type === "success"
-          ? "border border-emerald-300/28 bg-emerald-400/14 text-emerald-100"
-          : "border border-red-300/30 bg-red-500/16 text-red-100"
-        }`}
-    >
-      {message.text}
-    </div>
-  );
-}
-
 export function StatsGrid({ lessons, songs, exercises, quizzes, published, drafts }) {
   return (
     <section className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-6">

@@ -1,3 +1,4 @@
+import useMessageNotice from "../../../components/ui/useMessageNotice.js";
 import { useEffect, useMemo, useState } from "react";
 import { completeTask, deleteTask, getMyTasks, submitTaskForReview } from "../../../services/taskService";
 import { getTaskProgress, getTaskStats, getVisibleTasks, groupTasks } from "./taskSelectors";
@@ -10,6 +11,7 @@ export function useTasks() {
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
+  useMessageNotice(message);
 
   const loadTasks = async () => {
     try {

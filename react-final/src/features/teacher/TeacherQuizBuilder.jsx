@@ -1,3 +1,4 @@
+import useMessageNotice from "../../components/ui/useMessageNotice.js";
 import React, { useState } from "react";
 import { generateQuizWithAI } from "../../services/aiService";
 import { createQuiz } from "../../services/quizService";
@@ -5,7 +6,6 @@ import { createQuiz } from "../../services/quizService";
 import SmartContentFields from "./components/SmartContentFields";
 
 import {
-  MessageBox,
   HeaderLines,
 } from "./components/ui/TeacherInfoBlocks";
 
@@ -60,6 +60,7 @@ export default function TeacherQuizBuilder() {
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  useMessageNotice(message);
 
   const handleChange = (field, value) => {
     setForm((prev) => ({
@@ -421,7 +422,6 @@ export default function TeacherQuizBuilder() {
             publishMode={publishMode}
           />
 
-          <MessageBox message={message} />
 
           <div className="grid gap-4 xl:grid-cols-[1.55fr_0.72fr]">
             <section className="rounded-[2rem] border border-white/22 bg-[#061f36]/76 p-4 shadow-[0_24px_65px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.14)]">

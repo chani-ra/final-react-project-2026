@@ -1,3 +1,4 @@
+import useMessageNotice from "../../components/ui/useMessageNotice.js";
 import React, { useState } from "react";
 import { createLesson, uploadSong } from "../../services/teacherService";
 import SmartContentFields from "./components/SmartContentFields";
@@ -9,7 +10,6 @@ import {
 } from "./components/ui/TeacherFormFields";
 
 import {
-  MessageBox,
   MiniInfoCard,
   InfoRow,
   HeaderLines,
@@ -40,6 +40,7 @@ export default function TeacherCreate() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  useMessageNotice(message);
 
   const updateSmartField = (field, value) => {
     if (field === "category") setCategory(value);
@@ -245,7 +246,6 @@ export default function TeacherCreate() {
             </div>
           </header>
 
-          <MessageBox message={message} />
 
           <div className="grid gap-4 xl:grid-cols-[1.55fr_0.72fr]">
             <section className="rounded-[2rem] border border-white/22 bg-[#061f36]/76 p-4 shadow-[0_24px_65px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.14)]">

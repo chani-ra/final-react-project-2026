@@ -6,20 +6,20 @@ import { loginUser as loginAction } from "../../redux/slices/authSlice";
 import { loginUser } from "../../services/authService";
 import { getHomePathForRole, saveAuthSession } from "../../services/authSession";
 import skyJourneyBackground from "../../assets/sky-journey-background.svg";
+import { useNotices } from "../../components/ui/NoticeProvider";
 
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const notices = useNotices();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    setError("");
     setIsLoading(true);
 
     try {
@@ -29,7 +29,7 @@ export default function Login() {
       navigate(getHomePathForRole(user.role));
     } catch (err) {
       console.error("Login error:", err);
-      setError(typeof err === "string" ? err : err.message || "שגיאה בהתחברות");
+      notices.error(typeof err === "string" ? err : err.message || "לא הצלחנו להיכנס לחשבון. בדקי את הפרטים ונסי שוב.", "הכניסה לא הצליחה");
     } finally {
       setIsLoading(false);
     }
@@ -141,12 +141,6 @@ export default function Login() {
                 </p>
               </div>
 
-              {error && (
-                <div className="rounded-2xl border-2 border-red-300/35 bg-red-500/15 px-4 py-3 text-sm font-black text-red-100">
-                  {error}
-                </div>
-              )}
-
               <div>
                 <label className="mb-2 block text-sm font-black text-white/75">
                   אימייל
@@ -185,7 +179,7 @@ export default function Login() {
                     : "0 7px 0 rgba(89,15,20,0.42)",
                 }}
               >
-                {isLoading ? "מתחבר לשרת..." : "כניסה למערכת"}
+                {isLoading ? "נכנסים לחשבון..." : "כניסה למערכת"}
               </button>
 
               <button

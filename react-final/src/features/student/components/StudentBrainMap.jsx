@@ -1,3 +1,4 @@
+import useMessageNotice from "../../../components/ui/useMessageNotice.js";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMyTasks } from "../../../services/taskService";
@@ -20,6 +21,7 @@ export default function StudentBrainMap({ user }) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiMap, setAiMap] = useState(null);
   const [message, setMessage] = useState({ type: "", text: "" });
+  useMessageNotice(message);
 
   const level = user?.englishLevel || user?.level || "beginner";
 
@@ -179,8 +181,6 @@ export default function StudentBrainMap({ user }) {
             </button>
           </div>
         </div>
-
-        {message.text && <MessageBox message={message} />}
 
         <div className="mt-5 grid gap-3 md:grid-cols-5">
           <MiniStat label="משימות" value={currentMap.stats.totalTasks} />
@@ -376,19 +376,6 @@ function MiniStat({ label, value }) {
     <div className="rounded-[1.2rem] border border-white/12 bg-white/8 p-4 text-center">
       <div className="text-2xl font-black text-white">{value}</div>
       <div className="mt-1 text-xs font-black text-white/45">{label}</div>
-    </div>
-  );
-}
-
-function MessageBox({ message }) {
-  const className =
-    message.type === "success"
-      ? "border-emerald-300/35 bg-emerald-300/12 text-emerald-100"
-      : "border-red-300/35 bg-red-500/15 text-red-100";
-
-  return (
-    <div className={`mt-4 rounded-[1.2rem] border px-4 py-3 text-sm font-black ${className}`}>
-      {message.text}
     </div>
   );
 }

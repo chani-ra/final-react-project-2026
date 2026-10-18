@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { checkEssayWithAI } from "../../services/aiService";
 import SmartGuideBackButton from "../../components/ui/SmartGuideBackButton";
+import { useNotices } from "../../components/ui/NoticeProvider";
 
 const SAMPLE_PROMPTS = [
   {
@@ -20,11 +21,18 @@ const SAMPLE_PROMPTS = [
 
 export default function WritingTrainer() {
   const { user } = useSelector((state) => state.auth);
+  const notices = useNotices();
 
   const [essay, setEssay] = useState("");
   const [result, setResult] = useState(null);
   const [checking, setChecking] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  // All feedback appears in the shared centered notice rather than above the form.
+  React.useEffect(() => {
+    if (!message.text) return;
+    if (message.type === "error") notices.error(message.text);
+    if (message.type === "success") notices.success(message.text, "בדיקת הכתיבה הושלמה");
+  }, [message, notices]);
 
   const studentLevel = user?.englishLevel || user?.level || "beginner";
 
@@ -63,8 +71,12 @@ export default function WritingTrainer() {
         studentLevel,
       });
 
+      const verifiedScore = Number(data?.score);
+      if (data?.score == null || !Number.isFinite(verifiedScore) || verifiedScore < 0 || verifiedScore > 100 || !data?.generalFeedback?.trim()) {
+        throw new Error("לא התקבלה בדיקת כתיבה מלאה. נסי שוב בעוד רגע.");
+      }
       setResult({
-        score: Number(data?.score) || 0,
+        score: verifiedScore,
         generalFeedback:
           data?.generalFeedback || "לא התקבל משוב מפורט כרגע.",
         grammarCorrections: Array.isArray(data?.grammarCorrections)
@@ -139,18 +151,6 @@ export default function WritingTrainer() {
           </div>
         </div>
       </section>
-
-      {message.text && (
-        <div
-          className={`rounded-[1.5rem] border-2 px-5 py-3 text-sm font-black ${
-            message.type === "success"
-              ? "border-emerald-300/35 bg-emerald-400/15 text-emerald-100"
-              : "border-red-300/35 bg-red-500/15 text-red-100"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_320px]">
         <section

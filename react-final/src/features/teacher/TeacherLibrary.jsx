@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import TeacherContentCard from "./components/TeacherContentCard";
 import EditContentModal from "./components/EditContentModal";
 import {
-  LibraryHeader, MessageBox, StatsGrid, TabsBar,
+  LibraryHeader, StatsGrid, TabsBar,
   QuizLibraryCard, EmptyState, HeaderLines,
 } from "./components/library/TeacherLibrarySections";
 import useTeacherLibrary from "./hooks/useTeacherLibrary";
@@ -15,7 +15,7 @@ export default function TeacherLibrary() {
   const {
     activeTab, setActiveTab,
     lessons, songs, exercises, quizzes,
-    loading, actionLoadingId, message,
+    loading, actionLoadingId,
     editingItem, editType, editForm, setEditForm,
     tabs, itemsToShow, activeType,
     publishedCount, draftCount, totalCount,
@@ -53,7 +53,6 @@ export default function TeacherLibrary() {
             onCreateContent={() => navigate("/teacher/create")}
           />
 
-          {message.text && <MessageBox message={message} />}
 
           <StatsGrid
             lessons={lessons.length}

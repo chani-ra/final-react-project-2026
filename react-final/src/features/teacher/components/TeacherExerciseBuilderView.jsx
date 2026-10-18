@@ -1,3 +1,4 @@
+import useMessageNotice from "../../../components/ui/useMessageNotice.js";
 import SmartContentFields from "./SmartContentFields";
 
 const exerciseTypeOptions = [
@@ -25,6 +26,7 @@ export default function TeacherExerciseBuilderView({
   handleGenerateWithAI,
   handleSaveExercise,
 }) {
+  useMessageNotice(message);
   return (
     <main className="mx-auto max-w-7xl px-4 py-4" dir="rtl">
       <section className="relative overflow-hidden rounded-[2.4rem] border border-white/32 bg-[#123c6b]/70 text-white shadow-[0_32px_95px_rgba(3,31,61,0.38),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl">
@@ -74,7 +76,6 @@ export default function TeacherExerciseBuilderView({
             </div>
           </header>
 
-          {message.text && <MessageBox message={message} />}
 
           <div className="grid gap-4 xl:grid-cols-[1.55fr_0.72fr]">
             <section className="rounded-[2rem] border border-white/22 bg-[#061f36]/76 p-4 shadow-[0_24px_65px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.14)]">

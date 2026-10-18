@@ -1,3 +1,5 @@
+import useMessageNotice from "../../components/ui/useMessageNotice.js";
+import { useNotices } from "../../components/ui/NoticeProvider";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -24,8 +26,9 @@ export default function CourseDetails() {
   const [actionLoadingKey, setActionLoadingKey] = useState("");
 
   const [error, setError] = useState("");
-  const [refreshMessage, setRefreshMessage] = useState("");
   const [progressMessage, setProgressMessage] = useState({ type: "", text: "" });
+  const notices = useNotices();
+  useMessageNotice(progressMessage);
 
   const totals = useMemo(() => {
     return {
@@ -122,7 +125,6 @@ export default function CourseDetails() {
   const handleRefreshCourse = async () => {
     try {
       setRefreshing(true);
-      setRefreshMessage("");
       setError("");
 
       const data = await refreshPersonalizedCourse(courseId);
@@ -136,11 +138,11 @@ export default function CourseDetails() {
         (selected.quizzes || 0);
 
       if (totalAdded > 0) {
-        setRefreshMessage(
+        notices.success(
           `המסלול רוענן בהצלחה. נמצאו ${totalAdded} פריטי תוכן שיכולים להתאים לך.`
         );
       } else {
-        setRefreshMessage(
+        notices.success(
           "המסלול רוענן, אבל עדיין לא נמצאו תכנים חדשים שמתאימים בדיוק למסלול שלך."
         );
       }
@@ -148,7 +150,7 @@ export default function CourseDetails() {
       await loadProgress();
     } catch (err) {
       console.error("שגיאה ברענון מסלול:", err);
-      setError(err.toString());
+      notices.error(err.toString(), "רענון המסלול נכשל");
     } finally {
       setRefreshing(false);
     }
@@ -290,8 +292,6 @@ export default function CourseDetails() {
 
       <MessagesArea
         error={error}
-        refreshMessage={refreshMessage}
-        progressMessage={progressMessage}
       />
 
       {!hasAnyContent ? (
@@ -445,31 +445,13 @@ function SmallStat({ label, value }) {
   );
 }
 
-function MessagesArea({ error, refreshMessage, progressMessage }) {
-  const hasMessages = error || refreshMessage || progressMessage.text;
+function MessagesArea({ error }) {
+  const hasMessages = error;
 
   if (!hasMessages) return null;
 
   return (
     <div className="space-y-3">
-      {refreshMessage && (
-        <div className="rounded-[1.5rem] border border-emerald-300/25 bg-emerald-400/13 px-5 py-4 font-bold text-emerald-100 backdrop-blur-xl">
-          {refreshMessage}
-        </div>
-      )}
-
-      {progressMessage.text && (
-        <div
-          className={`rounded-[1.5rem] px-5 py-4 font-bold backdrop-blur-xl ${
-            progressMessage.type === "success"
-              ? "border border-emerald-300/25 bg-emerald-400/13 text-emerald-100"
-              : "border border-red-300/30 bg-red-500/16 text-red-100"
-          }`}
-        >
-          {progressMessage.text}
-        </div>
-      )}
-
       {error && (
         <div className="rounded-[1.5rem] border border-red-300/30 bg-red-500/16 px-5 py-4 font-bold text-red-100 backdrop-blur-xl">
           {error}

@@ -1,5 +1,6 @@
+import useMessageNotice from "../../components/ui/useMessageNotice";
 import React, { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
+import AppConfirmModal from "../../components/AppConfirmModal";
 import {
   approveReview,
   deleteReview,
@@ -22,6 +23,7 @@ export default function AdminReviews() {
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
+  useMessageNotice(message);
 
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -171,17 +173,7 @@ export default function AdminReviews() {
         </div>
       </section>
 
-      {message.text && (
-        <div
-          className={`rounded-[1.5rem] border-2 px-5 py-3 text-sm font-black ${
-            message.type === "success"
-              ? "border-emerald-300/35 bg-emerald-400/15 text-emerald-100"
-              : "border-red-300/35 bg-red-500/15 text-red-100"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
+
 
       <section
         className="relative overflow-hidden rounded-[2rem] border-2 border-white/20 bg-slate-950/55 p-4 text-white backdrop-blur-xl md:p-5"
@@ -260,16 +252,17 @@ export default function AdminReviews() {
         </div>
       </section>
 
-      {confirmModal.isOpen && (
-        <ConfirmActionModal
-          title={confirmModal.title}
-          text={confirmModal.text}
-          confirmText={confirmModal.confirmText}
-          isLoading={Boolean(actionLoadingId)}
-          onConfirm={runAction}
-          onCancel={closeConfirmModal}
-        />
-      )}
+      <AppConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        text={confirmModal.text}
+        confirmText={confirmModal.confirmText}
+        cancelText="ביטול"
+        type={confirmModal.confirmText === "מחיקה" ? "danger" : "warning"}
+        isLoading={Boolean(actionLoadingId)}
+        onConfirm={runAction}
+        onCancel={closeConfirmModal}
+      />
     </div>
   );
 }
@@ -371,72 +364,6 @@ function ReviewsTable({
   );
 }
 
-function ConfirmActionModal({
-  title,
-  text,
-  confirmText,
-  isLoading,
-  onConfirm,
-  onCancel,
-}) {
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, []);
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 p-4"
-      dir="rtl"
-    >
-      <div
-        className="w-full max-w-md rounded-[2rem] border-2 border-white/20 bg-slate-950 p-6 text-white shadow-2xl"
-        style={{
-          boxShadow:
-            "0 30px 100px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.10)",
-        }}
-      >
-        <div className="mb-4 rounded-full border border-red-300/30 bg-red-500/15 px-4 py-2 text-center text-sm font-black text-red-100">
-          פעולה ניהולית
-        </div>
-
-        <h2 className="text-center text-2xl font-black text-white">{title}</h2>
-
-        <p className="mt-4 text-center text-sm font-semibold leading-7 text-white/65">
-          {text}
-        </p>
-
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={isLoading}
-            className="flex-1 rounded-full border-2 border-white/50 bg-gradient-to-b from-red-400 to-red-700 px-5 py-3 text-sm font-black text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-            style={{
-              boxShadow: isLoading ? "none" : "0 6px 0 rgba(89,15,20,0.42)",
-            }}
-          >
-            {isLoading ? "מבצע..." : confirmText}
-          </button>
-
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isLoading}
-            className="flex-1 rounded-full border-2 border-white/16 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/16 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            ביטול
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-}
 
 function StatusBadge({ status }) {
   const config = {

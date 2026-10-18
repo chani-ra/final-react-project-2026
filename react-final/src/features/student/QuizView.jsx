@@ -1,3 +1,4 @@
+import useMessageNotice from "../../components/ui/useMessageNotice.js";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getQuizById, submitQuiz } from "../../services/quizService";
@@ -19,6 +20,7 @@ export default function QuizView() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  useMessageNotice(message.type === "error" ? message : null);
   const [resultOpen, setResultOpen] = useState(false);
 
   const questions = quiz?.questions || [];
@@ -221,16 +223,6 @@ export default function QuizView() {
             </p>
           </header>
 
-          {message.text && (
-            <div
-              className={`mb-4 rounded-[1.5rem] px-5 py-4 text-sm font-black shadow-[0_12px_32px_rgba(3,31,61,0.16)] ${message.type === "success"
-                  ? "border border-emerald-300/28 bg-emerald-400/14 text-emerald-100"
-                  : "border border-red-300/30 bg-red-500/16 text-red-100"
-                }`}
-            >
-              {message.text}
-            </div>
-          )}
 
           <div className="grid gap-4 xl:grid-cols-[1.72fr_0.58fr]">
             <section className="overflow-hidden rounded-[2rem] border border-white/22 bg-[#061f36]/76 p-4 shadow-[0_24px_65px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.14)]">

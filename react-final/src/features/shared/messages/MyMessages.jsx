@@ -1,3 +1,4 @@
+import useMessageNotice from "../../../components/ui/useMessageNotice.js";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   getMyMessages,
@@ -13,6 +14,7 @@ export default function MyMessages() {
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState("");
   const [messageState, setMessageState] = useState({ type: "", text: "" });
+  useMessageNotice(messageState);
 
   const loadMessages = async () => {
     try {
@@ -132,17 +134,6 @@ export default function MyMessages() {
         </div>
       </section>
 
-      {messageState.text && (
-        <div
-          className={`rounded-[1.5rem] border-2 px-5 py-3 text-sm font-black ${
-            messageState.type === "success"
-              ? "border-emerald-300/35 bg-emerald-400/15 text-emerald-100"
-              : "border-red-300/35 bg-red-500/15 text-red-100"
-          }`}
-        >
-          {messageState.text}
-        </div>
-      )}
 
       {loading ? (
         <LoadingState />

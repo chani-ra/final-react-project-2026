@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNotices } from "../../../components/ui/NoticeProvider";
 import { createAILesson, getLearningCatalog, getLearningProviders, getMyLearningHistory } from "../../../services/learningService";
 import { initialLearningSelection, learningRequest, subcategoriesOf } from "./learningStudioModel.js";
 
 export function useLearningStudio() {
+  const notices = useNotices();
   const [categories, setCategories] = useState([]);
   const [providers, setProviders] = useState([]);
   const [categoryId, setCategoryId] = useState("");
@@ -60,7 +62,8 @@ export function useLearningStudio() {
       setLesson(item);
       setActiveTab("create");
       await loadHistory(1);
-    } catch (err) { setError(err.message); }
+      notices.success("השיעור נוצר ונשמר בהיסטוריה שלך.", "השיעור מוכן!");
+    } catch (err) { setError(err.message); notices.error(err.message, "יצירת השיעור נכשלה"); }
     finally { setSaving(false); }
   };
 

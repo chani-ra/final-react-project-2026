@@ -1,21 +1,5 @@
 import React from "react";
 
-export function MessageBox({ message }) {
-  if (!message?.text) return null;
-
-  return (
-    <div
-      className={`mb-5 rounded-[1.5rem] px-5 py-4 text-base font-bold shadow-[0_12px_32px_rgba(3,31,61,0.16)] ${
-        message.type === "success"
-          ? "border border-emerald-300/28 bg-emerald-400/14 text-emerald-100"
-          : "border border-red-300/30 bg-red-500/16 text-red-100"
-      }`}
-    >
-      {message.text}
-    </div>
-  );
-}
-
 export function MiniInfoCard({ label, value }) {
   return (
     <div className="rounded-[1.5rem] border border-white/18 bg-white/10 p-4 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">

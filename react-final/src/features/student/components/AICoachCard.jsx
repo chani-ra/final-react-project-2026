@@ -1,3 +1,4 @@
+import useMessageNotice from "../../../components/ui/useMessageNotice.js";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   generateCoachPlan,
@@ -16,6 +17,7 @@ export default function AICoachCard({ user }) {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [savingTasks, setSavingTasks] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  useMessageNotice(message);
 
   const username = user?.username || user?.name || "תלמידה";
   const level = user?.englishLevel || user?.level || "beginner";
@@ -276,7 +278,6 @@ export default function AICoachCard({ user }) {
           </aside>
 
           <main className="space-y-4">
-            {message.text && <MessageBox message={message} />}
 
             <PlanCard
               plan={planToShow}
@@ -492,21 +493,6 @@ function SmallNote({ title, text, tone }) {
       <p className="mt-1 text-sm font-semibold leading-7 text-white/70">
         {text}
       </p>
-    </div>
-  );
-}
-
-function MessageBox({ message }) {
-  const className =
-    message.type === "success"
-      ? "border-emerald-300/35 bg-emerald-300/12 text-emerald-100"
-      : "border-red-300/35 bg-red-500/15 text-red-100";
-
-  return (
-    <div
-      className={`rounded-[1.2rem] border px-4 py-3 text-sm font-black ${className}`}
-    >
-      {message.text}
     </div>
   );
 }

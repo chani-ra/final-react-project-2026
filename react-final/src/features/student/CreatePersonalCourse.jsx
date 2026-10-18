@@ -1,3 +1,4 @@
+import useMessageNotice from "../../components/ui/useMessageNotice.js";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPersonalizedCourse } from "../../services/courseService";
@@ -14,6 +15,7 @@ export default function CreatePersonalCourse() {
   const [createdCourseId, setCreatedCourseId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  useMessageNotice(message.type === "error" ? message : null);
   const [successOpen, setSuccessOpen] = useState(false);
 
   const levelOptions = [
@@ -153,17 +155,6 @@ export default function CreatePersonalCourse() {
             </p>
           </header>
 
-          {message.text && (
-            <div
-              className={`mb-5 rounded-[1.5rem] px-5 py-4 text-sm font-bold shadow-[0_12px_32px_rgba(3,31,61,0.16)] ${
-                message.type === "success"
-                  ? "border border-emerald-300/28 bg-emerald-400/14 text-emerald-100"
-                  : "border border-red-300/30 bg-red-500/16 text-red-100"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
 
           <div className="grid gap-4 xl:grid-cols-[1.65fr_0.72fr]">
             <section className="rounded-[2rem] border border-white/22 bg-[#061f36]/76 p-4 shadow-[0_24px_65px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.14)]">

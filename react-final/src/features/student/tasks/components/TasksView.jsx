@@ -5,7 +5,7 @@ import { EmptyTasks, LoadingState, StatBox, TabButton } from "./taskUi";
 
 export default function TasksView({
   activeTab, setActiveTab, stats, displayItems, progressPercent,
-  loading, actionLoadingId, message,
+  loading, actionLoadingId,
   handleCompleteTask, handleSubmitForReview, handleDeleteTask,
 }) {
   return (
@@ -69,16 +69,6 @@ export default function TasksView({
         </div>
       </section>
 
-      {message.text && (
-        <div
-          className={`rounded-[1.7rem] border-2 px-5 py-4 text-sm font-black shadow-xl ${message.type === "success"
-            ? "border-emerald-300/35 bg-emerald-400/15 text-emerald-100"
-            : "border-red-300/35 bg-red-500/15 text-red-100"
-            }`}
-        >
-          {message.text}
-        </div>
-      )}
 
       <section
         className="relative overflow-hidden rounded-[2.2rem] border-2 border-white/20 bg-slate-950/55 p-4 text-white backdrop-blur-xl"

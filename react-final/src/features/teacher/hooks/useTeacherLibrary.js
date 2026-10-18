@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import useMessageNotice from "../../../components/ui/useMessageNotice.js";
+import { useNotices } from "../../../components/ui/NoticeProvider";
 import { libraryApi } from "../library/libraryApi";
 import {
   EMPTY_LIBRARY,
@@ -13,11 +15,13 @@ import { getEmptyEditForm } from "../components/library/libraryUtils";
 const NO_MESSAGE = { type: "", text: "" };
 
 export default function useTeacherLibrary(teacherId) {
+  const notices = useNotices();
   const [activeTab, setActiveTab] = useState("lessons");
   const [collections, setCollections] = useState(EMPTY_LIBRARY);
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState("");
   const [message, setMessage] = useState(NO_MESSAGE);
+  useMessageNotice(message);
   const [editingItem, setEditingItem] = useState(null);
   const [editType, setEditType] = useState("");
   const [editForm, setEditForm] = useState(getEmptyEditForm);
@@ -81,7 +85,13 @@ export default function useTeacherLibrary(teacherId) {
 
   const handleDelete = async (item, type) => {
     if (!item?._id || !TYPE_LABELS[type]) return;
-    if (!window.confirm(`האם למחוק את ${TYPE_LABELS[type]}?`)) return;
+    const accepted = await notices.confirm({
+      title: `למחוק ${TYPE_LABELS[type]}?`,
+      message: "לא ניתן לשחזר פריט שנמחק.",
+      confirmText: "כן, למחוק",
+      danger: true,
+    });
+    if (!accepted) return;
 
     await performAction(item._id, async () => {
       await libraryApi.remove(type, item._id);

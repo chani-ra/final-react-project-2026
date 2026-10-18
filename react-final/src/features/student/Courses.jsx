@@ -5,10 +5,12 @@ import {
   getMyCourses,
   getRecommendedCourses,
 } from "../../services/courseService";
+import { useNotices } from "../../components/ui/NoticeProvider";
 import SmartGuideBackButton from "../../components/ui/SmartGuideBackButton";
 
 export default function Courses() {
   const navigate = useNavigate();
+  const notices = useNotices();
   const scrollerRef = useRef(null);
 
   const [myCourses, setMyCourses] = useState([]);
@@ -20,7 +22,6 @@ export default function Courses() {
   const [enrollingId, setEnrollingId] = useState("");
 
   const [error, setError] = useState("");
-  const [actionMessage, setActionMessage] = useState("");
 
   const loadMyCourses = async () => {
     try {
@@ -39,12 +40,11 @@ export default function Courses() {
   const loadRecommendedCourses = async () => {
     try {
       setRecommendedLoading(true);
-      setActionMessage("");
 
       const data = await getRecommendedCourses();
       setRecommendedCourses(data.courses || []);
     } catch (err) {
-      setActionMessage(err.toString());
+      notices.error(err.toString());
     } finally {
       setRecommendedLoading(false);
     }
@@ -65,18 +65,17 @@ export default function Courses() {
   const handleEnroll = async (courseId) => {
     try {
       setEnrollingId(courseId);
-      setActionMessage("");
 
       await enrollInCourse(courseId);
 
-      setActionMessage("נרשמת לקורס בהצלחה.");
+      notices.success("נרשמת לקורס בהצלחה.", "הרשמה לקורס");
 
       await loadMyCourses();
       await loadRecommendedCourses();
 
       setActiveTab("myCourses");
     } catch (err) {
-      setActionMessage(err.toString());
+      notices.error(err.toString());
     } finally {
       setEnrollingId("");
     }
@@ -174,7 +173,7 @@ export default function Courses() {
         </div>
       </section>
 
-      <Messages error={error} actionMessage={actionMessage} />
+      <Messages error={error} />
 
       <section
         className="relative overflow-hidden rounded-[2rem] border-2 border-white/20 bg-slate-950/55 p-4 text-white backdrop-blur-xl md:p-5"
@@ -418,8 +417,8 @@ function SmallStat({ label, value }) {
   );
 }
 
-function Messages({ error, actionMessage }) {
-  if (!error && !actionMessage) return null;
+function Messages({ error }) {
+  if (!error) return null;
 
   return (
     <div className="space-y-3">
@@ -429,11 +428,6 @@ function Messages({ error, actionMessage }) {
         </div>
       )}
 
-      {actionMessage && (
-        <div className="rounded-[1.5rem] border-2 border-yellow-300/35 bg-yellow-300/15 px-5 py-3 text-center text-sm font-black text-yellow-100">
-          {actionMessage}
-        </div>
-      )}
     </div>
   );
 }

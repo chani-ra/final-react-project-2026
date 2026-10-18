@@ -50,16 +50,18 @@ node --test
 
 | Directory / file | Responsibility |
 | --- | --- |
-| `src/App.jsx` | Top-level routes, role-specific navigation and lazy-loaded screens. |
-| `src/features/student/learning/` | AI Learning Studio UI, lesson display, state hook and model helpers. |
-| `src/services/learningService.js` | HTTP calls for category, provider, generation and history endpoints. |
-| `src/features/admin/AdminLearningHistory.jsx` | Admin view of generated lessons and their owners. |
-| `src/features/student/` | Other student learning workflows (courses, tasks, quizzes, writing and more). |
-| `src/features/teacher/` | Teacher content and exercises. |
-| `src/components/` | Shared layout and interface components. |
-| `src/services/axiosConfig.jsx` | Shared API client and authentication handling. |
+| `src/App.jsx` | Top-level routes, role-specific guards and lazy-loaded screens. |
+| `src/features/auth/login/`, `auth/register/` | Authentication and registration pages with colocated validation. |
+| `src/features/student/chat/`, `courses/`, `dictionary/`, `tasks/`, `writing/` | Student pages together with their feature-specific hooks, models, components and tests. |
+| `src/features/student/dashboard/`, `exercise/`, `quiz/`, `learning/` | Dashboard and learning experiences; AI Learning Studio includes its own state hook and model. |
+| `src/features/teacher/create/`, `library/`, `exerciseBuilder/`, `quizBuilder/` | Teacher workflows, forms and local feature logic. |
+| `src/features/admin/` | Admin features: dashboard, users, content, messages, reviews, learning history and settings. |
+| `src/features/general/` | Cross-role functionality such as shared lesson preview, messages and the dashboard journey map. |
+| `src/components/` | App-wide layout, guards and reusable UI infrastructure. |
+| `src/services/` | Backend requests and centralized Axios/session handling. |
+| `src/redux/` | Global authentication state. |
 
-The Learning Studio follows a **view → hook/model → API service → backend** separation so that view styling, application state and network logic are not mixed in one file. Route-level lazy loading reduces initial JavaScript work for users who do not visit every screen.
+**Architecture conventions:** see [Frontend Architecture](docs/FRONTEND_ARCHITECTURE.md). Components are colocated with the feature that owns them, while `.jsx` modules contain JSX and `.js` modules contain logic without JSX. The Learning Studio follows a **view → hook/model → API service → backend** separation. Route-level lazy loading avoids downloading every screen up front.
 
 ## Deployment (Render)
 

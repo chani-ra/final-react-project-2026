@@ -7,43 +7,44 @@ import MainLayout from "./components/layout/MainLayout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import SessionBootstrap from "./components/auth/SessionBootstrap";
 import Home from "./components/Home";
-import Register from "./features/auth/Register";
-import Login from "./features/auth/Login";
+import Register from "./features/auth/register/Register";
+import Login from "./features/auth/login/Login";
 import Introduce from "./components/Introduce";
 
 // shared components
 const MyMessages = lazy(() => import("./features/general/messages/MyMessages"));
 
 // student components
-const StudentDashboard = lazy(() => import("./features/student/StudentDashboard"));
-const Tasks = lazy(() => import("./features/student/Tasks"));
-const Chat = lazy(() => import("./features/student/Chat"));
-const Courses = lazy(() => import("./features/student/Courses"));
-const CourseDetails = lazy(() => import("./features/student/CourseDetails"));
-const CreatePersonalCourse = lazy(() => import("./features/student/CreatePersonalCourse"));
-const ExerciseView = lazy(() => import("./features/student/ExerciseView"));
-const QuizView = lazy(() => import("./features/student/QuizView"));
-const Dictionary = lazy(() => import("./features/student/Dictionary"));
-const WritingTrainer = lazy(() => import("./features/student/WritingTrainer"));
+const StudentDashboard = lazy(() => import("./features/student/dashboard/StudentDashboard"));
+const Tasks = lazy(() => import("./features/student/tasks/Tasks"));
+const Chat = lazy(() => import("./features/student/chat/Chat"));
+const Courses = lazy(() => import("./features/student/courses/Courses"));
+const CourseDetails = lazy(() => import("./features/student/courses/CourseDetails"));
+const CreatePersonalCourse = lazy(() => import("./features/student/courses/CreatePersonalCourse"));
+const ExerciseView = lazy(() => import("./features/student/exercise/ExerciseView"));
+const QuizView = lazy(() => import("./features/student/quiz/QuizView"));
+const Dictionary = lazy(() => import("./features/student/dictionary/Dictionary"));
+const WritingTrainer = lazy(() => import("./features/student/writing/WritingTrainer"));
 const LearningStudio = lazy(() => import("./features/student/learning/LearningStudio"));
 
 // teacher components
-const TeacherDashboard = lazy(() => import("./features/teacher/TeacherDashBoard"));
-const TeacherStudents = lazy(() => import("./features/teacher/TeacherStudents"));
-const TeacherCreate = lazy(() => import("./features/teacher/TeacherCreate"));
-const TeacherExerciseBuilder = lazy(() => import("./features/teacher/TeacherExerciseBuilder"));
-const TeacherLibrary = lazy(() => import("./features/teacher/TeacherLibrary"));
-const TeacherGrading = lazy(() => import("./features/teacher/TeacherGrading"));
-const LessonView = lazy(() => import("./features/teacher/LessonView"));
-const TeacherQuizBuilder = lazy(() => import("./features/teacher/TeacherQuizBuilder"));
+const TeacherDashboard = lazy(() => import("./features/teacher/dashboard/TeacherDashboard"));
+const TeacherStudents = lazy(() => import("./features/teacher/students/TeacherStudents"));
+const TeacherCreate = lazy(() => import("./features/teacher/create/TeacherCreate"));
+const TeacherExerciseBuilder = lazy(() => import("./features/teacher/exerciseBuilder/TeacherExerciseBuilder"));
+const TeacherLibrary = lazy(() => import("./features/teacher/library/TeacherLibrary"));
+const TeacherGrading = lazy(() => import("./features/teacher/grading/TeacherGrading"));
+const LessonView = lazy(() => import("./features/general/lessons/LessonView"));
+const TeacherQuizBuilder = lazy(() => import("./features/teacher/quizBuilder/TeacherQuizBuilder"));
 
 // admin components
-const AdminDashboard = lazy(() => import("./features/admin/AdminDashboard"));
-const AdminUsers = lazy(() => import("./features/admin/AdminUsers"));
-const AdminContent = lazy(() => import("./features/admin/AdminContent"));
-const AdminMessages = lazy(() => import("./features/admin/AdminMessages"));
-const AdminReviews = lazy(() => import("./features/admin/AdminReviews"));
-const AdminLearningHistory = lazy(() => import("./features/admin/AdminLearningHistory"));
+const AdminDashboard = lazy(() => import("./features/admin/dashboard/AdminDashboard"));
+const AdminUsers = lazy(() => import("./features/admin/users/AdminUsers"));
+const AdminContent = lazy(() => import("./features/admin/content/AdminContent"));
+const AdminMessages = lazy(() => import("./features/admin/messages/AdminMessages"));
+const AdminReviews = lazy(() => import("./features/admin/reviews/AdminReviews"));
+const AdminLearningHistory = lazy(() => import("./features/admin/learningHistory/AdminLearningHistory"));
+const AdminSettings = lazy(() => import("./features/admin/settings/AdminSettings"));
 
 function RouteLoading() {
   return (
@@ -55,14 +56,6 @@ function RouteLoading() {
     </div>
   );
 }
-
-const AdminSettings = () => (
-  <div className="p-6">
-    <h1 className="text-2xl font-bold text-white">
-      הגדרות מערכת גלובליות
-    </h1>
-  </div>
-);
 
 export default function App() {
   return (

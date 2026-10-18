@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNotices } from "../../../components/ui/NoticeProvider";
-import { sendConversationMessage } from "../../../services/aiService";
-import { addMessageToChatConversation, createChatConversation, deleteChatConversation, getChatConversationById, getMyChatConversations } from "../../../services/chatService";
+import { sendChatConversationMessage, createChatConversation, deleteChatConversation, getChatConversationById, getMyChatConversations } from "../../../services/chatService";
 import { buildWelcomeMessage, buildConversationTitle, getCurrentTime, formatTime } from "./chatModel.js";
 
 export default function useChat(user) {
@@ -103,22 +102,8 @@ export default function useChat(user) {
     return newConversation._id;
   };
 
-  const saveMessageToConversation = async ({ conversationId, sender, text }) => {
-    const updatedConversation = await addMessageToChatConversation({
-      conversationId,
-      sender,
-      text,
-    });
-
-    setConversations((prev) => {
-      const withoutCurrent = prev.filter(
-        (conversation) => conversation._id !== updatedConversation._id
-      );
-
-      return [updatedConversation, ...withoutCurrent];
-    });
-
-    return updatedConversation;
+  const updateConversation = (updatedConversation) => {
+    setConversations((prev) => [updatedConversation, ...prev.filter((item) => item._id !== updatedConversation._id)]);
   };
 
   const handleSend = async (event) => {
@@ -145,20 +130,12 @@ export default function useChat(user) {
     try {
       conversationId = await ensureConversationExists(cleanInput);
 
-      await saveMessageToConversation({
+      const { reply: finalAiReply, conversation: updatedConversation } = await sendChatConversationMessage({
         conversationId,
-        sender: "user",
-        text: cleanInput,
-      });
-
-      const aiReply = await sendConversationMessage({
         message: cleanInput,
         level: userLevel,
       });
-
-      const finalAiReply =
-        aiReply ||
-        "אני כאן כדי לעזור לך לתרגל אנגלית. נסי לכתוב לי משפט נוסף.";
+      updateConversation(updatedConversation);
 
       const aiMessage = {
         id: `local-ai-${Date.now()}`,
@@ -168,38 +145,10 @@ export default function useChat(user) {
       };
 
       setMessages((prev) => [...prev, aiMessage]);
-
-      await saveMessageToConversation({
-        conversationId,
-        sender: "ai",
-        text: finalAiReply,
-      });
     } catch (error) {
-      const fallbackText =
-        "אופס, לא הצלחתי לקבל תשובה מה־AI כרגע. אפשר לנסות שוב בעוד רגע.";
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `local-ai-error-${Date.now()}`,
-          text: fallbackText,
-          sender: "ai",
-          time: getCurrentTime(),
-        },
-      ]);
-
-      if (conversationId) {
-        try {
-          await saveMessageToConversation({
-            conversationId,
-            sender: "ai",
-            text: fallbackText,
-          });
-        } catch {
-          // לא שוברים את הצ׳אט אם שמירת ההודעה נכשלה
-        }
-      }
-
+      // The server did not confirm persistence: do not display an invented AI reply.
+      setMessages((prev) => prev.filter((message) => message.id !== userMessage.id));
+      setInput(cleanInput);
       setErrorMessage(error.toString());
     } finally {
       setIsTyping(false);

@@ -85,3 +85,12 @@ export const deleteChatConversation = async (conversationId) => {
     throw error.response?.data?.message || "נכשל במחיקת השיחה";
   }
 };
+// Creates a trusted assistant reply and stores both sides on the server.
+export const sendChatConversationMessage = async ({ conversationId, message, level }) => {
+  try {
+    const response = await axiosConfig.post(`/chat-conversations/${conversationId}/reply`, { message, level });
+    return { reply: response.data.reply, conversation: response.data.conversation };
+  } catch (error) {
+    throw error.response?.data?.message || "נכשל בקבלת תשובה מהעוזר";
+  }
+};

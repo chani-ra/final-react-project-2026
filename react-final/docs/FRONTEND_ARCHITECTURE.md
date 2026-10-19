@@ -24,13 +24,17 @@ and tests close together. Even a one-file page has a clear feature home.
 - `src/App.jsx`: central routing, guards and lazy imports; no domain work.
 - `src/components/`: app shell, guards, notifications and global UI primitives.
 - `src/services/`: HTTP calls and shared Axios/refresh-token behavior.
+- `src/contracts/`: cross-feature TypeScript data contracts shared by services and features.
 - `src/redux/`: global authentication; screen-specific state remains local.
 - `src/assets/`: static assets.
 
 ## Files and folder depth
 
-`.jsx` is for modules containing JSX and `.js` for normal JavaScript. Mixing them
-**in a feature folder** is intentional and professional. A small feature should
+`.jsx` is for modules containing JSX, `.js` for JavaScript logic, and `.ts`
+for incrementally typed modules such as `courseService.ts` and shared
+`courseContracts.ts`. Mixing JavaScript and TypeScript is intentional;
+`tsconfig.json` checks `.ts`/`.tsx` with strict settings while `checkJs` remains
+disabled for legacy JS/JSX. A small feature should
 have no artificial `models/`, `hooks/`, `containers/` or `repositories/` folders.
 For a larger feature (e.g., dashboard), `components/` groups multiple visual
 parts while hooks and tests can stay beside the page. Choose responsibility,
@@ -43,10 +47,12 @@ component. Avoid circular imports and feature-to-feature reach-through.
 
 ## Safe refactoring
 
-This batch changes file ownership and **relative import paths only**. It must
-not change route URLs, guards, API contracts, rendered JSX, Tailwind classes,
-content, or state. Run `node --test`, `npm run build`, `git diff --check`,
-then test student, teacher and admin flows in the browser.
+Preserve the existing routes, permissions, API contracts, JSX output and
+Tailwind classes during structural refactors. When migrating individual files
+to TypeScript, type the existing API shapes rather than changing runtime
+responses. Run `npm run typecheck`, `node --test`, `npm run build`,
+`npm run lint`, and `npm run test:e2e`, then check authenticated student,
+teacher and admin flows manually when test credentials are unavailable.
 
 When changing features later, follow the nearest existing convention and edit
 its colocated tests. Keep untracked ZIPs, patches, generated code and media out

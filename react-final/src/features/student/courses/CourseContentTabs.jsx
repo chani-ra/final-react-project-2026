@@ -1,14 +1,12 @@
 import { apiUrl } from "../../../services/axiosConfig";
 import { useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { courseTabFromSearch } from "../../general/navigation/courseNavigationModel.js";
 import { useCourseAudio } from "../../general/audio/useCourseAudio.js";
-import DetailHeaderActions from "../../../components/ui/DetailHeaderActions.jsx";
-import AudioPlayerControls from "../../../components/ui/AudioPlayerControls.jsx";
+import CourseContentRail from "./CourseContentRail.jsx";
+import CourseSongPlayerPanel from "./CourseSongPlayerPanel.jsx";
+import { selectCourseItems } from "../../../contracts/courseContracts.ts";
 
-
-const EMPTY_ITEMS = Object.freeze([]);
 
 export default function CourseContentTabs({
   course,
@@ -35,10 +33,10 @@ export default function CourseContentTabs({
   const [songPanelOpen, setSongPanelOpen] = useState(false);
   const { playSong } = useCourseAudio();
 
-  const lessons = course.lessons || EMPTY_ITEMS;
-  const songs = course.songs || EMPTY_ITEMS;
-  const exercises = course.exercises || EMPTY_ITEMS;
-  const quizzes = course.quizzes || EMPTY_ITEMS;
+  const lessons = selectCourseItems(course, "lessons");
+  const songs = selectCourseItems(course, "songs");
+  const exercises = selectCourseItems(course, "exercises");
+  const quizzes = selectCourseItems(course, "quizzes");
 
   const activeSong =
     songs.find((song) => song._id === activeSongId) || songs[0];
@@ -81,13 +79,10 @@ export default function CourseContentTabs({
   const safeIsItemCompleted = isItemCompleted || (() => false);
   const safeToggle = onToggleCourseItem || (() => null);
 
-  const activeItems = useMemo(() => {
-    if (activeTab === "lessons") return lessons;
-    if (activeTab === "songs") return songs;
-    if (activeTab === "exercises") return exercises;
-    if (activeTab === "quizzes") return quizzes;
-    return [];
-  }, [activeTab, lessons, songs, exercises, quizzes]);
+  const activeItems = useMemo(
+    () => selectCourseItems(course, activeTab),
+    [course, activeTab]
+  );
 
   const activeTabData = tabs.find((tab) => tab.id === activeTab);
 
@@ -155,7 +150,7 @@ export default function CourseContentTabs({
           </div>
         </div>
 
-        <ContentRail
+        <CourseContentRail
           railRef={railRef}
           scrollRail={scrollRail}
           activeTab={activeTab}
@@ -173,7 +168,7 @@ export default function CourseContentTabs({
         />
 
         {activeTab === "songs" && activeSong && songPanelOpen && (
-          <SongPlayerPanel
+          <CourseSongPlayerPanel
             activeSong={activeSong}
             getLevelLabel={getLevelLabel}
             actionLoadingKey={actionLoadingKey}
@@ -185,446 +180,4 @@ export default function CourseContentTabs({
       </div>
     </section>
   );
-}
-
-function ContentRail({
-  railRef,
-  scrollRail,
-  activeTab,
-  activeTabData,
-  items,
-  courseId,
-  navigate,
-  getLevelLabel,
-  getCategoryLabel,
-  actionLoadingKey,
-  isItemCompleted,
-  onToggleCourseItem,
-  activeSongId,
-  openSongPanel,
-}) {
-  if (!items.length) {
-    return (
-      <EmptyContent
-        label={activeTabData?.label}
-        text={`עדיין אין ${activeTabData?.label || "תוכן"} בקורס הזה.`}
-      />
-    );
-  }
-
-  return (
-    <div className="relative px-4 py-4">
-      <RailLine />
-
-      {items.length > 4 && (
-        <>
-          <button
-            type="button"
-            onClick={() => scrollRail("right")}
-            className="absolute right-3 top-1/2 z-30 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/18 bg-[#123c6b]/80 text-3xl font-black text-white shadow-[0_10px_24px_rgba(3,31,61,0.26)] backdrop-blur-xl transition hover:bg-[#176aa8] xl:flex"
-          >
-            ›
-          </button>
-
-          <button
-            type="button"
-            onClick={() => scrollRail("left")}
-            className="absolute left-3 top-1/2 z-30 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/18 bg-[#123c6b]/80 text-3xl font-black text-white shadow-[0_10px_24px_rgba(3,31,61,0.26)] backdrop-blur-xl transition hover:bg-[#176aa8] xl:flex"
-          >
-            ‹
-          </button>
-        </>
-      )}
-
-      <div
-        ref={railRef}
-        className="course-horizontal-rail relative z-10 flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden px-2 pb-4 pt-5"
-      >
-        {items.map((item, index) => {
-          const itemType = getItemType(activeTab);
-          const completed = isItemCompleted({
-            itemType,
-            itemId: item._id,
-          });
-
-          const loadingKey = `${itemType}-${item._id}`;
-          const isLoading = actionLoadingKey === loadingKey;
-          const isActiveSong =
-            activeTab === "songs" && activeSongId === item._id;
-
-          return (
-            <CourseRailCar
-              key={item._id}
-              item={item}
-              index={index}
-              activeTab={activeTab}
-              typeLabel={activeTabData?.typeLabel || "פריט"}
-              color={activeTabData?.color}
-              completed={completed}
-              isLoading={isLoading}
-              isActiveSong={isActiveSong}
-              getLevelLabel={getLevelLabel}
-              getCategoryLabel={getCategoryLabel}
-              onOpen={() =>
-                openItem({
-                  activeTab,
-                  item,
-                  courseId,
-                  navigate,
-                  openSongPanel,
-                })
-              }
-              onToggle={() =>
-                onToggleCourseItem({
-                  itemType,
-                  itemId: item._id,
-                  completed: !completed,
-                })
-              }
-            />
-          );
-        })}
-      </div>
-
-      {items.length > 4 && <RailHint />}
-    </div>
-  );
-}
-
-function CourseRailCar({
-  item,
-  index,
-  activeTab,
-  typeLabel,
-  color,
-  completed,
-  isLoading,
-  isActiveSong,
-  getLevelLabel,
-  getCategoryLabel,
-  onOpen,
-  onToggle,
-}) {
-  return (
-    <article
-      className={`relative h-[236px] w-[270px] shrink-0 snap-center rounded-[1.7rem] border p-4 text-white shadow-[0_15px_34px_rgba(3,31,61,0.22),0_0_20px_rgba(103,232,249,0.10),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl transition hover:-translate-y-2 ${
-        isActiveSong
-          ? "border-[#ffd439]/58 bg-[#1b5f95]/70"
-          : "border-cyan-100/28 bg-[#1b5f95]/54 hover:bg-[#1b5f95]/66"
-      }`}
-    >
-      <div className="absolute -top-4 right-5 flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-[#075a98] bg-gradient-to-b from-[#ff6659] to-[#b8322a] text-base font-black shadow-[0_7px_14px_rgba(3,31,61,0.22)]">
-        {index + 1}
-      </div>
-
-      <div className="flex h-full flex-col">
-        <div className="mb-3 flex items-center justify-between gap-3 pr-9">
-          <span
-            className={`rounded-full border border-white/18 bg-gradient-to-b ${color} px-3 py-1 text-[11px] font-black text-white shadow-[0_5px_12px_rgba(3,31,61,0.16)]`}
-          >
-            {typeLabel}
-          </span>
-
-          {completed && (
-            <span className="rounded-full border border-emerald-300/35 bg-emerald-400/16 px-3 py-1 text-[11px] font-black text-emerald-200">
-              בוצע
-            </span>
-          )}
-        </div>
-
-        <h3 className="line-clamp-2 min-h-[50px] text-xl font-black leading-tight">
-          {item.title || item.theme || `${typeLabel} ${index + 1}`}
-        </h3>
-
-        <p className="mt-2 line-clamp-2 min-h-[34px] text-xs font-bold leading-relaxed text-white/62">
-          {getShortDescription(activeTab, item)}
-        </p>
-
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {item.level && (
-            <span className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white/72">
-              {getLevelLabel(item.level)}
-            </span>
-          )}
-
-          {item.category && (
-            <span className="rounded-full bg-[#ffd439]/14 px-2.5 py-1 text-[11px] font-bold text-[#ffe99a]">
-              {getCategoryLabel(item.category)}
-            </span>
-          )}
-        </div>
-
-        <div className="mt-auto grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={onOpen}
-            className="rounded-full border-2 border-white/50 bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-3 py-2.5 text-xs font-black text-white shadow-[0_5px_0_rgba(89,15,20,0.40)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none"
-          >
-            {getOpenButtonText(activeTab)}
-          </button>
-
-          <ProgressToggleButton
-            completed={completed}
-            isLoading={isLoading}
-            completedLabel="בוצע"
-            pendingLabel="סמני"
-            onClick={onToggle}
-            variant="dark"
-          />
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function CourseSongControls({ songId, downloadUrl }) {
-  const { track, isPlaying, currentTime, duration, volume, playbackRate, error,
-    toggle, seek, changeVolume, changeSpeed } = useCourseAudio();
-  const selected = track?.id === songId;
-  return (
-    <AudioPlayerControls
-      title={selected ? track.title : "שיר לימודי"}
-      subtitle={selected ? track.subtitle : "תרגול האזנה"}
-      isPlaying={selected && isPlaying}
-      currentTime={selected ? currentTime : 0}
-      duration={selected ? duration : 0}
-      onToggle={selected ? toggle : undefined}
-      onSeek={selected ? seek : undefined}
-      volume={volume}
-      onVolumeChange={changeVolume}
-      playbackRate={playbackRate}
-      onSpeedChange={changeSpeed}
-      downloadUrl={downloadUrl}
-      error={selected ? error : "השיר אינו פעיל. חזרי לרשימה ובחרי אותו מחדש."}
-    />
-  );
-}
-
-function SongPlayerPanel({
-  activeSong,
-  getLevelLabel,
-  actionLoadingKey,
-  isItemCompleted,
-  onToggleCourseItem,
-  onClose,
-}) {
-  const completed = isItemCompleted({
-    itemType: "song",
-    itemId: activeSong._id,
-  });
-
-  const isLoading = actionLoadingKey === `song-${activeSong._id}`;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#031f3d]/55 px-4 py-6 backdrop-blur-md"
-      dir="rtl"
-    >
-      <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2.4rem] border border-white/28 bg-[#123c6b]/96 text-white shadow-[0_35px_100px_rgba(3,31,61,0.58),inset_0_1px_0_rgba(255,255,255,0.18)]">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,255,255,0.16),transparent_26%),linear-gradient(to_bottom,rgba(255,255,255,0.08),transparent_48%)]" />
-
-        <div className="relative z-10 p-5 md:p-7">
-          <DetailHeaderActions onBack={onClose} onClose={onClose} backLabel="חזרה לשירים" />
-          <div className="mb-6 flex items-center gap-4 pl-14">
-            <div className="flex h-17 w-17 shrink-0 items-center justify-center rounded-[1.5rem] border border-white/28 bg-gradient-to-b from-[#ffd439] to-[#d98918] text-4xl shadow-[0_12px_28px_rgba(3,31,61,0.28)]">
-              ♪
-            </div>
-
-            <div>
-              <div className="text-xs font-black text-[#ffe99a]">
-                נגן שיר פעיל
-              </div>
-
-              <h3 className="mt-1 text-2xl font-black leading-tight md:text-3xl">
-                {activeSong.title || activeSong.theme || "שיר לימודי"}
-              </h3>
-
-              <p className="mt-1 text-sm font-bold text-white/68">
-                רמה: {getLevelLabel(activeSong.level)} · נושא:{" "}
-                {activeSong.theme || "לא צוין"}
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <CourseSongControls
-              songId={activeSong._id}
-              downloadUrl={apiUrl(`/songs/song/${activeSong._id}/stream`)}
-            />
-          </div>
-
-          <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
-            <div className="rounded-[1.5rem] border border-white/14 bg-white/9 p-4">
-              <h4 className="font-black text-white">תרגול קצר</h4>
-              <p className="mt-1 text-sm font-bold leading-relaxed text-white/64">
-                האזיני לשיר, ואז סמני שהשלמת.
-              </p>
-            </div>
-
-            <div className="min-w-[200px]">
-              <ProgressToggleButton
-                completed={completed}
-                isLoading={isLoading}
-                completedLabel="השיר הושלם"
-                pendingLabel="סמני שהאזנת"
-                onClick={() =>
-                  onToggleCourseItem({
-                    itemType: "song",
-                    itemId: activeSong._id,
-                    completed: !completed,
-                  })
-                }
-                variant="light"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-}
-
-function ProgressToggleButton({
-  completed,
-  isLoading,
-  pendingLabel,
-  completedLabel,
-  onClick,
-  variant = "dark",
-}) {
-  const pendingClass =
-    variant === "light"
-      ? "border-[#176aa8]/20 bg-[#176aa8]/10 text-[#123c6b] hover:bg-[#176aa8]/16"
-      : "border-white/16 bg-white/10 text-white hover:bg-white/16";
-
-  const completedClass =
-    variant === "light"
-      ? "border-emerald-400/35 bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
-      : "border-emerald-300/35 bg-emerald-400/16 text-emerald-200 hover:bg-emerald-400/22";
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={isLoading}
-      className={`w-full rounded-full border px-3 py-2.5 text-xs font-black transition-all disabled:opacity-60 ${
-        completed ? completedClass : pendingClass
-      }`}
-    >
-      {isLoading ? "מעדכן..." : completed ? completedLabel : pendingLabel}
-    </button>
-  );
-}
-
-function RailLine() {
-  return (
-    <svg
-      className="pointer-events-none absolute inset-x-0 top-[48%] z-0 h-28 w-full"
-      viewBox="0 0 1200 120"
-      preserveAspectRatio="none"
-    >
-      <path
-        d="M20 62C130 20 240 96 350 62C470 25 565 95 680 62C790 30 900 82 1015 58C1090 42 1145 46 1180 30"
-        fill="none"
-        stroke="rgba(255,255,255,0.28)"
-        strokeWidth="5"
-        strokeLinecap="round"
-        strokeDasharray="12 16"
-      />
-      <path
-        d="M20 66C130 24 240 100 350 66C470 29 565 99 680 66C790 34 900 86 1015 62C1090 46 1145 50 1180 34"
-        fill="none"
-        stroke="rgba(7,90,152,0.22)"
-        strokeWidth="13"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function RailHint() {
-  return (
-    <div className="mt-1 text-center text-xs font-bold text-white/50">
-      יש עוד קרונות במסלול — אפשר להשתמש בחצים או לגלול בעדינות לרוחב
-    </div>
-  );
-}
-
-function EmptyContent({ label, text }) {
-  return (
-    <div className="p-5">
-      <div className="rounded-[2rem] border border-dashed border-white/18 bg-[#123c6b]/44 py-16 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/14 bg-white/9 text-2xl">
-          —
-        </div>
-        <h3 className="text-2xl font-black text-white">{label}</h3>
-        <p className="mt-2 font-bold text-white/60">{text}</p>
-      </div>
-    </div>
-  );
-}
-
-function getItemType(activeTab) {
-  const map = {
-    lessons: "lesson",
-    songs: "song",
-    exercises: "exercise",
-    quizzes: "quiz",
-  };
-
-  return map[activeTab] || "lesson";
-}
-
-function openItem({ activeTab, item, courseId, navigate, openSongPanel }) {
-  if (activeTab === "lessons") {
-    navigate(`/lesson/${item._id}?courseId=${encodeURIComponent(courseId)}`, { state: { courseReturn: { courseId, tab: "lessons" } } });
-    return;
-  }
-
-  if (activeTab === "songs") {
-    openSongPanel(item._id);
-    return;
-  }
-
-  if (activeTab === "exercises") {
-    navigate(`/exercise/${item._id}?courseId=${encodeURIComponent(courseId)}`, { state: { courseReturn: { courseId, tab: "exercises" } } });
-    return;
-  }
-
-  if (activeTab === "quizzes") {
-    navigate(`/quiz/${item._id}?courseId=${encodeURIComponent(courseId)}`, { state: { courseReturn: { courseId, tab: "quizzes" } } });
-    return;
-  }
-}
-
-function getOpenButtonText(activeTab) {
-  const map = {
-    lessons: "צפייה",
-    songs: "השמעה",
-    exercises: "התחל",
-    quizzes: "התחל",
-  };
-
-  return map[activeTab] || "פתח";
-}
-
-function getShortDescription(activeTab, item) {
-  if (activeTab === "lessons") {
-    return item.description || "שיעור מתוך המסלול.";
-  }
-
-  if (activeTab === "songs") {
-    return item.theme || "תרגול האזנה.";
-  }
-
-  if (activeTab === "exercises") {
-    return "תרגול אישי.";
-  }
-
-  if (activeTab === "quizzes") {
-    return item.description || "בדיקת הבנה.";
-  }
-
-  return item.description || item.theme || "פריט מתוך הקורס.";
 }

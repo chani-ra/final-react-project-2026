@@ -20,6 +20,10 @@ export default function useChat(user) {
   }, [errorMessage, notices]);
 
   const messagesEndRef = useRef(null);
+  // The visible conversation has its own generation. Delayed replies for an
+  // earlier view must never overwrite the conversation the student sees now.
+  const viewVersionRef = useRef(0);
+  const sendingForVersionRef = useRef(null);
 
   const userLevel = user?.englishLevel || user?.level || "beginner";
 
@@ -63,48 +67,53 @@ export default function useChat(user) {
   }, [messages, isTyping]);
 
   const handleOpenConversation = async (conversationId) => {
-    try {
-      setLoadingConversationId(conversationId);
-      setErrorMessage("");
+    const version = ++viewVersionRef.current;
+    setActiveConversationId(conversationId);
+    setMessages([]);
+    setLoadingConversationId(conversationId);
+    setIsTyping(false);
+    setErrorMessage("");
 
+    try {
       const conversation = await getChatConversationById(conversationId);
+      if (viewVersionRef.current !== version) return;
 
       setActiveConversationId(conversation._id);
-
-      if (conversation.messages?.length > 0) {
-        setMessages(
-          conversation.messages.map((message) => ({
+      setMessages(conversation.messages?.length > 0
+        ? conversation.messages.map((message) => ({
             id: message._id || `${message.sender}-${message.createdAt}`,
             text: message.text,
             sender: message.sender,
             time: formatTime(message.createdAt),
           }))
-        );
-      } else {
-        setMessages([buildWelcomeMessage(user)]);
-      }
+        : [buildWelcomeMessage(user)]);
     } catch (error) {
-      setErrorMessage(error.toString());
+      if (viewVersionRef.current === version) setErrorMessage(error.toString());
     } finally {
-      setLoadingConversationId("");
+      if (viewVersionRef.current === version) setLoadingConversationId("");
     }
   };
 
   const handleNewConversation = () => {
+    ++viewVersionRef.current;
     setActiveConversationId("");
     setMessages([buildWelcomeMessage(user)]);
+    setLoadingConversationId("");
+    setIsTyping(false);
     setInput("");
     setErrorMessage("");
   };
 
-  const ensureConversationExists = async (firstMessageText) => {
+  const ensureConversationExists = async (firstMessageText, version) => {
     if (activeConversationId) return activeConversationId;
 
     const title = buildConversationTitle(firstMessageText);
     const newConversation = await createChatConversation(title);
 
-    setActiveConversationId(newConversation._id);
-    setConversations((prev) => [newConversation, ...prev]);
+    // Keep the newly persisted chat in history even if the student switched
+    // views while the network request was pending.
+    setConversations((prev) => [newConversation, ...prev.filter((item) => item._id !== newConversation._id)]);
+    if (viewVersionRef.current === version) setActiveConversationId(newConversation._id);
 
     return newConversation._id;
   };
@@ -118,7 +127,9 @@ export default function useChat(user) {
 
     const cleanInput = input.trim();
 
-    if (!cleanInput || isTyping) return;
+    const version = viewVersionRef.current;
+    if (!cleanInput || isTyping || loadingConversationId || sendingForVersionRef.current === version) return;
+    sendingForVersionRef.current = version;
 
     const userMessage = {
       id: `local-user-${Date.now()}`,
@@ -133,7 +144,7 @@ export default function useChat(user) {
     setErrorMessage("");
 
     try {
-      const conversationId = await ensureConversationExists(cleanInput);
+      const conversationId = await ensureConversationExists(cleanInput, version);
 
       const { reply: finalAiReply, conversation: updatedConversation } = await sendChatConversationMessage({
         conversationId,
@@ -149,18 +160,24 @@ export default function useChat(user) {
         time: getCurrentTime(),
       };
 
-      setMessages((prev) => [...prev, aiMessage]);
+      if (viewVersionRef.current === version) {
+        setMessages((prev) => [...prev, aiMessage]);
+      }
     } catch (error) {
       // The server did not confirm persistence: do not display an invented AI reply.
-      setMessages((prev) => prev.filter((message) => message.id !== userMessage.id));
-      setInput(cleanInput);
-      setErrorMessage(error.toString());
+      if (viewVersionRef.current === version) {
+        setMessages((prev) => prev.filter((message) => message.id !== userMessage.id));
+        setInput(cleanInput);
+        setErrorMessage(error.toString());
+      }
     } finally {
-      setIsTyping(false);
+      if (sendingForVersionRef.current === version) sendingForVersionRef.current = null;
+      if (viewVersionRef.current === version) setIsTyping(false);
     }
   };
 
   const handleDeleteConversation = async (conversationId) => {
+    const version = viewVersionRef.current;
     try {
       await deleteChatConversation(conversationId);
 
@@ -168,7 +185,7 @@ export default function useChat(user) {
         prev.filter((conversation) => conversation._id !== conversationId)
       );
 
-      if (activeConversationId === conversationId) {
+      if (activeConversationId === conversationId && viewVersionRef.current === version) {
         handleNewConversation();
       }
     } catch (error) {

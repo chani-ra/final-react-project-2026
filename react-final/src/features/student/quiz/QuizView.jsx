@@ -9,11 +9,13 @@ import QuizQuestionCard from "./QuizQuestionCard";
 
 export default function QuizView() {
   const { quizId } = useParams();
-  const { goBack, returnLabel } = useCourseReturn("quizzes");
   const location = useLocation();
+  const courseId = new URLSearchParams(location.search).get("courseId");
+  return <QuizDetails key={`${quizId}:${courseId || ""}`} quizId={quizId} courseId={courseId} />;
+}
 
-  const searchParams = new URLSearchParams(location.search);
-  const courseId = searchParams.get("courseId");
+function QuizDetails({ quizId, courseId }) {
+  const { goBack, returnLabel } = useCourseReturn("quizzes");
 
   const [quiz, setQuiz] = useState(null);
   const [answers, setAnswers] = useState({});

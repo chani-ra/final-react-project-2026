@@ -12,9 +12,14 @@ import {
   recalculateCourseProgress,
 } from "../../../services/courseProgressService";
 import CourseContentTabs from "./CourseContentTabs";
+import { getCourseCompletionStats } from "./coursesModel.js";
 
 export default function CourseDetails() {
   const { courseId } = useParams();
+  return <CourseDetailsContent key={courseId} courseId={courseId} />;
+}
+
+function CourseDetailsContent({ courseId }) {
   const navigate = useNavigate();
 
   const [course, setCourse] = useState(null);
@@ -39,20 +44,10 @@ export default function CourseDetails() {
     };
   }, [course]);
 
-  const totalItems = useMemo(() => {
-    return totals.lessons + totals.songs + totals.exercises + totals.quizzes;
-  }, [totals]);
-
-  const completedItems = useMemo(() => {
-    return (
-      (progress?.completedLessons?.length || 0) +
-      (progress?.completedSongs?.length || 0) +
-      (progress?.completedExercises?.length || 0) +
-      (progress?.completedQuizzes?.length || 0)
-    );
-  }, [progress]);
-
-  const progressPercent = progress?.progressPercent || 0;
+  const { totalItems, completedItems, percent: progressPercent } = useMemo(
+    () => getCourseCompletionStats(course, progress),
+    [course, progress]
+  );
 
   const hasAnyContent =
     course?.lessons?.length > 0 ||
@@ -113,25 +108,6 @@ export default function CourseDetails() {
     return () => { active = false; };
   }, [courseId]);
 
-  useEffect(() => {
-    const syncProgressPercent = async () => {
-      if (!course || totalItems === 0) return;
-
-      try {
-        const updatedProgress = await recalculateCourseProgress({
-          courseId,
-          totals,
-        });
-
-        setProgress(updatedProgress);
-      } catch (err) {
-        console.error("שגיאה בחישוב התקדמות:", err);
-      }
-    };
-
-    syncProgressPercent();
-  }, [courseId, course, totalItems, totals]);
-
   const handleRefreshCourse = async () => {
     try {
       setRefreshing(true);
@@ -157,7 +133,16 @@ export default function CourseDetails() {
         );
       }
 
-      await loadProgress();
+      // Only explicit content refresh may update the stored percentage.
+      // If that recalculation fails, still show the refreshed course and reload
+      // the last saved progress without claiming that the refresh itself failed.
+      try {
+        const updatedProgress = await recalculateCourseProgress({ courseId });
+        setProgress(updatedProgress);
+      } catch (progressError) {
+        console.error("שגיאה בחישוב התקדמות אחרי רענון קורס:", progressError);
+        await loadProgress();
+      }
     } catch (err) {
       console.error("שגיאה ברענון מסלול:", err);
       notices.error(err.toString(), "רענון המסלול נכשל");

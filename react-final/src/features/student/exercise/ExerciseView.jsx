@@ -15,9 +15,13 @@ import { parseExercisePrompts } from "./parseExercisePrompts";
 
 export default function ExerciseView() {
   const { exerciseId } = useParams();
-  const { goBack, returnLabel } = useCourseReturn("exercises");
   const [searchParams] = useSearchParams();
   const courseId = searchParams.get("courseId");
+  return <ExerciseDetails key={`${exerciseId}:${courseId || ""}`} exerciseId={exerciseId} courseId={courseId} />;
+}
+
+function ExerciseDetails({ exerciseId, courseId }) {
+  const { goBack, returnLabel } = useCourseReturn("exercises");
 
   const [exercise, setExercise] = useState(null);
   const [answers, setAnswers] = useState({});

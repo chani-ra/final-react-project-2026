@@ -34,3 +34,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 *.zip
+
+# Playwright browser test artifacts
+playwright-report/
+test-results/

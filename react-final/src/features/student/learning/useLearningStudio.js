@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNotices } from "../../../components/ui/NoticeProvider";
+import { useNotices } from "../../../components/ui/noticeContext";
 import { createAILesson, getLearningCatalog, getLearningProviders, getMyLearningHistory } from "../../../services/learningService";
 import { initialLearningSelection, learningRequest, subcategoriesOf } from "./learningStudioModel.js";
 

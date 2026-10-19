@@ -1,4 +1,3 @@
-import React from "react";
 
 function inlineFormatting(text) {
   return String(text).split(/(\*\*[^*]+\*\*|`[^`]+`)/g).map((piece, i) => {

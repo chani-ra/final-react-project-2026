@@ -1,6 +1,6 @@
 import useMessageNotice from "../../../components/ui/useMessageNotice";
 import { apiUrl } from "../../../services/axiosConfig";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   getAllSongsForAdmin,
   setWeeklySong,
@@ -17,6 +17,7 @@ export default function AdminContent() {
   const [message, setMessage] = useState({ type: "", text: "" });
   useMessageNotice(message);
 
+  // Also used by the manual refresh button in the content-management view.
   const loadSongs = async () => {
     try {
       setLoading(true);
@@ -39,7 +40,20 @@ export default function AdminContent() {
   };
 
   useEffect(() => {
-    loadSongs();
+    let active = true;
+    getAllSongsForAdmin()
+      .then((data) => {
+        if (!active) return;
+        const list = Array.isArray(data) ? data : [];
+        setSongs(list);
+        if (list.length > 0) {
+          const weeklySong = list.find((song) => song.isWeeklySong);
+          setSelectedSongId((weeklySong || list[0])._id);
+        }
+      })
+      .catch((error) => { if (active) setMessage({ type: "error", text: error.toString() }); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, []);
 
   const selectedSong = useMemo(() => {

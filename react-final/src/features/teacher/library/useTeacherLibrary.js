@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import useMessageNotice from "../../../components/ui/useMessageNotice.js";
-import { useNotices } from "../../../components/ui/NoticeProvider";
+import { useNotices } from "../../../components/ui/noticeContext";
 import { libraryApi } from "./libraryApi";
 import {
   EMPTY_LIBRARY,
@@ -13,6 +13,10 @@ import {
 import { getEmptyEditForm } from "./libraryUtils";
 
 const NO_MESSAGE = { type: "", text: "" };
+const MISSING_TEACHER_MESSAGE = {
+  type: "error",
+  text: "לא נמצא מזהה מורה. נסי להתחבר מחדש.",
+};
 
 export default function useTeacherLibrary(teacherId) {
   const notices = useNotices();
@@ -21,7 +25,9 @@ export default function useTeacherLibrary(teacherId) {
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState("");
   const [message, setMessage] = useState(NO_MESSAGE);
-  useMessageNotice(message);
+  const visibleMessage = teacherId ? message : MISSING_TEACHER_MESSAGE;
+  useMessageNotice(visibleMessage);
+  const [loadedTeacherId, setLoadedTeacherId] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [editType, setEditType] = useState("");
   const [editForm, setEditForm] = useState(getEmptyEditForm);
@@ -30,17 +36,8 @@ export default function useTeacherLibrary(teacherId) {
   useEffect(() => {
     let cancelled = false;
 
-    if (!teacherId) {
-      setMessage({
-        type: "error",
-        text: "לא נמצא מזהה מורה. נסי להתחבר מחדש.",
-      });
-      setLoading(false);
-      return;
-    }
+    if (!teacherId) return;
 
-    setLoading(true);
-    setMessage(NO_MESSAGE);
     libraryApi.loadAll(teacherId)
       .then((result) => {
         if (!cancelled) setCollections(result);
@@ -51,7 +48,10 @@ export default function useTeacherLibrary(teacherId) {
         }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoadedTeacherId(teacherId);
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -170,9 +170,9 @@ export default function useTeacherLibrary(teacherId) {
     ...view,
     activeTab,
     setActiveTab,
-    loading,
+    loading: Boolean(teacherId) && (loading || loadedTeacherId !== teacherId),
     actionLoadingId,
-    message,
+    message: visibleMessage,
     editingItem,
     editType,
     editForm,

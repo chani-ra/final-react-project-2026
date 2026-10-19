@@ -1,5 +1,5 @@
 import useMessageNotice from "../../../../components/ui/useMessageNotice.js";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMyTasks } from "../../../../services/taskService";
 import { getMyDictionaryWords } from "../../../../services/dictionaryService";
@@ -67,7 +67,29 @@ export default function StudentBrainMap({ user }) {
   };
 
   useEffect(() => {
-    loadData();
+    let active = true;
+    Promise.all([
+      getMyTasks(),
+      getMyDictionaryWords(),
+      getMyChatConversations(),
+      getMyCoursesProgressSummary(),
+      getUserQuizResults(),
+    ])
+      .then(([tasksData, wordsData, conversationsData, coursesProgressData, quizResultsData]) => {
+        if (!active) return;
+        setTasks(Array.isArray(tasksData) ? tasksData : []);
+        setDictionaryWords(Array.isArray(wordsData) ? wordsData : []);
+        setConversations(Array.isArray(conversationsData) ? conversationsData : []);
+        setCourseSummary(coursesProgressData || null);
+        setQuizResults(Array.isArray(quizResultsData?.quizResults) ? quizResultsData.quizResults : []);
+      })
+      .catch((error) => {
+        if (active) setMessage({ type: "error", text: error.toString() });
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
   }, []);
 
   const localBrainMap = useMemo(() => {

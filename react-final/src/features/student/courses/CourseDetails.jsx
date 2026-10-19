@@ -1,6 +1,6 @@
 import useMessageNotice from "../../../components/ui/useMessageNotice.js";
-import { useNotices } from "../../../components/ui/NoticeProvider";
-import React, { useEffect, useMemo, useState } from "react";
+import { useNotices } from "../../../components/ui/noticeContext";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getCourseById,
@@ -60,21 +60,6 @@ export default function CourseDetails() {
     course?.exercises?.length > 0 ||
     course?.quizzes?.length > 0;
 
-  const loadCourse = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const data = await getCourseById(courseId);
-      setCourse(data.course);
-    } catch (err) {
-      console.error("שגיאה בטעינת קורס:", err);
-      setError(err.toString());
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const loadProgress = async () => {
     try {
       setProgressLoading(true);
@@ -94,13 +79,38 @@ export default function CourseDetails() {
   };
 
   useEffect(() => {
-    loadCourse();
+    let active = true;
+    getCourseById(courseId)
+      .then((data) => {
+        if (active) setCourse(data.course);
+      })
+      .catch((err) => {
+        if (!active) return;
+        console.error("שגיאה בטעינת קורס:", err);
+        setError(err.toString());
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
   }, [courseId]);
 
   useEffect(() => {
-    if (courseId) {
-      loadProgress();
-    }
+    if (!courseId) return;
+    let active = true;
+    getMyCourseProgress(courseId)
+      .then((data) => {
+        if (active) setProgress(data);
+      })
+      .catch((err) => {
+        if (!active) return;
+        console.error("שגיאה בטעינת התקדמות קורס:", err);
+        setProgressMessage({ type: "error", text: err.toString() });
+      })
+      .finally(() => {
+        if (active) setProgressLoading(false);
+      });
+    return () => { active = false; };
   }, [courseId]);
 
   useEffect(() => {
@@ -120,7 +130,7 @@ export default function CourseDetails() {
     };
 
     syncProgressPercent();
-  }, [courseId, course, totalItems]);
+  }, [courseId, course, totalItems, totals]);
 
   const handleRefreshCourse = async () => {
     try {

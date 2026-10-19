@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMyMessages } from "../../services/messageService";
 
@@ -7,40 +7,32 @@ export default function MessageBell() {
 
   const [messages, setMessages] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  // טעינת הודעות המשתמש המחובר עבור הפעמון
-  const loadMessages = async () => {
-    try {
-      setLoading(true);
-
-      const data = await getMyMessages();
-      setMessages(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Failed to load messages for bell:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadMessages();
-
-    // עדכון אוטומטי כל 30 שניות
-    const interval = setInterval(() => {
-      loadMessages();
-    }, 30000);
-
-    // עדכון מיידי כאשר עמוד ההודעות מסמן הודעה כנקראה
-    const handleMessagesUpdated = () => {
-      loadMessages();
+    let active = true;
+    let newestRequest = 0;
+    const refresh = async () => {
+      const request = ++newestRequest;
+      try {
+        const data = await getMyMessages();
+        if (active && request === newestRequest) {
+          setMessages(Array.isArray(data) ? data : []);
+        }
+      } catch (error) {
+        if (active) console.error("Failed to load messages for bell:", error);
+      } finally {
+        if (active && request === newestRequest) setLoading(false);
+      }
     };
 
-    window.addEventListener("messages-updated", handleMessagesUpdated);
-
+    void refresh();
+    const interval = setInterval(refresh, 30000);
+    window.addEventListener("messages-updated", refresh);
     return () => {
+      active = false;
       clearInterval(interval);
-      window.removeEventListener("messages-updated", handleMessagesUpdated);
+      window.removeEventListener("messages-updated", refresh);
     };
   }, []);
 

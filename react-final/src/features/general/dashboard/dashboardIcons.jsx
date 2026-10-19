@@ -1,6 +1,5 @@
-import React from "react";
 
-export function getStationIcon(iconKey) {
+export function StationIcon({ iconKey }) {
   const icons = {
     compass: <CompassIcon />,
     brain: <BrainIcon />,

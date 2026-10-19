@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ReviewCard from "./ReviewCard";
@@ -62,7 +62,18 @@ export default function ReviewsSection() {
   };
 
   useEffect(() => {
-    loadReviews();
+    let active = true;
+    getApprovedReviews()
+      .then((data) => {
+        if (active) setReviews(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (active) setReviews([]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
   }, []);
 
   const reviewsToDisplay = reviews.length > 0 ? reviews : fallbackReviews;

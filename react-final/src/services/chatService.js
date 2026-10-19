@@ -1,3 +1,4 @@
+import { toApiError } from "./apiError.js";
 import axiosConfig from "./axiosConfig";
 
 // קבלת כל השיחות של המשתמש המחובר
@@ -6,7 +7,7 @@ export const getMyChatConversations = async () => {
     const response = await axiosConfig.get("/chat-conversations");
     return response.data.conversations || [];
   } catch (error) {
-    throw error.response?.data?.message || "נכשל בטעינת היסטוריית השיחות";
+    throw toApiError(error, "נכשל בטעינת היסטוריית השיחות");
   }
 };
 
@@ -19,7 +20,7 @@ export const getChatConversationById = async (conversationId) => {
 
     return response.data.conversation;
   } catch (error) {
-    throw error.response?.data?.message || "נכשל בטעינת השיחה";
+    throw toApiError(error, "נכשל בטעינת השיחה");
   }
 };
 
@@ -32,7 +33,7 @@ export const createChatConversation = async (title) => {
 
     return response.data.conversation;
   } catch (error) {
-    throw error.response?.data?.message || "נכשל ביצירת שיחה חדשה";
+    throw toApiError(error, "נכשל ביצירת שיחה חדשה");
   }
 };
 
@@ -53,7 +54,7 @@ export const addMessageToChatConversation = async ({
 
     return response.data.conversation;
   } catch (error) {
-    throw error.response?.data?.message || "נכשל בשמירת ההודעה";
+    throw toApiError(error, "נכשל בשמירת ההודעה");
   }
 };
 
@@ -69,7 +70,7 @@ export const renameChatConversation = async ({ conversationId, title }) => {
 
     return response.data.conversation;
   } catch (error) {
-    throw error.response?.data?.message || "נכשל בשינוי שם השיחה";
+    throw toApiError(error, "נכשל בשינוי שם השיחה");
   }
 };
 
@@ -82,7 +83,7 @@ export const deleteChatConversation = async (conversationId) => {
 
     return response.data;
   } catch (error) {
-    throw error.response?.data?.message || "נכשל במחיקת השיחה";
+    throw toApiError(error, "נכשל במחיקת השיחה");
   }
 };
 // Creates a trusted assistant reply and stores both sides on the server.
@@ -91,6 +92,6 @@ export const sendChatConversationMessage = async ({ conversationId, message, lev
     const response = await axiosConfig.post(`/chat-conversations/${conversationId}/reply`, { message, level });
     return { reply: response.data.reply, conversation: response.data.conversation };
   } catch (error) {
-    throw error.response?.data?.message || "נכשל בקבלת תשובה מהעוזר";
+    throw toApiError(error, "נכשל בקבלת תשובה מהעוזר");
   }
 };

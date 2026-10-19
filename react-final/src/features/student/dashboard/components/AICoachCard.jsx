@@ -1,17 +1,27 @@
 import useMessageNotice from "../../../../components/ui/useMessageNotice.js";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   generateCoachPlan,
   getCoachHistory,
 } from "../../../../services/aiCoachService";
 import { createManyTasks } from "../../../../services/taskService";
+import { saveCoachPlanTasks } from "./coachTasks.js";
+import { readSavedCoachSteps, getCoachStepsForKey, calculateCoachProgress } from "./coachProgressModel.js";
+
+// Keep progress scoped to a specific student and plan, including when the user
+// selects a different saved plan. Invalid saved data must never break rendering.
+function readSavedSteps(key) {
+  return readSavedCoachSteps(
+    typeof window === "undefined" ? null : window.localStorage,
+    key
+  );
+}
 
 export default function AICoachCard({ user }) {
   const [note, setNote] = useState("");
   const [currentPlan, setCurrentPlan] = useState(null);
   const [history, setHistory] = useState([]);
   const [studyMode, setStudyMode] = useState(false);
-  const [completedSteps, setCompletedSteps] = useState([]);
 
   const [loadingPlan, setLoadingPlan] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
@@ -41,16 +51,37 @@ export default function AICoachCard({ user }) {
   const planToShow = currentPlan || fallbackPlan;
   const steps = Array.isArray(planToShow?.steps) ? planToShow.steps : [];
 
-  const progress =
-    steps.length > 0
-      ? Math.round((completedSteps.length / steps.length) * 100)
-      : 0;
-
   const storageKey = useMemo(() => {
     const userId = user?._id || user?.id || "guest";
     const focus = planToShow?.focus || "coach-plan";
     return `ai-coach-progress-${userId}-${focus}`;
   }, [user, planToShow]);
+
+  const [progressState, setProgressState] = useState(() => ({
+    key: storageKey,
+    steps: readSavedSteps(storageKey),
+  }));
+  const completedSteps = useMemo(
+    () => getCoachStepsForKey(
+      progressState,
+      storageKey,
+      typeof window === "undefined" ? null : window.localStorage
+    ),
+    [progressState, storageKey]
+  );
+  const progress = calculateCoachProgress(completedSteps, steps.length);
+
+  const setCompletedSteps = (valueOrUpdater) => {
+    setProgressState((previous) => {
+      const current = previous.key === storageKey
+        ? previous.steps
+        : readSavedSteps(storageKey);
+      const steps = typeof valueOrUpdater === "function"
+        ? valueOrUpdater(current)
+        : valueOrUpdater;
+      return { key: storageKey, steps };
+    });
+  };
 
   const loadHistory = async () => {
     try {
@@ -72,20 +103,32 @@ export default function AICoachCard({ user }) {
   };
 
   useEffect(() => {
-    loadHistory();
+    let active = true;
+    getCoachHistory()
+      .then((data) => {
+        if (!active) return;
+        const safeHistory = Array.isArray(data) ? data : [];
+        setHistory(safeHistory);
+        if (safeHistory.length > 0) {
+          setCurrentPlan((previous) => previous || safeHistory[0].plan);
+        }
+      })
+      .catch((error) => {
+        if (active) console.error("Failed to load coach history:", error);
+      })
+      .finally(() => {
+        if (active) setLoadingHistory(false);
+      });
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
-      const saved = localStorage.getItem(storageKey);
-      setCompletedSteps(saved ? JSON.parse(saved) : []);
-    } catch {
-      setCompletedSteps([]);
+      window.localStorage.setItem(storageKey, JSON.stringify(completedSteps));
+    } catch (error) {
+      console.error("Could not persist coach progress:", error);
     }
-  }, [storageKey]);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(completedSteps));
   }, [completedSteps, storageKey]);
 
   const handleGeneratePlan = async () => {
@@ -100,7 +143,6 @@ export default function AICoachCard({ user }) {
     try {
       setLoadingPlan(true);
       setMessage({ type: "", text: "" });
-      setCompletedSteps([]);
       setStudyMode(false);
 
       const plan = await generateCoachPlan(note.trim());
@@ -151,30 +193,8 @@ export default function AICoachCard({ user }) {
     try {
       setSavingTasks(true);
       setMessage({ type: "", text: "" });
-      const planTitle =
-        planToShow?.focus || "תוכנית אישית מהמאמן";
-
-      const tasks = steps.map((step, index) => ({
-        title: `שלב ${index + 1}`,
-        description: step,
-        type: "coach_task",
-        source: "ai_coach",
-        difficulty: "Easy",
-        estimatedTime: "10 דקות",
-        rewardXP: 50,
-        coachPlanFocus: planTitle,
-      }));
-
-      await createManyTasks({
-        tasks,
-        coachPlanFocus: planTitle,
-        planTitle,
-      });
-
-      await createManyTasks({
-        tasks,
-        coachPlanFocus: planToShow.focus || "תוכנית אישית",
-      });
+      // Exactly one API request per click: duplicate requests created duplicate tasks.
+      await saveCoachPlanTasks(createManyTasks, planToShow);
 
       setMessage({
         type: "success",
@@ -193,7 +213,7 @@ export default function AICoachCard({ user }) {
   const selectHistoryPlan = (item) => {
     setCurrentPlan(item.plan);
     setStudyMode(false);
-    setCompletedSteps([]);
+    // Progress belongs to each saved plan and is restored by its storage key.
 
     setMessage({
       type: "success",

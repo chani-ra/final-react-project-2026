@@ -1,5 +1,5 @@
 import useMessageNotice from "../../../components/ui/useMessageNotice";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import {
   getAllUsersForAdmin,
@@ -36,7 +36,18 @@ export default function AdminUsers() {
   };
 
   useEffect(() => {
-    loadUsers();
+    let active = true;
+    getAllUsersForAdmin()
+      .then((data) => {
+        if (active) setUsers(Array.isArray(data) ? data : []);
+      })
+      .catch((error) => {
+        if (active) setMessage({ type: "error", text: error.toString() });
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
   }, []);
 
   const counts = useMemo(() => {

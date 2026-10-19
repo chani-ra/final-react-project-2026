@@ -1,4 +1,3 @@
-import React from "react";
 import { TextArea, SelectInput } from "../components/ui/TeacherFormFields";
 import { getCleanOptions } from "./quizBuilder.utils";
 

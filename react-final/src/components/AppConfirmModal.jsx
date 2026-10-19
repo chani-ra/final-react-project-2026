@@ -1,4 +1,3 @@
-import React from "react";
 import NoticeDialog from "./ui/NoticeDialog";
 
 /** Backwards-compatible confirmation adapter for admin flows. */

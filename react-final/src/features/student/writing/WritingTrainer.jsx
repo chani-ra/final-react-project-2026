@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { checkEssayWithAI } from "../../../services/aiService";
 import SmartGuideBackButton from "../../../components/ui/SmartGuideBackButton";
-import { useNotices } from "../../../components/ui/NoticeProvider";
+import { useNotices } from "../../../components/ui/noticeContext";
 
 const SAMPLE_PROMPTS = [
   {

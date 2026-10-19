@@ -1,4 +1,3 @@
-import React from "react";
 import skyJourneyBackground from "../../../assets/sky-journey-background.svg";
 
 const inputClass =

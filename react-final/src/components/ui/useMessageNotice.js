@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useNotices } from "./NoticeProvider";
+import { useNotices } from "./noticeContext";
 
 /** Present legacy {type,text} page messages without requiring users to scroll. */
 export default function useMessageNotice(message, successTitle = "הפעולה הושלמה") {

@@ -1,3 +1,4 @@
+import { toApiError } from "./apiError.js";
 import axiosConfig from "./axiosConfig";
 
 // יצירת תוכנית לימוד אישית לפי הודעת התלמידה
@@ -6,7 +7,7 @@ export const generateCoachPlan = async (note) => {
     const response = await axiosConfig.post("/ai/coach", { note });
     return response.data.plan;
   } catch (error) {
-    throw error.response?.data?.message || "נכשל ביצירת תוכנית לימוד אישית";
+    throw toApiError(error, "נכשל ביצירת תוכנית לימוד אישית");
   }
 };
 
@@ -16,6 +17,6 @@ export const getCoachHistory = async () => {
     const response = await axiosConfig.get("/ai/coach/history");
     return response.data.history || [];
   } catch (error) {
-    throw error.response?.data?.message || "נכשל בטעינת היסטוריית המאמן";
+    throw toApiError(error, "נכשל בטעינת היסטוריית המאמן");
   }
 };

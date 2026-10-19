@@ -13,6 +13,8 @@ export function useTasks() {
   const [message, setMessage] = useState({ type: "", text: "" });
   useMessageNotice(message);
 
+  // Reserved for a future explicit reload action; initial load is cancellable below.
+  // eslint-disable-next-line no-unused-vars
   const loadTasks = async () => {
     try {
       setLoading(true);
@@ -28,7 +30,12 @@ export function useTasks() {
   };
 
   useEffect(() => {
-    loadTasks();
+    let active = true;
+    getMyTasks()
+      .then((data) => { if (active) setTasks(Array.isArray(data) ? data : []); })
+      .catch((error) => { if (active) setMessage({ type: "error", text: error.toString() }); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, []);
 
   const stats = useMemo(() => getTaskStats(tasks), [tasks]);

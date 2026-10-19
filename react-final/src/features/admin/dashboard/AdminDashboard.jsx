@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getAdminDashboardStats } from "../../../services/adminService";
 
 const emptyStats = {
@@ -29,7 +29,13 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    loadStats();
+    let active = true;
+    // First load starts in the initial loading state. Ignore late responses after unmount.
+    getAdminDashboardStats()
+      .then((data) => { if (active) setStats(data || emptyStats); })
+      .catch((err) => { if (active) setError(err.toString()); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, []);
 
   if (loading) {

@@ -1,4 +1,3 @@
-import React from 'react';
 const icons = {
   home: <><path d="m3 10 9-7 9 7M5 9v12h14V9M10 21v-7h4v7"/></>,
   dashboard: <><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="5" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="10" width="8" height="11" rx="1"/></>,

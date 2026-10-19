@@ -1,20 +1,15 @@
 import { apiUrl } from "../../../services/axiosConfig";
-import React, { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { resolveActiveSong } from "./songsModel.js";
 
 export default function StudentSongsPanel({ songs = [], getLevelLabel }) {
   const audioRef = useRef(null);
 
-  const [activeSong, setActiveSong] = useState(songs[0] || null);
+  const [selectedSongId, setSelectedSongId] = useState(null);
+  const activeSong = resolveActiveSong(songs, selectedSongId);
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-
-  // החלפת שיר פעיל כשיש שירים חדשים
-  useEffect(() => {
-    if (!activeSong && songs.length > 0) {
-      setActiveSong(songs[0]);
-    }
-  }, [songs, activeSong]);
 
   // הפעלה או עצירה של השיר
   const togglePlay = async () => {
@@ -36,7 +31,7 @@ export default function StudentSongsPanel({ songs = [], getLevelLabel }) {
 
   // בחירת שיר מהרשימה
   const selectSong = (song) => {
-    setActiveSong(song);
+    setSelectedSongId(song._id);
     setIsPlaying(false);
     setCurrentTime(0);
 

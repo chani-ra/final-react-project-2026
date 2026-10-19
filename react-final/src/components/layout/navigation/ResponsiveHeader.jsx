@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import MessageBell from '../MessageBell';
 import MobileNavDrawer from './MobileNavDrawer';
@@ -8,17 +8,9 @@ import { getNavLinks, getRoleLabel, isNavActive } from './navigationConfig';
 
 export default function ResponsiveHeader({ user, onHome, onLogout }) {
   const location = useLocation();
-  const navigate = useNavigate();
-  const trigger = useRef(null);
-  const [open, setOpen] = useState(false);
   const language = 'he';
   const links = getNavLinks(user.role, language);
   const name = user.username || user.name || 'משתמשת';
-  const close = useCallback(() => {
-    setOpen(false);
-    trigger.current?.focus();
-  }, []);
-  useEffect(() => { setOpen(false); }, [location.pathname]);
   return (
     <>
       <header dir="rtl" className="sticky top-0 z-50 w-full border-b border-white/25 bg-[#84c5ee]/20 px-2 py-2 shadow-[0_4px_15px_rgba(17,65,110,0.10)] backdrop-blur-lg sm:px-3">
@@ -53,17 +45,45 @@ export default function ResponsiveHeader({ user, onHome, onLogout }) {
               className="hidden h-10 items-center gap-1 rounded-xl border border-[#ffcec8]/35 bg-[#9d3935]/85 px-2.5 text-xs font-extrabold text-white shadow-sm transition hover:bg-[#a92e2a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffd439] sm:flex">
               <NavGlyph path="logout" size={17} /> יציאה
             </button>
-            <button ref={trigger} type="button" onClick={() => setOpen(true)} aria-label="פתיחת תפריט" aria-haspopup="dialog" aria-expanded={open} aria-controls="englishwise-mobile-navigation"
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/40 bg-[#143a5e]/90 text-white shadow-md transition hover:bg-[#225d8e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffd439] sm:hidden">
-              <NavGlyph path="menu" size={22} />
-            </button>
+            <MobileNavigation
+              key={location.key}
+              user={user}
+              links={links}
+              activePath={location.pathname}
+              onLogout={onLogout}
+            />
           </div>
         </div>
       </header>
-      {open && <MobileNavDrawer user={user} links={links} activePath={location.pathname}
+    </>
+  );
+}
+
+// Only the mobile controls remount when the router changes history entries.
+// This closes an open drawer during navigation without calling setState in an effect.
+function MobileNavigation({ user, links, activePath, onLogout }) {
+  const navigate = useNavigate();
+  const trigger = useRef(null);
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => {
+    setOpen(false);
+    trigger.current?.focus();
+  }, []);
+
+  return (
+    <>
+      <button ref={trigger} type="button" onClick={() => setOpen(true)} aria-label="פתיחת תפריט" aria-haspopup="dialog" aria-expanded={open} aria-controls="englishwise-mobile-navigation"
+        className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/40 bg-[#143a5e]/90 text-white shadow-md transition hover:bg-[#225d8e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffd439] sm:hidden">
+        <NavGlyph path="menu" size={22} />
+      </button>
+      {open && <MobileNavDrawer
+        user={user}
+        links={links}
+        activePath={activePath}
         onNavigate={url => { setOpen(false); navigate(url); }}
-        onLogout={() => { setOpen(false); onLogout(); }} onClose={close}
-         />}
+        onLogout={() => { setOpen(false); onLogout(); }}
+        onClose={close}
+      />}
     </>
   );
 }

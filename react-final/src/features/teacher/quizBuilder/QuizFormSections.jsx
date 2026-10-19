@@ -1,4 +1,3 @@
-import React from "react";
 import { SectionTitle, TextInput, TextArea, SelectInput } from "../components/ui/TeacherFormFields";
 import { MiniInfoCard } from "../components/ui/TeacherInfoBlocks";
 

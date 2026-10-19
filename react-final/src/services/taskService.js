@@ -1,3 +1,4 @@
+import { toApiError } from "./apiError.js";
 import axiosConfig from "./axiosConfig";
 
 // קבלת המשימות של המשתמש המחובר
@@ -6,7 +7,7 @@ export const getMyTasks = async () => {
     const response = await axiosConfig.get("/tasks/my");
     return response.data.tasks || [];
   } catch (error) {
-    throw error.response?.data?.message || "נכשל בטעינת המשימות";
+    throw toApiError(error, "נכשל בטעינת המשימות");
   }
 };
 
@@ -16,7 +17,7 @@ export const createTask = async (taskData) => {
     const response = await axiosConfig.post("/tasks", taskData);
     return response.data.task;
   } catch (error) {
-    throw error.response?.data?.message || "נכשל ביצירת המשימה";
+    throw toApiError(error, "נכשל ביצירת המשימה");
   }
 };
 
@@ -30,7 +31,7 @@ export const createManyTasks = async ({ tasks, coachPlanFocus }) => {
 
     return response.data.tasks || [];
   } catch (error) {
-    throw error.response?.data?.message || "נכשל בהוספת המשימות";
+    throw toApiError(error, "נכשל בהוספת המשימות");
   }
 };
 
@@ -40,7 +41,7 @@ export const completeTask = async (taskId) => {
     const response = await axiosConfig.patch(`/tasks/${taskId}/complete`);
     return response.data.task;
   } catch (error) {
-    throw error.response?.data?.message || "נכשל בסימון המשימה כבוצעה";
+    throw toApiError(error, "נכשל בסימון המשימה כבוצעה");
   }
 };
 
@@ -50,7 +51,7 @@ export const submitTaskForReview = async (taskId) => {
     const response = await axiosConfig.patch(`/tasks/${taskId}/review`);
     return response.data.task;
   } catch (error) {
-    throw error.response?.data?.message || "נכשל בשליחת המשימה לבדיקה";
+    throw toApiError(error, "נכשל בשליחת המשימה לבדיקה");
   }
 };
 
@@ -60,6 +61,6 @@ export const deleteTask = async (taskId) => {
     const response = await axiosConfig.delete(`/tasks/${taskId}`);
     return response.data;
   } catch (error) {
-    throw error.response?.data?.message || "נכשל במחיקת המשימה";
+    throw toApiError(error, "נכשל במחיקת המשימה");
   }
 };

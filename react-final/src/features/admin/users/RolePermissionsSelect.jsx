@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import AppConfirmModal from "../../../components/AppConfirmModal";
 
 const roleOptions = [
@@ -13,17 +13,13 @@ export default function RolePermissionsSelect({
   isLoading,
   onChangeRole,
 }) {
-  const [selectedRole, setSelectedRole] = useState(normalizeRole(user.role));
   const [pendingRole, setPendingRole] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [localError, setLocalError] = useState("");
 
+  const selectedRole = normalizeRole(user.role);
   const userId = user._id || user.id;
   const isCurrentUser = currentUserId && userId === currentUserId;
-
-  useEffect(() => {
-    setSelectedRole(normalizeRole(user.role));
-  }, [user.role]);
 
   const handleSelectChange = (event) => {
     const newRole = event.target.value;
@@ -49,7 +45,6 @@ export default function RolePermissionsSelect({
 
       await onChangeRole(userId, pendingRole);
 
-      setSelectedRole(pendingRole);
       setPendingRole("");
       setIsModalOpen(false);
     } catch (error) {

@@ -1,5 +1,5 @@
 import { apiUrl } from "../../../../services/axiosConfig";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppModal from "../../../../components/ui/AppModal";
 import SmartLearningPath from "./SmartLearningPath";
@@ -7,7 +7,10 @@ import StudentBrainMap from "./StudentBrainMap";
 import AICoachCard from "./AICoachCard";
 import CustomAudioPlayer from "../../../../components/CustomAudioPlayer";
 
+// Reserved palette tokens for future mountain journey variants.
+// eslint-disable-next-line no-unused-vars -- Preserve the planned palette token.
 const BRAND_RED = "#B8322A";
+// eslint-disable-next-line no-unused-vars -- Preserve the planned palette token.
 const BRAND_BLUE = "#0F4C75";
 
 export default function LearningMountainJourney({

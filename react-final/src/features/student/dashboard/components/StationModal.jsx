@@ -1,13 +1,13 @@
 import { apiUrl } from "../../../../services/axiosConfig";
-import React from "react";
 
 import AppModal from "../../../../components/ui/AppModal";
 import SmartLearningPath from "./SmartLearningPath";
 import StudentBrainMap from "./StudentBrainMap";
 import AICoachCard from "./AICoachCard";
-import CustomAudioPlayer from "../../../../components/CustomAudioPlayer";
+import AudioPlayerControls from "../../../../components/ui/AudioPlayerControls.jsx";
+import { useCourseAudio } from "../../../general/audio/useCourseAudio.js";
 
-import { getStationIcon, MusicIcon } from "../../../general/dashboard/dashboardIcons";
+import { StationIcon, MusicIcon } from "../../../general/dashboard/dashboardIcons";
 
 export default function StationModal({
   activeStation,
@@ -24,11 +24,11 @@ export default function StationModal({
       onClose={onClose}
       title={activeStationData?.title || ""}
       subtitle={activeStationData?.short || ""}
-      icon={activeStationData ? getStationIcon(activeStationData.iconKey) : null}
+      icon={activeStationData ? <StationIcon iconKey={activeStationData.iconKey} /> : null}
       maxWidth={
-        activeStation === "weekly-song" || activeStation === "coach"
-          ? "max-w-4xl"
-          : "max-w-6xl"
+        activeStation === "weekly-song"
+          ? "max-w-2xl"
+          : activeStation === "coach" ? "max-w-4xl" : "max-w-6xl"
       }
     >
       {activeStation === "smart-guide" && <SmartLearningPath user={user} />}
@@ -49,6 +49,26 @@ export default function StationModal({
 }
 
 function WeeklySongModalContent({ weeklySong, loading, error }) {
+  const { track, isPlaying, currentTime, duration, volume, playbackRate,
+    error: audioError, playSong, toggle, seek, changeVolume, changeSpeed } = useCourseAudio();
+  const weeklyId = weeklySong?._id ? `weekly:${weeklySong._id}` : "";
+  const isCurrentSong = track?.id === weeklyId;
+  const handleWeeklyPlayback = () => {
+    if (!weeklySong?._id) return;
+    if (isCurrentSong) {
+      void toggle();
+      return;
+    }
+    // User-click initiation allows browser audio permission and keeps playback in MainLayout.
+    void playSong({
+      id: weeklyId,
+      title: weeklySong.title || weeklySong.theme || "שיר השבוע",
+      subtitle: `שיר השבוע · ${getLevelLabel(weeklySong.level)}`,
+      src: apiUrl(`/songs/song/${weeklySong._id}/stream`),
+      returnPath: "/dashboard",
+      returnLabel: "חזרה לדשבורד",
+    });
+  };
   if (loading) {
     return (
       <div className="rounded-3xl border border-sky-100 bg-white p-8 text-center font-bold text-slate-500">
@@ -84,13 +104,13 @@ function WeeklySongModalContent({ weeklySong, loading, error }) {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-3xl border border-sky-100 bg-white p-6 shadow-sm">
-        <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-sky-100 bg-sky-50 text-sky-700">
+    <div className="space-y-3">
+      <div className="rounded-2xl border border-sky-100 bg-white p-4 shadow-sm">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-sky-100 bg-sky-50 text-sky-700">
           <MusicIcon large />
         </div>
 
-        <h3 className="mt-5 text-3xl font-black text-slate-900">
+        <h3 className="mt-3 text-xl font-black text-slate-900">
           {weeklySong.title || weeklySong.theme || "שיר השבוע"}
         </h3>
 
@@ -100,14 +120,22 @@ function WeeklySongModalContent({ weeklySong, loading, error }) {
         </p>
       </div>
 
-      <CustomAudioPlayer
-        src={apiUrl(`/songs/song/${weeklySong._id}/stream`)}
+      <AudioPlayerControls
         title={weeklySong.title || weeklySong.theme || "שיר השבוע"}
         subtitle={`תרגול האזנה · ${getLevelLabel(weeklySong.level)}`}
-        allowDownload={false}
+        isPlaying={isCurrentSong && isPlaying}
+        currentTime={isCurrentSong ? currentTime : 0}
+        duration={isCurrentSong ? duration : 0}
+        onToggle={handleWeeklyPlayback}
+        onSeek={isCurrentSong ? seek : undefined}
+        volume={volume}
+        onVolumeChange={changeVolume}
+        playbackRate={playbackRate}
+        onSpeedChange={changeSpeed}
+        error={isCurrentSong ? audioError : ""}
       />
 
-      <div className="rounded-3xl border border-sky-100 bg-sky-50 p-5">
+      <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
         <h4 className="mb-2 font-black text-sky-800">הצעת תרגול</h4>
 
         <p className="text-sm leading-relaxed text-slate-600">

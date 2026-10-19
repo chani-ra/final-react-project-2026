@@ -1,4 +1,3 @@
-import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useNavigate } from "react-router-dom";
 import { logoutUser } from "../../redux/slices/authSlice";
@@ -8,6 +7,8 @@ import {
 } from "../../services/authSession";
 import skyJourneyBackground from "../../assets/sky-journey-background.svg";
 import ResponsiveHeader from "./navigation/ResponsiveHeader";
+import CourseAudioProvider from "../../features/general/audio/CourseAudioProvider.jsx";
+import PersistentCoursePlayer from "../../features/general/audio/PersistentCoursePlayer.jsx";
 
 export default function MainLayout() {
   const { user } = useSelector(state => state.auth);
@@ -23,6 +24,7 @@ export default function MainLayout() {
   };
 
   return (
+    <CourseAudioProvider>
     <div
       className="relative min-h-screen overflow-x-clip bg-[#55b9ef] text-white"
       dir="rtl"
@@ -45,7 +47,9 @@ export default function MainLayout() {
             <Outlet />
           </div>
         </main>
+        <PersistentCoursePlayer />
       </div>
     </div>
+    </CourseAudioProvider>
   );
 }

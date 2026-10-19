@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useNotices } from "../../../components/ui/NoticeProvider";
+import { useNotices } from "../../../components/ui/noticeContext";
 import { enrollInCourse, getMyCourses, getRecommendedCourses } from "../../../services/courseService";
 import { getCourseTotalItems } from "./coursesModel.js";
 
@@ -47,7 +47,12 @@ export default function useCourses() {
   };
 
   useEffect(() => {
-    loadMyCourses();
+    let active = true;
+    getMyCourses()
+      .then((data) => { if (active) setMyCourses(data?.courses || []); })
+      .catch((err) => { if (active) setError(err.toString()); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, []);
 
   const handleRecommendedTab = async () => {

@@ -1,4 +1,3 @@
-import React from "react";
 import useDictionary from "./useDictionary.js";
 import SmartGuideBackButton from "../../../components/ui/SmartGuideBackButton";
 import { StatBox, TextInput, TextArea, FilterButton, WordCard, LoadingState, EmptyDictionary, SmallSpinner, DarkSpinner } from "./DictionaryComponents.jsx";

@@ -1,4 +1,3 @@
-import React from "react";
 
 const categoryOptions = [
   { value: "general", label: "כללי" },

@@ -1,5 +1,5 @@
 import useMessageNotice from "../../../components/ui/useMessageNotice.js";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPersonalizedCourse } from "../../../services/courseService";
 import AppFeedbackModal from "../../../components/ui/AppFeedbackModal";

@@ -1,5 +1,5 @@
 import useMessageNotice from "../../../components/ui/useMessageNotice.js";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -197,6 +197,8 @@ export default function TeacherDashboard() {
 function TeacherDashboardHeader({
   teacherName,
   stats,
+  // Reserved for future inline dashboard feedback. Keep the prop contract.
+  // eslint-disable-next-line no-unused-vars
   message,
   onGoToLibrary,
 }) {

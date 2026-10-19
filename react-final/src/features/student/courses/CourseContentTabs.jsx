@@ -1,8 +1,14 @@
 import { apiUrl } from "../../../services/axiosConfig";
-import React, { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
-import CustomAudioPlayer from "../../../components/CustomAudioPlayer";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { courseTabFromSearch } from "../../general/navigation/courseNavigationModel.js";
+import { useCourseAudio } from "../../general/audio/useCourseAudio.js";
+import DetailHeaderActions from "../../../components/ui/DetailHeaderActions.jsx";
+import AudioPlayerControls from "../../../components/ui/AudioPlayerControls.jsx";
+
+
+const EMPTY_ITEMS = Object.freeze([]);
 
 export default function CourseContentTabs({
   course,
@@ -14,18 +20,25 @@ export default function CourseContentTabs({
   onToggleCourseItem,
 }) {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = courseTabFromSearch(`?${searchParams.toString()}`);
+  const changeTab = (tab) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("tab", tab);
+    setSearchParams(next, { replace: true });
+    setSongPanelOpen(false);
+  };
   const railRef = useRef(null);
-
-  const [activeTab, setActiveTab] = useState("lessons");
   const [activeSongId, setActiveSongId] = useState(
     course.songs?.[0]?._id || null
   );
   const [songPanelOpen, setSongPanelOpen] = useState(false);
+  const { playSong } = useCourseAudio();
 
-  const lessons = course.lessons || [];
-  const songs = course.songs || [];
-  const exercises = course.exercises || [];
-  const quizzes = course.quizzes || [];
+  const lessons = course.lessons || EMPTY_ITEMS;
+  const songs = course.songs || EMPTY_ITEMS;
+  const exercises = course.exercises || EMPTY_ITEMS;
+  const quizzes = course.quizzes || EMPTY_ITEMS;
 
   const activeSong =
     songs.find((song) => song._id === activeSongId) || songs[0];
@@ -88,8 +101,18 @@ export default function CourseContentTabs({
   };
 
   const openSongPanel = (songId) => {
+    const selected = songs.find((song) => song._id === songId);
+    if (!selected) return;
     setActiveSongId(songId);
     setSongPanelOpen(true);
+    // Runs directly in a click handler, preserving browser media-play permissions.
+    void playSong({
+      id: selected._id,
+      title: selected.title || selected.theme || "שיר לימודי",
+      subtitle: `תרגול האזנה · ${getLevelLabel(selected.level)}`,
+      courseId: String(course._id),
+      src: apiUrl(`/songs/song/${selected._id}/stream`),
+    });
   };
 
   return (
@@ -110,7 +133,7 @@ export default function CourseContentTabs({
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => changeTab(tab.id)}
                 className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-black transition-all ${
                   activeTab === tab.id
                     ? "bg-white text-[#123c6b] shadow-[0_0_14px_rgba(255,255,255,0.16)]"
@@ -354,6 +377,29 @@ function CourseRailCar({
   );
 }
 
+function CourseSongControls({ songId, downloadUrl }) {
+  const { track, isPlaying, currentTime, duration, volume, playbackRate, error,
+    toggle, seek, changeVolume, changeSpeed } = useCourseAudio();
+  const selected = track?.id === songId;
+  return (
+    <AudioPlayerControls
+      title={selected ? track.title : "שיר לימודי"}
+      subtitle={selected ? track.subtitle : "תרגול האזנה"}
+      isPlaying={selected && isPlaying}
+      currentTime={selected ? currentTime : 0}
+      duration={selected ? duration : 0}
+      onToggle={selected ? toggle : undefined}
+      onSeek={selected ? seek : undefined}
+      volume={volume}
+      onVolumeChange={changeVolume}
+      playbackRate={playbackRate}
+      onSpeedChange={changeSpeed}
+      downloadUrl={downloadUrl}
+      error={selected ? error : "השיר אינו פעיל. חזרי לרשימה ובחרי אותו מחדש."}
+    />
+  );
+}
+
 function SongPlayerPanel({
   activeSong,
   getLevelLabel,
@@ -377,16 +423,8 @@ function SongPlayerPanel({
       <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2.4rem] border border-white/28 bg-[#123c6b]/96 text-white shadow-[0_35px_100px_rgba(3,31,61,0.58),inset_0_1px_0_rgba(255,255,255,0.18)]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,255,255,0.16),transparent_26%),linear-gradient(to_bottom,rgba(255,255,255,0.08),transparent_48%)]" />
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute left-5 top-5 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/24 bg-white/12 text-3xl font-black text-white shadow-lg transition hover:bg-white/22"
-          aria-label="סגירת נגן"
-        >
-          ×
-        </button>
-
         <div className="relative z-10 p-5 md:p-7">
+          <DetailHeaderActions onBack={onClose} onClose={onClose} backLabel="חזרה לשירים" />
           <div className="mb-6 flex items-center gap-4 pl-14">
             <div className="flex h-17 w-17 shrink-0 items-center justify-center rounded-[1.5rem] border border-white/28 bg-gradient-to-b from-[#ffd439] to-[#d98918] text-4xl shadow-[0_12px_28px_rgba(3,31,61,0.28)]">
               ♪
@@ -408,12 +446,10 @@ function SongPlayerPanel({
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-white/22 bg-white/8 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]">
-            <CustomAudioPlayer
-              src={apiUrl(`/songs/song/${activeSong._id}/stream`)}
-              title={activeSong.title || activeSong.theme || "שיר לימודי"}
-              subtitle={`תרגול האזנה · ${getLevelLabel(activeSong.level)}`}
-              allowDownload={true}
+          <div>
+            <CourseSongControls
+              songId={activeSong._id}
+              downloadUrl={apiUrl(`/songs/song/${activeSong._id}/stream`)}
             />
           </div>
 
@@ -542,7 +578,7 @@ function getItemType(activeTab) {
 
 function openItem({ activeTab, item, courseId, navigate, openSongPanel }) {
   if (activeTab === "lessons") {
-    navigate(`/lesson/${item._id}`);
+    navigate(`/lesson/${item._id}?courseId=${encodeURIComponent(courseId)}`, { state: { courseReturn: { courseId, tab: "lessons" } } });
     return;
   }
 
@@ -552,12 +588,12 @@ function openItem({ activeTab, item, courseId, navigate, openSongPanel }) {
   }
 
   if (activeTab === "exercises") {
-    navigate(`/exercise/${item._id}?courseId=${encodeURIComponent(courseId)}`);
+    navigate(`/exercise/${item._id}?courseId=${encodeURIComponent(courseId)}`, { state: { courseReturn: { courseId, tab: "exercises" } } });
     return;
   }
 
   if (activeTab === "quizzes") {
-    navigate(`/quiz/${item._id}?courseId=${courseId}`);
+    navigate(`/quiz/${item._id}?courseId=${encodeURIComponent(courseId)}`, { state: { courseReturn: { courseId, tab: "quizzes" } } });
     return;
   }
 }

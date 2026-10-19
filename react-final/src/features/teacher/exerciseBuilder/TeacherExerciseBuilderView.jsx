@@ -520,6 +520,8 @@ function TextArea({ label, value, onChange, rows, placeholder = "" }) {
   );
 }
 
+// Kept for a future inline feedback mode alongside the shared notice system.
+// eslint-disable-next-line no-unused-vars
 function MessageBox({ message }) {
   return (
     <div

@@ -1,4 +1,3 @@
-import React from "react";
 import useTeacherCreate from "./useTeacherCreate.js";
 import { ContentTypeTabs, PublishModeSection, SongDetails, MediaUploadBox, CreateSummary } from "./TeacherCreateSections.jsx";
 import SmartContentFields from "../components/SmartContentFields";

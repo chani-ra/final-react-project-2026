@@ -1,4 +1,3 @@
-import React from "react";
 
 export function StatBox({ label, value, tone }) {
   const tones = {

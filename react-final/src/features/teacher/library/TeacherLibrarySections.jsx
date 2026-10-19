@@ -1,4 +1,3 @@
-import React from "react";
 import { getLevelLabel, getQuizTypeLabel } from "./libraryUtils";
 
 export function LibraryHeader({

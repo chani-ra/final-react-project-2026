@@ -1,13 +1,15 @@
 import useMessageNotice from "../../../components/ui/useMessageNotice.js";
-import React, { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useParams } from "react-router-dom";
+import useCourseReturn from "../../general/navigation/useCourseReturn.js";
+import DetailHeaderActions from "../../../components/ui/DetailHeaderActions.jsx";
 import { getQuizById, submitQuiz } from "../../../services/quizService";
 import AppFeedbackModal from "../../../components/ui/AppFeedbackModal";
 import QuizQuestionCard from "./QuizQuestionCard";
 
 export default function QuizView() {
   const { quizId } = useParams();
-  const navigate = useNavigate();
+  const { goBack, returnLabel } = useCourseReturn("quizzes");
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);
@@ -33,25 +35,25 @@ export default function QuizView() {
     ? Math.round((answeredCount / questions.length) * 100)
     : 0;
 
-  const loadQuiz = async () => {
-    try {
-      setLoading(true);
-      setMessage({ type: "", text: "" });
-
-      const data = await getQuizById(quizId, courseId);
-      setQuiz(data.quiz || data);
-    } catch (error) {
-      setMessage({
-        type: "error",
-        text: error?.response?.data?.message || error.toString(),
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadQuiz();
+    let active = true;
+    getQuizById(quizId, courseId)
+      .then((data) => {
+        if (!active) return;
+        setQuiz(data.quiz || data);
+        setAnswers({});
+        setResult(null);
+      })
+      .catch((error) => {
+        if (active) setMessage({
+          type: "error",
+          text: error?.response?.data?.message || error.toString(),
+        });
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
   }, [quizId, courseId]);
 
   const handleSelectAnswer = (questionIndex, answer) => {
@@ -112,9 +114,7 @@ export default function QuizView() {
     );
   };
 
-  const handleClose = () => {
-    navigate(-1);
-  };
+  const handleClose = goBack;
 
   if (loading) {
     return (
@@ -173,25 +173,9 @@ export default function QuizView() {
       <section className="relative overflow-hidden rounded-[2.4rem] border border-white/32 bg-[#123c6b]/70 text-white shadow-[0_32px_95px_rgba(3,31,61,0.38),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,255,255,0.14),transparent_28%),linear-gradient(to_bottom,rgba(255,255,255,0.07),transparent_52%)]" />
 
-        <button
-          type="button"
-          onClick={handleClose}
-          className="absolute left-5 top-5 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/24 bg-white/12 text-3xl font-black text-white shadow-lg transition hover:bg-white/22"
-          aria-label="סגירת בוחן"
-        >
-          ×
-        </button>
-
         <div className="relative z-10 p-4 md:p-5">
-          <header className="mb-4 pl-14">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/18 bg-white/10 px-4 py-2 text-sm font-black text-white/82 transition hover:bg-white/16 hover:text-white"
-            >
-              <span>→</span>
-              <span>חזרה לקורס</span>
-            </button>
+          <header className="mb-4">
+            <DetailHeaderActions onBack={handleClose} onClose={handleClose} backLabel={returnLabel} />
 
             <div className="mb-2 flex flex-wrap gap-2">
               <span className="rounded-full border border-[#ffd439]/24 bg-[#ffd439]/14 px-3 py-1 text-xs font-black text-[#ffe89a]">
@@ -297,7 +281,7 @@ export default function QuizView() {
         message={getResultMessage(result, quiz, questions)}
         primaryText="חזרה למסלול"
         secondaryText="לצפות במשוב"
-        onPrimary={() => navigate(-1)}
+        onPrimary={handleClose}
         onSecondary={() => setResultOpen(false)}
         onClose={() => setResultOpen(false)}
       />

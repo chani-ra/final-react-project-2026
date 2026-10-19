@@ -1,4 +1,3 @@
-import React from "react";
 import { apiUrl } from "../../../services/axiosConfig";
 
 export default function TeacherContentCard({

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -19,22 +19,19 @@ export default function StudentDashboard() {
   const [weeklySongError, setWeeklySongError] = useState("");
   const [activeStation, setActiveStation] = useState(null);
 
-  const loadWeeklySong = async () => {
-    try {
-      setWeeklySongLoading(true);
-      setWeeklySongError("");
-
-      const song = await getWeeklySong();
-      setWeeklySong(song);
-    } catch (error) {
-      setWeeklySongError(error.toString());
-    } finally {
-      setWeeklySongLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadWeeklySong();
+    let active = true;
+    getWeeklySong()
+      .then((song) => {
+        if (active) setWeeklySong(song);
+      })
+      .catch((error) => {
+        if (active) setWeeklySongError(error.toString());
+      })
+      .finally(() => {
+        if (active) setWeeklySongLoading(false);
+      });
+    return () => { active = false; };
   }, []);
 
   const profile = useMemo(() => {

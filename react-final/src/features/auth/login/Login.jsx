@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -6,7 +6,7 @@ import { loginUser as loginAction } from "../../../redux/slices/authSlice";
 import { loginUser } from "../../../services/authService";
 import { getHomePathForRole, saveAuthSession } from "../../../services/authSession";
 import skyJourneyBackground from "../../../assets/sky-journey-background.svg";
-import { useNotices } from "../../../components/ui/NoticeProvider";
+import { useNotices } from "../../../components/ui/noticeContext";
 
 export default function Login() {
   const dispatch = useDispatch();

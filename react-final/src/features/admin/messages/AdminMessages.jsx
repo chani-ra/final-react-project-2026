@@ -1,4 +1,3 @@
-import React from "react";
 import useAdminMessages from "./useAdminMessages.js";
 import AppConfirmModal from "../../../components/AppConfirmModal";
 import { MessageFormPanel, RecipientsSummary, MessagesHistory, LoadingState } from "./AdminMessagesSections.jsx";

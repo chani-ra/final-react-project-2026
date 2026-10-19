@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLearningStudio } from "./useLearningStudio";
 import LessonText from "./LessonText";

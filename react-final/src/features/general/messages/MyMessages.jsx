@@ -1,5 +1,5 @@
 import useMessageNotice from "../../../components/ui/useMessageNotice.js";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   getMyMessages,
   markMessageAsRead,
@@ -16,28 +16,26 @@ export default function MyMessages() {
   const [messageState, setMessageState] = useState({ type: "", text: "" });
   useMessageNotice(messageState);
 
-  const loadMessages = async () => {
-    try {
-      setLoading(true);
-      setMessageState({ type: "", text: "" });
-
-      const data = await getMyMessages();
-      const safeMessages = Array.isArray(data) ? data : [];
-
-      setMessages(safeMessages);
-
-      if (safeMessages.length > 0) {
-        setActiveMessage((prev) => prev || safeMessages[0]);
-      }
-    } catch (error) {
-      setMessageState({ type: "error", text: error.toString() });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadMessages();
+    let active = true;
+    // Handle the result of the external request rather than setting state
+    // synchronously while React is processing the effect.
+    getMyMessages()
+      .then((data) => {
+        if (!active) return;
+        const safeMessages = Array.isArray(data) ? data : [];
+        setMessages(safeMessages);
+        if (safeMessages.length > 0) {
+          setActiveMessage((prev) => prev || safeMessages[0]);
+        }
+      })
+      .catch((error) => {
+        if (active) setMessageState({ type: "error", text: error.toString() });
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
   }, []);
 
   const unreadCount = useMemo(() => {

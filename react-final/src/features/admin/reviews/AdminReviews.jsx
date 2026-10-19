@@ -1,5 +1,5 @@
 import useMessageNotice from "../../../components/ui/useMessageNotice";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppConfirmModal from "../../../components/AppConfirmModal";
 import {
   approveReview,
@@ -49,7 +49,18 @@ export default function AdminReviews() {
   };
 
   useEffect(() => {
-    loadReviews();
+    let active = true;
+    getAllReviewsForAdmin("all")
+      .then((data) => {
+        if (active) setReviews(normalizeReviewsResponse(data));
+      })
+      .catch((error) => {
+        if (active) setMessage({ type: "error", text: error.toString() });
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
   }, []);
 
   const counts = useMemo(() => {

@@ -1,5 +1,5 @@
 import useMessageNotice from "../../../components/ui/useMessageNotice.js";
-import React, { useState } from "react";
+import { useState } from "react";
 import { generateQuizWithAI } from "../../../services/aiService";
 import { createQuiz } from "../../../services/quizService";
 

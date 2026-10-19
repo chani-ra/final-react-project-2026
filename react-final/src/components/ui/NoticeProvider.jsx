@@ -1,7 +1,6 @@
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { NoticeContext } from "./noticeContext";
 import NoticeDialog from "./NoticeDialog";
-
-const Context = createContext(null);
 
 function readableError(value) {
   const raw = String(value?.message || value || "").replace(/^Error:\s*/i, "").trim();
@@ -49,19 +48,13 @@ export function NoticeProvider({ children }) {
   }), [show]);
 
   return (
-    <Context.Provider value={api}>
+    <NoticeContext.Provider value={api}>
       {children}
       <NoticeDialog
         isOpen={Boolean(current)} type={current?.type} title={current?.title} message={current?.message}
         primaryText={current?.primaryText || "הבנתי"} secondaryText={current?.secondaryText}
         onPrimary={() => finish(true)} onSecondary={() => finish(false)} onClose={() => finish(false)}
       />
-    </Context.Provider>
+    </NoticeContext.Provider>
   );
-}
-
-export function useNotices() {
-  const value = useContext(Context);
-  if (!value) throw new Error("useNotices requires NoticeProvider");
-  return value;
 }

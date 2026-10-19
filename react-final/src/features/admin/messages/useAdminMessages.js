@@ -48,12 +48,27 @@ export default function useAdminMessages() {
   };
 
   useEffect(() => {
-    loadData();
+    // Initial load: state updates occur only after the async response.
+    // Manual refresh after sending still uses loadData.
+    let active = true;
+    Promise.all([getAllUsersForAdmin(), getAdminSentMessages()])
+      .then(([usersData, messagesData]) => {
+        if (!active) return;
+        setUsers(Array.isArray(usersData) ? usersData : []);
+        setSentMessages(Array.isArray(messagesData) ? messagesData : []);
+      })
+      .catch((error) => {
+        if (active) setMessage({ type: "error", text: error.toString() });
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
   }, []);
 
   const counts = useMemo(() => getRecipientsCounts(users), [users]);
   const singleUserOptions = useMemo(() => getRecipientOptions(users), [users]);
-  const recipientCount = useMemo(() => getRecipientCount(form, counts), [form.targetType, form.targetUser, counts]);
+  const recipientCount = useMemo(() => getRecipientCount(form, counts), [form, counts]);
 
   const updateField = (field, value) => {
     setForm((prev) => ({

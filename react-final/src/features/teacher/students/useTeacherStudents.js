@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getTeacherStudents } from "../../../services/teacherService";
-import { useNotices } from "../../../components/ui/NoticeProvider";
+import { useNotices } from "../../../components/ui/noticeContext";
 import { normalizeTeacherStudents } from "./teacherStudentsModel.js";
 
 export default function useTeacherStudents() {
@@ -23,6 +23,18 @@ export default function useTeacherStudents() {
     }
   }, [notices]);
 
-  useEffect(() => { reload(); }, [reload]);
+  useEffect(() => {
+    let active = true;
+    getTeacherStudents()
+      .then((data) => { if (active) setStudents(normalizeTeacherStudents(data)); })
+      .catch((err) => {
+        if (!active) return;
+        const message = typeof err === "string" ? err : err?.response?.data?.message || err?.message || "לא ניתן לטעון תלמידים";
+        setError(message);
+        notices.error(message, "טעינת תלמידים נכשלה");
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [notices]);
   return { students, loading, error, reload };
 }

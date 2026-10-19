@@ -1,11 +1,32 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import axiosConfig, { apiUrl } from "../../../services/axiosConfig";
+import useCourseReturn from "../navigation/useCourseReturn.js";
+import DetailHeaderActions from "../../../components/ui/DetailHeaderActions.jsx";
+
+// Shared by initial loading and the existing manual Retry button.
+async function requestLesson(lessonId, isTeacherPreview) {
+  const endpoint = isTeacherPreview
+    ? `/lessons/manage/${lessonId}`
+    : `/lessons/${lessonId}`;
+  const response = await axiosConfig.get(endpoint);
+  return {
+    lesson: response.data?.lesson || response.data,
+    previewToken: isTeacherPreview ? response.data?.previewToken || "" : "",
+  };
+}
+
+function getLessonError(err) {
+  if (err?.code === "ERR_NETWORK") {
+    return "לא הצלחתי להתחבר לשרת. בדקי שהשרת פעיל ושהכתובת מוגדרת נכון.";
+  }
+  return err?.response?.data?.message || err?.message || "אירעה שגיאה בטעינת השיעור.";
+}
 
 export default function LessonView({ mode = "teacher" }) {
   const isTeacherPreview = mode === "teacher";
   const { lessonId } = useParams();
-  const navigate = useNavigate();
+  const { goBack, returnLabel } = useCourseReturn("lessons", { teacherPreview: isTeacherPreview });
 
   const [lesson, setLesson] = useState(null);
   const [previewToken, setPreviewToken] = useState("");
@@ -16,39 +37,36 @@ export default function LessonView({ mode = "teacher" }) {
     try {
       setLoading(true);
       setError("");
-
-      const endpoint = isTeacherPreview
-        ? `/lessons/manage/${lessonId}`
-        : `/lessons/${lessonId}`;
-      const response = await axiosConfig.get(endpoint);
-      const lessonData = response.data?.lesson || response.data;
-
-      setLesson(lessonData);
-      setPreviewToken(isTeacherPreview ? response.data?.previewToken || "" : "");
+      const result = await requestLesson(lessonId, isTeacherPreview);
+      setLesson(result.lesson);
+      setPreviewToken(result.previewToken);
     } catch (err) {
       console.error("שגיאה בטעינת השיעור:", err);
-
-      if (err?.code === "ERR_NETWORK") {
-        setError(
-          "לא הצלחתי להתחבר לשרת. בדקי שהשרת פעיל ושהכתובת מוגדרת נכון."
-        );
-      } else {
-        setError(
-          err?.response?.data?.message ||
-            err?.message ||
-            "אירעה שגיאה בטעינת השיעור."
-        );
-      }
+      setError(getLessonError(err));
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (lessonId) {
-      loadLesson();
-    }
-  }, [lessonId]);
+    if (!lessonId) return;
+    let active = true;
+    requestLesson(lessonId, isTeacherPreview)
+      .then((result) => {
+        if (!active) return;
+        setLesson(result.lesson);
+        setPreviewToken(result.previewToken);
+      })
+      .catch((err) => {
+        if (!active) return;
+        console.error("שגיאה בטעינת השיעור:", err);
+        setError(getLessonError(err));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [lessonId, isTeacherPreview]);
 
   const videoSrc = useMemo(() => {
     if (!lesson?.videoFileName) return "";
@@ -62,9 +80,7 @@ export default function LessonView({ mode = "teacher" }) {
     );
   }, [lesson, lessonId, isTeacherPreview, previewToken]);
 
-  const handleClose = () => {
-    navigate(-1);
-  };
+  const handleClose = goBack;
 
   if (loading) {
     return (
@@ -110,25 +126,9 @@ export default function LessonView({ mode = "teacher" }) {
       <section className="relative overflow-hidden rounded-[2.4rem] border border-white/32 bg-[#123c6b]/70 text-white shadow-[0_32px_95px_rgba(3,31,61,0.38),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,255,255,0.14),transparent_28%),linear-gradient(to_bottom,rgba(255,255,255,0.07),transparent_52%)]" />
 
-        <button
-          type="button"
-          onClick={handleClose}
-          className="absolute left-5 top-5 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-white/24 bg-white/12 text-3xl font-black text-white shadow-lg transition hover:bg-white/22"
-          aria-label="סגירת שיעור"
-        >
-          ×
-        </button>
-
         <div className="relative z-10 p-4 md:p-5">
-          <header className="mb-4 pl-14">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/18 bg-white/10 px-4 py-2 text-sm font-black text-white/82 transition hover:bg-white/16 hover:text-white"
-            >
-              <span>→</span>
-              <span>חזרה לקורס</span>
-            </button>
+          <header className="mb-4">
+            <DetailHeaderActions onBack={handleClose} onClose={handleClose} backLabel={returnLabel} />
 
             <h1
               className="text-2xl font-black leading-tight md:text-4xl"

@@ -1,4 +1,3 @@
-import React from "react";
 
 export default function ExerciseSidebar({ materials, onOpenMaterials }) {
   const hasMaterials = materials?.length > 0;

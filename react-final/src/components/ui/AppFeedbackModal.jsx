@@ -1,4 +1,3 @@
-import React from "react";
 import NoticeDialog from "./NoticeDialog";
 
 /** Backwards-compatible adapter: existing feedback flows now share one design. */

@@ -1,4 +1,3 @@
-import React from "react";
 import RolePermissionsSelect from "./RolePermissionsSelect";
 
 export default function AdminUsersTable({

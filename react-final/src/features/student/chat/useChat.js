@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNotices } from "../../../components/ui/NoticeProvider";
+import { useNotices } from "../../../components/ui/noticeContext";
 import { sendChatConversationMessage, createChatConversation, deleteChatConversation, getChatConversationById, getMyChatConversations } from "../../../services/chatService";
 import { buildWelcomeMessage, buildConversationTitle, getCurrentTime, formatTime } from "./chatModel.js";
 
@@ -29,6 +29,8 @@ export default function useChat(user) {
     );
   }, [conversations, activeConversationId]);
 
+  // Retained for future manual conversation-list refresh actions.
+  // eslint-disable-next-line no-unused-vars
   const loadConversations = async () => {
     try {
       setLoadingConversations(true);
@@ -44,7 +46,12 @@ export default function useChat(user) {
   };
 
   useEffect(() => {
-    loadConversations();
+    let active = true;
+    getMyChatConversations()
+      .then((data) => { if (active) setConversations(Array.isArray(data) ? data : []); })
+      .catch((error) => { if (active) setErrorMessage(error.toString()); })
+      .finally(() => { if (active) setLoadingConversations(false); });
+    return () => { active = false; };
   }, []);
 
   const scrollToBottom = () => {
@@ -125,10 +132,8 @@ export default function useChat(user) {
     setIsTyping(true);
     setErrorMessage("");
 
-    let conversationId = activeConversationId;
-
     try {
-      conversationId = await ensureConversationExists(cleanInput);
+      const conversationId = await ensureConversationExists(cleanInput);
 
       const { reply: finalAiReply, conversation: updatedConversation } = await sendChatConversationMessage({
         conversationId,

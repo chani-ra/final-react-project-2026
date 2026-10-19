@@ -1,4 +1,3 @@
-import React from "react";
 import { SectionTitle, TextInput } from "../components/ui/TeacherFormFields";
 import { InfoRow } from "../components/ui/TeacherInfoBlocks";
 

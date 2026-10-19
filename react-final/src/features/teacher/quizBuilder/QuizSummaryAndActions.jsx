@@ -1,4 +1,3 @@
-import React from "react";
 import { InfoRow } from "../components/ui/TeacherInfoBlocks";
 import { getLevelLabel, getCategoryLabel, getQuizTypeLabel } from "./quizBuilder.utils";
 

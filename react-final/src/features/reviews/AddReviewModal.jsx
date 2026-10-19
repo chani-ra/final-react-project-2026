@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { createReview } from "../../services/reviewService";
 
 export default function AddReviewModal({ isOpen, onClose, onCreated }) {

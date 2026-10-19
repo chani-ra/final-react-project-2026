@@ -1,5 +1,4 @@
-import React from "react";
-import { getStationIcon } from "./dashboardIcons";
+import { StationIcon } from "./dashboardIcons";
 
 export default function JourneyMap({ stations, onStationClick }) {
   return (
@@ -104,7 +103,7 @@ function StationIllustration({ iconKey }) {
         <>
           <div className="absolute left-4 top-5 h-14 w-10 rounded-lg border-[4px] border-[#d5382f] bg-[#f7c24b] rotate-[-10deg]" />
           <div className="absolute right-4 top-7 h-14 w-10 rounded-lg border-[4px] border-[#075a98] bg-[#7bc4e4] rotate-[12deg]" />
-          <div className="relative z-10 text-[#0f6aa7]">{getStationIcon(iconKey)}</div>
+          <div className="relative z-10 text-[#0f6aa7]"><StationIcon iconKey={iconKey} /></div>
         </>
       )}
 
@@ -115,7 +114,7 @@ function StationIllustration({ iconKey }) {
             <span className="h-2.5 w-2.5 rounded-full bg-[#0f6aa7]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#0f6aa7]" />
           </div>
-          <div className="relative z-10 mt-12 text-[#0f6aa7]">{getStationIcon(iconKey)}</div>
+          <div className="relative z-10 mt-12 text-[#0f6aa7]"><StationIcon iconKey={iconKey} /></div>
         </>
       )}
 
@@ -123,7 +122,7 @@ function StationIllustration({ iconKey }) {
         <>
           <div className="absolute h-14 w-16 rounded-xl border-[4px] border-[#075a98] bg-[#fff3b0]" />
           <div className="absolute h-12 w-[3px] bg-[#075a98]/60" />
-          <div className="relative z-10 text-[#b8322a]">{getStationIcon(iconKey)}</div>
+          <div className="relative z-10 text-[#b8322a]"><StationIcon iconKey={iconKey} /></div>
         </>
       )}
 
@@ -131,14 +130,14 @@ function StationIllustration({ iconKey }) {
         <>
           <div className="absolute h-15 w-14 rounded-xl border-[4px] border-[#075a98] bg-white" />
           <div className="absolute right-5 top-5 h-14 w-3 rounded-full bg-[#b8322a] rotate-45" />
-          <div className="relative z-10 text-[#0f6aa7]">{getStationIcon(iconKey)}</div>
+          <div className="relative z-10 text-[#0f6aa7]"><StationIcon iconKey={iconKey} /></div>
         </>
       )}
 
       {iconKey === "brain" && (
         <>
           <div className="absolute h-14 w-16 rounded-2xl border-[4px] border-[#075a98] bg-[#ffd7df]" />
-          <div className="relative z-10 text-[#b8322a]">{getStationIcon(iconKey)}</div>
+          <div className="relative z-10 text-[#b8322a]"><StationIcon iconKey={iconKey} /></div>
         </>
       )}
 
@@ -146,13 +145,13 @@ function StationIllustration({ iconKey }) {
         <>
           <div className="absolute h-16 w-16 rounded-full border-[5px] border-[#075a98] bg-[#fff8cf]" />
           <div className="absolute h-14 w-[4px] rounded-full bg-[#b8322a] rotate-45" />
-          <div className="relative z-10 text-[#0f6aa7]">{getStationIcon(iconKey)}</div>
+          <div className="relative z-10 text-[#0f6aa7]"><StationIcon iconKey={iconKey} /></div>
         </>
       )}
 
       {!["music", "bot", "book", "pen", "brain", "compass"].includes(
         iconKey
-      ) && <div className="relative z-10 text-[#0f6aa7]">{getStationIcon(iconKey)}</div>}
+      ) && <div className="relative z-10 text-[#0f6aa7]"><StationIcon iconKey={iconKey} /></div>}
     </div>
   );
 }

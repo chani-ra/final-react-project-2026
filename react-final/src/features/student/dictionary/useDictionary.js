@@ -24,22 +24,19 @@ export default function useDictionary() {
   const [message, setMessage] = useState({ type: "", text: "" });
   useMessageNotice(message);
 
-  const loadWords = async () => {
-    try {
-      setLoading(true);
-      setMessage({ type: "", text: "" });
-
-      const data = await getMyDictionaryWords();
-      setWords(Array.isArray(data) ? data : []);
-    } catch (error) {
-      setMessage({ type: "error", text: error.toString() });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadWords();
+    let active = true;
+    getMyDictionaryWords()
+      .then((data) => {
+        if (active) setWords(Array.isArray(data) ? data : []);
+      })
+      .catch((error) => {
+        if (active) setMessage({ type: "error", text: error.toString() });
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
   }, []);
 
   const stats = useMemo(() => getDictionaryStats(words), [words]);

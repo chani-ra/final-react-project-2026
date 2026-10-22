@@ -1,0 +1,108 @@
+/* EnglishWise V5 — cinematic sky, full-bleed illustrated panorama.
+   Intentionally scoped to .ewm-home: other app screens keep their design.
+   Imported after home-final.css and home-atmosphere-v4.css. */
+.ewm-home {background:#0b4077;isolation:isolate;}
+.ewm-home main {position:relative;isolation:isolate;overflow:clip;}
+.ewm-home section {position:relative;}
+/* Transparent overlap replaces the previous decorative hard-edged bands. */
+.ewm-home main>section:not(.ewm-hero){
+  margin-top:-72px;
+  padding-top:130px;
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0, black 92px, black 100%);
+  mask-image:linear-gradient(to bottom,transparent 0,black 92px,black 100%);
+}
+.ewm-home main>section:not(.ewm-hero)::after {
+  content:"";position:absolute;inset:auto 0 0;height:125px;
+  z-index:0;pointer-events:none;
+  background:linear-gradient(0deg,rgba(5,58,110,.06),transparent);
+}
+.ewm-home .ewm-wave:not(.ewm-wave--hero){display:none;}
+.ewm-home .ewm-wave--hero{opacity:.45;height:55px;bottom:-1px;}
+/* Four audiences — dramatic luminous clouds, ornamental flowers and lively glass cards. */
+.ewm-home .ewm-audiences {
+ background:#1e6ba5 url('../assets/home-v5/audience-v5.webp') center center / 100% 100% no-repeat;
+ padding-bottom:139px;min-height:550px;
+}
+.ewm-home .ewm-audiences::before {background:linear-gradient(180deg,rgba(8,61,119,.07),transparent 25%,rgba(6,75,135,.14));opacity:1;mix-blend-mode:normal;}
+.ewm-home .ewm-audiences::after {background:url('../assets/home-v5/seam-clouds.png') center bottom / 100% 120px no-repeat;height:120px;z-index:1;}
+.ewm-home .ewm-scenery--aud-left,.ewm-home .ewm-scenery--aud-right,.ewm-home .ewm-scenery--aud-clouds,.ewm-home .ewm-flowers--aud {display:none;}
+.ewm-home .ewm-audience-content {z-index:2;}
+.ewm-home .ewm-aud-grid {margin-top:27px;gap:15px;}
+.ewm-home .ewm-audience {
+  border-radius:28px;border:1px solid rgba(237,249,255,.78);
+  background:linear-gradient(150deg,rgba(219,239,255,.31),rgba(73,155,216,.23));
+  box-shadow:inset 0 1px 14px rgba(250,254,255,.27),0 17px 40px rgba(3,47,96,.13);
+  backdrop-filter:blur(6px);
+}
+.ewm-home .ewm-audience:hover {transform:translateY(-6px);background:linear-gradient(140deg,rgba(228,248,255,.39),rgba(93,171,230,.24));box-shadow:0 23px 48px rgba(4,40,91,.22);}
+.ewm-home .ewm-audience h3,.ewm-home .ewm-audience p {color:#fff;text-shadow:0 2px 8px rgba(0,45,89,.55);}
+/* Balloon route — floating on an actual illustrated sky, with native interactive thread. */
+.ewm-home .ewm-journey {
+ background:#0b4785 url('../assets/home-v5/journey-v5.webp') center center / 100% 100% no-repeat;
+ padding-bottom:140px;min-height:562px;
+}
+.ewm-home .ewm-journey::before {background:linear-gradient(180deg,rgba(6,50,104,.15),transparent 44%,rgba(4,47,103,.13));opacity:1;mix-blend-mode:normal;}
+.ewm-home .ewm-journey::after {background:url('../assets/home-v5/seam-clouds.png') center bottom / 100% 130px no-repeat;height:130px;z-index:1;}
+.ewm-home .ewm-journey-inner {z-index:3;}
+.ewm-home .ewm-scenery--journey-left,.ewm-home .ewm-scenery--journey-right {display:none;}
+.ewm-home .ewm-balloon-body{box-shadow:inset 0 2px 9px rgba(242,252,255,.65),0 0 17px rgba(255,141,171,.61),0 10px 18px rgba(0,34,87,.32);}
+.ewm-home .ewm-stop {opacity:1!important;visibility:visible!important;}
+.ewm-home .ewm-balloon-button:hover .ewm-balloon-body,.ewm-home .ewm-balloon-button:focus-visible .ewm-balloon-body{filter:brightness(1.11) drop-shadow(0 0 9px rgba(252,164,194,.55));}
+/* About — the poster's rich reading scene is on the right, real text to the left. */
+.ewm-home .ewm-about {
+ background:#c1e1f4 url('../assets/home-v5/about-v5.webp') center center / 100% 100% no-repeat;
+ padding-bottom:145px;min-height:580px;color:#0a3970;
+}
+.ewm-home .ewm-about::before {background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(203,232,249,.15) 44%,transparent 78%);opacity:1;mix-blend-mode:normal;}
+.ewm-home .ewm-about::after {background:url('../assets/home-v5/seam-clouds.png') center bottom / 100% 120px no-repeat;height:120px;z-index:1;display:block;}
+.ewm-home .ewm-about-inner {min-height:318px;display:flex;justify-content:flex-end;align-items:center;z-index:3;}
+.ewm-home .ewm-about-copy {width:52%;margin-inline-start:auto;padding:0 0 6px;}
+.ewm-home .ewm-about h2 {color:#0a3972;font-size:clamp(28px,2.8vw,37px);text-shadow:0 2px 10px rgba(239,251,255,.63);}
+.ewm-home .ewm-about-lead {color:#22547d;font-weight:500;max-width:575px;line-height:1.9;}
+.ewm-home .ewm-advantages {margin-top:27px;max-width:640px;}
+.ewm-home .ewm-advantage>span {background:rgba(232,246,255,.46);border:1px solid rgba(250,253,255,.78);}
+.ewm-home .ewm-about-script {left:auto;right:2%;top:58px;color:#d65569;opacity:.88;text-shadow:0 2px 18px #fff;}
+.ewm-home .ewm-scenery--about-clouds,.ewm-home .ewm-about-scene {display:none;}
+/* Reviews — picture-rich blue with subtle coral details, real review slider remains wired to API. */
+.ewm-home .ewf-reviews {
+ background:#12578e url('../assets/home-v5/reviews-v5.webp') center center / 100% 100% no-repeat!important;
+ min-height:420px;padding-bottom:134px!important;
+}
+.ewm-home .ewf-reviews::before {background:linear-gradient(to bottom,rgba(8,56,113,.05),rgba(4,56,107,.16));opacity:1;mix-blend-mode:normal;}
+.ewm-home .ewf-reviews::after {background:url('../assets/home-v5/seam-clouds.png') center bottom / 100% 130px no-repeat;height:130px;z-index:0;}
+.ewm-home .ewm-scenery--reviews-left,.ewm-home .ewm-scenery--reviews-right{display:none;}
+.ewm-home .ewf-review-card{background:linear-gradient(150deg,rgba(117,158,209,.31),rgba(17,60,120,.59));border:1px solid rgba(237,244,255,.72);box-shadow:0 15px 42px rgba(5,40,88,.26),inset 0 1px 7px rgba(255,255,255,.17);backdrop-filter:blur(5px);}
+.ewm-home .ewf-review-card:hover{transform:translateY(-4px);box-shadow:0 24px 48px rgba(3,31,79,.26);}
+.ewm-home .ewf-review-quote,.ewm-home .ewf-review-rating{color:#ff8299;}
+/* CTA now shows full illustration, not two separate photo rectangles. */
+.ewm-home .ewm-cta {background:#135389 url('../assets/home-v5/cta-v5.webp') center center / 100% 100% no-repeat;min-height:296px;padding-bottom:87px;}
+.ewm-home .ewm-cta::before{background:linear-gradient(180deg,rgba(14,76,130,.10),rgba(8,52,109,.09));opacity:1;}
+.ewm-home .ewm-cta::after{background:none;}
+.ewm-home .ewm-cta-inner::before,.ewm-home .ewm-cta-inner::after{display:none;}
+.ewm-home .ewm-cta-inner{z-index:3;}
+/* Better small screens: artwork stays behind copy and doesn't distort. */
+@media(max-width:900px){
+ .ewm-home .ewm-about-copy{width:57%;}
+ .ewm-home .ewm-about-script{right:1%;}
+}
+@media(max-width:790px){
+ .ewm-home main>section:not(.ewm-hero){margin-top:-49px;padding-top:95px;-webkit-mask-image:linear-gradient(to bottom,transparent,black 64px);mask-image:linear-gradient(to bottom,transparent,black 64px);}
+ .ewm-home .ewm-about {min-height:680px;padding-bottom:95px;background-position:center center;background-size:cover;}
+ .ewm-home .ewm-about-inner{min-height:500px;justify-content:flex-start;align-items:flex-start;}
+ .ewm-home .ewm-about-copy{width:100%;padding:0 0 260px;margin:0;}
+ .ewm-home .ewm-about-script{top:auto;right:7%;bottom:85px;}
+ .ewm-home .ewm-audiences,.ewm-home .ewm-journey,.ewm-home .ewf-reviews,.ewm-home .ewm-cta{background-size:cover;}
+}
+@media(max-width:520px){
+ .ewm-home main>section:not(.ewm-hero){margin-top:-37px;padding-top:69px;-webkit-mask-image:linear-gradient(to bottom,transparent,black 47px);mask-image:linear-gradient(to bottom,transparent,black 47px);}
+ .ewm-home .ewm-audiences{min-height:0;padding-bottom:112px;}
+ .ewm-home .ewm-journey{min-height:0;padding-bottom:96px;}
+ .ewm-home .ewm-about{min-height:640px;padding-bottom:80px;background-position:61% 50%;background-size:auto 100%;}
+ .ewm-home .ewm-about::before{background:linear-gradient(180deg,rgba(197,227,248,.91) 0%,rgba(200,230,250,.80) 55%,transparent 84%);}
+ .ewm-home .ewm-about-inner{min-height:488px;}
+ .ewm-home .ewm-about-copy{padding-bottom:215px;}
+ .ewm-home .ewm-about-script{bottom:61px;right:7%;}
+ .ewm-home .ewf-reviews{padding-bottom:94px!important;}
+ .ewm-home .ewm-cta{min-height:250px;padding-bottom:65px;}
+}
+@media(prefers-reduced-motion:reduce){.ewm-home .ewm-journey *, .ewm-home .ewm-audience{animation:none!important;transition:none!important}}

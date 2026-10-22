@@ -1,369 +1,166 @@
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import ReviewsSection from "../features/reviews/ReviewsSection";
-import skyJourneyBackground from "../assets/sky-journey-background.svg";
+import heroBalcony from "../assets/home-motion/hero-balcony.webp";
+import flowers from "../assets/home-motion/cta-flowers.webp";
+import audienceFlowersLeft from "../assets/home-motion/audience-bloom-left.webp";
+import audienceFlowersRight from "../assets/home-motion/audience-bloom-right.webp";
+import sceneryClouds from "../assets/home-motion/sky-cloud-mountain.webp";
+import journeyFlowersLeft from "../assets/home-motion/journey-lanterns.webp";
+import journeyMountainsRight from "../assets/home-motion/journey-village.webp";
+import aboutCloudLeft from "../assets/home-motion/about-cloud-left.webp";
+import "./home-final.css";
+import "./home-atmosphere-v4.css";
+import "./home-atmosphere-v5.css";
+
+const audiences = [
+  { title: "למשתחררים", copy: "להרגיש בנוח ובביטחון בכל מקום בעולם.", icon: "plane" },
+  { title: "למי שאוהב ללמוד", copy: "לחוויית העשרה אישית, מרגשת וביטחון עצמי.", icon: "heart" },
+  { title: "לסטודנטים", copy: "להצלחה בלימודים אקדמיים ובמחקר.", icon: "graduation" },
+  { title: "לאנשי מקצוע", copy: "לפתוח את הקריירה להצלחה בתקשורת בינלאומית.", icon: "briefcase" },
+];
+
+const journey = [
+  { number: 1, title: "מתחילים בקלות", copy: "מכירים את האפשרויות ובוחרים את המסלול המתאים.", icon: "flag" },
+  { number: 2, title: "לומדים ומתאמנים", copy: "שיעורים מגוונים ומשימות לאורך הדרך.", icon: "book" },
+  { number: 3, title: "מקבלים מסלול אישי", copy: "לפי הצרכים והמטרות האישיות שלכם.", icon: "chart" },
+  { number: 4, title: "רואים תוצאות", copy: "עוקבים אחר ההתקדמות ושומרים על ביטחון ויכולת בשפה.", icon: "star" },
+];
+
+const advantages = [
+  { title: "התאמה אישית", copy: "לכל רמה ומטרה", icon: "person" },
+  { title: "חוויית למידה", copy: "מהנה ומעוררת", icon: "heart" },
+  { title: "כלי AI", copy: "מתקדמים", icon: "spark" },
+  { title: "תוכן איכותי", copy: "ואמין", icon: "diamond" },
+];
+
+function Icon({ name, size = 23 }) {
+  const attrs = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true };
+  const content = {
+    book: <><path d="M12 6C9 4.4 6.4 4.4 3 5v14c3.4-1 6.4-.5 9 1.2C14.6 18.5 17.6 18 21 19V5c-3.4-.6-6-.6-9 1Z"/><path d="M12 6v14"/></>,
+    plane: <><path d="m21 3-6.4 18-3.8-7.8L3 9.4 21 3Z"/><path d="m10.8 13.2 4.4-4.4"/></>,
+    heart: <path d="M20.5 5.9a5 5 0 0 0-7.1 0L12 7.3l-1.4-1.4a5 5 0 0 0-7.1 7.1L12 21l8.5-8a5 5 0 0 0 0-7.1Z"/>,
+    graduation: <><path d="m2 9 10-5 10 5-10 5-10-5Z"/><path d="M6 11.5V17c3.6 2.8 8.4 2.8 12 0v-5.5M22 9v7"/></>,
+    briefcase: <><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12c4 3 14 3 18 0"/></>,
+    flag: <><path d="M5 22V4"/><path d="M5 5c5-3 8 3 14 0v11c-6 3-9-3-14 0"/></>,
+    chart: <><path d="M4 21h16M7 17V11M12 17V6M17 17V3"/></>,
+    star: <path d="m12 2.5 3 6.1 6.8 1-4.9 4.8 1.1 6.8-6-3.2-6 3.2 1.1-6.8-4.9-4.8 6.8-1 3-6.1Z"/>,
+    person: <><circle cx="12" cy="7" r="4"/><path d="M4 22c0-5 3.3-8 8-8s8 3 8 8"/></>,
+    spark: <><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2Z"/></>,
+    diamond: <><path d="m3 9 4-5h10l4 5-9 12L3 9Z"/><path d="M3 9h18M7 4l5 17 5-17"/></>,
+    arrow: <><path d="M19 12H5m7-7-7 7 7 7"/></>,
+    menu: <path d="M4 7h16M4 12h16M4 17h16"/>,
+    close: <path d="M5 5 19 19M19 5 5 19"/>,
+  };
+  return <svg {...attrs}>{content[name] || content.spark}</svg>;
+}
+
+function Wave({ className = "" }) {
+  // Deliberately no opaque polygon: the sky must blend continuously.
+  return <svg className={`ewm-wave ${className}`} aria-hidden="true" viewBox="0 0 1440 140" preserveAspectRatio="none">
+    <path d="M-20 71C147 13 314 118 480 69 662 16 744 20 902 63 1078 112 1176 6 1350 37c57 10 83 18 110 8" stroke="rgba(239,250,255,.72)" strokeWidth="2.6" fill="none"/>
+    <path d="M-20 85C148 25 324 138 486 86 662 30 753 40 908 78c175 43 273-55 437-28 54 9 85 18 115 11" stroke="rgba(141,205,252,.34)" strokeWidth="1.8" fill="none"/>
+  </svg>;
+}
+
+function Header({ loggedIn, onStart, onLogin, onRegister }) {
+  const [open, setOpen] = useState(false);
+  const links = [["בית", "#home-top"], ["למי זה מתאים", "#audiences"], ["איך זה עובד", "#journey"], ["עלינו", "#about"], ["המלצות", "#reviews"]];
+  return <header className="ewm-header">
+    <div className="ewm-container ewm-nav">
+      <a className="ewm-brand" href="#home-top" aria-label="EnglishWise — דף הבית" onClick={() => setOpen(false)}><Icon name="book" size={30}/><span lang="en" dir="ltr">EnglishWise</span></a>
+      <nav className="ewm-nav-links" aria-label="ניווט בדף הבית">{links.map(([label, href]) => <a key={href} href={href}>{label}</a>)}</nav>
+      <div className="ewm-nav-actions"><button type="button" className="ewm-login" onClick={loggedIn ? onStart : onLogin} aria-label={loggedIn ? "אזור אישי" : "התחברות"}>{loggedIn ? "אזור אישי" : "כניסה"}</button>{!loggedIn && <button type="button" className="ewm-btn ewm-btn--small" onClick={onRegister}>התחילו עכשיו <Icon name="arrow" size={16}/></button>}</div>
+      <button className="ewm-mobile-menu" type="button" aria-expanded={open} aria-label={open ? "סגירת תפריט" : "פתיחת תפריט"} onClick={() => setOpen(value => !value)}><Icon name={open ? "close" : "menu"}/></button>
+    </div>
+    {open && <nav className="ewm-mobile-links" aria-label="ניווט לנייד">{links.map(([label, href]) => <a href={href} key={href} onClick={() => setOpen(false)}>{label}</a>)}<button type="button" onClick={() => {setOpen(false); loggedIn ? onStart() : onLogin();}}>{loggedIn ? "אזור אישי" : "כניסה"}</button>{!loggedIn && <button type="button" onClick={() => {setOpen(false); onRegister();}}>התחילו עכשיו</button>}</nav>}
+  </header>;
+}
+
+function Hero({ loggedIn, onStart }) {
+  return <section id="home-top" className="ewm-hero">
+    <div className="ewm-hero-glow" aria-hidden="true"/>
+    <div className="ewm-container ewm-hero-inner">
+      <div className="ewm-hero-copy" data-reveal><p className="ewm-kicker">✦ ללמוד בדרך שלך</p>
+        <h1>לומדים אנגלית <span>בדרך ברורה ומעוררת השראה.</span></h1>
+        <p className="ewm-lead">ב־EnglishWise תמצאו מסלול לימוד מתקדם, אישי ומהנה שיעניק לכם ביטחון אמיתי באנגלית — לחיים, לעבודה ולחלומות שלכם.</p>
+        <div className="ewm-hero-actions"><button className="ewm-btn" type="button" onClick={onStart}>{loggedIn ? "ממשיכים ללמוד" : "התחילו עכשיו"}<Icon name="arrow" size={18}/></button><a className="ewm-subtle-link" href="#journey">גלו איך זה עובד <span aria-hidden="true">←</span></a></div>
+      </div>
+      <img className="ewm-hero-scene" src={heroBalcony} alt="שולחן לימוד לצד נוף הרים ושמיים" fetchPriority="high"/>
+      <span className="ewm-sky-balloon ewm-sky-balloon--one" aria-hidden="true"/><span className="ewm-sky-balloon ewm-sky-balloon--two" aria-hidden="true"/>
+    </div>
+    <Wave className="ewm-wave--hero" fill="#145a93"/>
+  </section>;
+}
+
+function Audience() {
+  return <section id="audiences" className="ewm-audiences">
+    <img className="ewm-scenery ewm-scenery--aud-left" src={audienceFlowersLeft} alt="" loading="lazy" aria-hidden="true"/>
+    <img className="ewm-scenery ewm-scenery--aud-right" src={audienceFlowersRight} alt="" loading="lazy" aria-hidden="true"/>
+    <img className="ewm-scenery ewm-scenery--aud-clouds" src={sceneryClouds} alt="" loading="lazy" aria-hidden="true"/>
+    <div className="ewm-container ewm-audience-content">
+    <div className="ewm-heading" data-reveal><p className="ewm-kicker ewm-kicker--coral">♥ למי EnglishWise מתאים?</p><h2>אנגלית פותחת דלתות חדשות בשבילכם</h2><p>בין אם אתם בתחילת הדרך או רוצים לשדרג את היכולות שלכם — תמצאו כאן את המסלול המתאים.</p></div>
+    <div className="ewm-aud-grid">{audiences.map((item, index) => <article className="ewm-audience" data-reveal key={item.title} style={{"--delay": `${index * 75}ms`}}><span className="ewm-audience-icon"><Icon name={item.icon} size={32}/></span><h3>{item.title}</h3><p>{item.copy}</p><a href="#journey" className="ewm-aud-link" aria-label={`${item.title} — לגלות את המסלול`}><Icon name="arrow" size={17}/></a></article>)}</div>
+    <img className="ewm-flowers ewm-flowers--aud" src={flowers} alt="" loading="lazy"/>
+  </div><Wave className="ewm-wave--aud" fill="#063e72"/></section>;
+}
+
+function Journey() {
+  const [active, setActive] = useState(null);
+  return <section id="journey" className="ewm-journey">
+    <img className="ewm-scenery ewm-scenery--journey-left" src={journeyFlowersLeft} alt="" loading="lazy" aria-hidden="true"/>
+    <img className="ewm-scenery ewm-scenery--journey-right" src={journeyMountainsRight} alt="" loading="lazy" aria-hidden="true"/>
+    <div className="ewm-container ewm-journey-inner">
+    <div className="ewm-heading ewm-heading--light" data-reveal><p className="ewm-kicker ewm-kicker--coral">✦ מסע ההתקדמות שלכם</p><h2>כך תגיעו לאנגלית שתמיד רציתם</h2><p>תהליך פשוט, מהנה ואפקטיבי שמוביל אתכם צעד אחר צעד.</p></div>
+    <div className="ewm-journey-track" onPointerLeave={() => setActive(null)}>
+      <svg className="ewm-journey-curve" viewBox="0 0 1200 240" preserveAspectRatio="none" aria-hidden="true"><path className="ewm-curve-base" d="M1080 63C907 0 911 184 721 155S494 38 358 108 205 179 110 50"/><path className="ewm-curve-progress" pathLength="100" d="M1080 63C907 0 911 184 721 155S494 38 358 108 205 179 110 50" style={{strokeDasharray: `${active === null ? 0 : [0, 5, 37, 67, 100][active]} 100`}}/></svg>
+      {journey.map((step, index) => <div className={`ewm-stop ewm-stop--${step.number}${active === step.number ? " ewm-stop--active" : ""}`} key={step.number} style={{"--delay": `${index * 90}ms`}}>
+        <button type="button" className="ewm-balloon-button" aria-label={`שלב ${step.number}: ${step.title}`} aria-pressed={active === step.number} onMouseEnter={() => setActive(step.number)} onFocus={() => setActive(step.number)} onClick={() => setActive(step.number)}><span className="ewm-balloon-body"><Icon name={step.icon} size={28}/></span><span className="ewm-balloon-basket" aria-hidden="true"/><span className="ewm-step-number">{step.number}</span></button>
+        <h3>{step.title}</h3><p>{step.copy}</p>
+      </div>)}
+    </div>
+    <p className="ewm-journey-hint">עברו על הבלונים כדי לגלות את המסלול <span aria-hidden="true">✧</span></p>
+  </div><Wave className="ewm-wave--journey" fill="#9dc4e5"/></section>;
+}
+
+function About() {
+  return <section id="about" className="ewm-about">
+    <img className="ewm-scenery ewm-scenery--about-clouds" src={aboutCloudLeft} alt="" loading="lazy" aria-hidden="true"/>
+    <div className="ewm-container ewm-about-inner">
+    <div className="ewm-about-copy" data-reveal><p className="ewm-kicker ewm-kicker--coral">♥ מה מיוחד ב־EnglishWise?</p><h2>למידה חכמה, רגועה ומותאמת באמת</h2><p className="ewm-about-lead">אנחנו משלבים כלים מתקדמים, גישה אישית וליווי מקצועי כדי להפוך את הלמידה לאפקטיבית, נעימה ומשתלבת בחיים שלכם.</p>
+      <div className="ewm-advantages">{advantages.map((item, i) => <div className="ewm-advantage" key={item.title} style={{"--delay": `${i * 90}ms`}}><span><Icon name={item.icon} size={27}/></span><strong>{item.title}</strong><small>{item.copy}</small></div>)}</div>
+    </div><span className="ewm-about-script" aria-hidden="true">A Brighter You ♡</span>
+  </div><Wave className="ewm-wave--about" fill="#0b477f"/></section>;
+}
+
+function BottomCTA({ loggedIn, onStart }) {
+  return <section className="ewm-cta"><div className="ewm-container ewm-cta-inner" data-reveal><h2>מוכנים לפתוח לעצמכם אופקים חדשים?</h2><p>הצטרפו לעוד לומדים שמתקדמים באנגלית — ובחיים.</p><button className="ewm-btn" type="button" onClick={onStart}>{loggedIn ? "לאזור הלמידה" : "התחילו עכשיו"}<Icon name="arrow" size={17}/></button></div></section>;
+}
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const rootRef = useRef(null);
+  const { user, isAuthenticated } = useSelector(state => state.auth);
+  const loggedIn = Boolean(isAuthenticated && user);
+  const goToArea = () => { if (user?.role === "teacher") return navigate("/teacher/dashboard"); if (user?.role === "admin") return navigate("/admin/dashboard"); navigate("/dashboard"); };
+  const onStart = () => loggedIn ? goToArea() : navigate("/register");
 
-  const isLoggedIn = Boolean(isAuthenticated && user);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || !window.IntersectionObserver || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const targets = Array.from(root.querySelectorAll("[data-reveal]"));
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) if (entry.isIntersecting) { entry.target.classList.add("is-visible"); observer.unobserve(entry.target); }
+    }, { threshold: 0.08, rootMargin: "0px 0px -5% 0px" });
+    root.classList.add("ewm-motion-ready");
+    targets.forEach(node => observer.observe(node));
+    return () => observer.disconnect();
+  }, []);
 
-  const goToUserArea = () => {
-    if (user?.role === "teacher") {
-      navigate("/teacher/dashboard");
-      return;
-    }
-
-    if (user?.role === "admin") {
-      navigate("/admin/dashboard");
-      return;
-    }
-
-    navigate("/dashboard");
-  };
-
-  return (
-    <div
-      className="relative min-h-screen overflow-hidden bg-[#55b9ef] text-white"
-      dir="rtl"
-    >
-      <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${skyJourneyBackground})` }}
-      />
-
-      <div className="fixed inset-0 bg-gradient-to-b from-[#0b5e9b]/8 via-[#0b4f88]/10 to-[#062e52]/35" />
-
-      <Header
-        isLoggedIn={isLoggedIn}
-        onLogin={() => navigate("/login")}
-        onRegister={() => navigate("/register")}
-        onUserArea={goToUserArea}
-      />
-
-      <main className="relative z-10 mx-auto max-w-7xl px-5 pb-10 pt-7 md:pt-10">
-        <HeroSection
-          isLoggedIn={isLoggedIn}
-          onStart={isLoggedIn ? goToUserArea : () => navigate("/register")}
-          onLogin={() => navigate("/login")}
-        />
-
-        <AboutSection />
-
-        <ExperienceSection />
-
-        <ForWhoSection />
-      </main>
-
-      <ReviewsSection />
-
-      <Footer />
-    </div>
-  );
-}
-
-function Header({ isLoggedIn, onLogin, onRegister, onUserArea }) {
-  return (
-    <header className="sticky top-0 z-50 px-4 py-4">
-      <div className="mx-auto flex max-w-7xl items-center justify-between rounded-full border-2 border-white/28 bg-[#061f36]/72 px-5 py-3 shadow-[0_18px_55px_rgba(3,31,61,0.38),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-xl">
-        <button
-          type="button"
-          className="text-2xl font-black tracking-tight text-white md:text-3xl"
-        >
-          EnglishWise
-        </button>
-
-        <div className="flex items-center gap-3">
-          {isLoggedIn && (
-            <button
-              type="button"
-              onClick={onUserArea}
-              className="rounded-full border-2 border-[#ffd439]/70 bg-[#ffd439] px-5 py-2.5 text-sm font-black text-[#123c6b] shadow-[0_6px_0_rgba(111,82,0,0.26)] transition hover:-translate-y-1 active:translate-y-1 active:shadow-none"
-            >
-              לאזור האישי
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={onLogin}
-            className="rounded-full border-2 border-white/35 bg-white/10 px-5 py-2.5 text-sm font-black text-white transition hover:bg-white/18"
-          >
-            התחברות
-          </button>
-
-          <button
-            type="button"
-            onClick={onRegister}
-            className="rounded-full border-2 border-white/55 bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-6 py-2.5 text-sm font-black text-white shadow-[0_6px_0_rgba(89,15,20,0.40)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none"
-          >
-            הרשמה
-          </button>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function HeroSection({ isLoggedIn, onStart, onLogin }) {
-  return (
-    <section className="relative overflow-hidden rounded-[2.8rem] border-2 border-white/30 bg-[#123c6b]/82 shadow-[0_34px_105px_rgba(3,31,61,0.42),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl">
-      <DecorativeLines />
-
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(255,255,255,0.16),transparent_30%),radial-gradient(circle_at_90%_100%,rgba(255,212,57,0.13),transparent_34%),linear-gradient(to_bottom,rgba(255,255,255,0.08),transparent_58%)]" />
-
-      <div className="relative z-10 grid gap-8 p-6 md:p-9 lg:grid-cols-[1.05fr_0.95fr] lg:p-11">
-        <div className="flex flex-col justify-center">
-          <div className="mb-5 w-fit rounded-full border border-[#ffd439]/45 bg-[#ffd439]/16 px-5 py-2 text-sm font-extrabold text-[#ffe89a]">
-            לימוד אנגלית שמתקדם איתך
-          </div>
-
-          <h1
-            className="max-w-4xl text-4xl font-black leading-tight text-white md:text-6xl lg:text-7xl"
-            style={{
-              textShadow:
-                "3px 3px 0 rgba(184,50,42,0.48), -1px -1px 0 rgba(15,76,117,0.95), 0 18px 38px rgba(7,89,133,0.38)",
-            }}
-          >
-            ללמוד אנגלית
-            <br />
-            בלי ללכת לאיבוד
-          </h1>
-
-          <p className="mt-6 max-w-3xl text-lg font-semibold leading-9 text-white/80 md:text-xl">
-            EnglishWise מרכז עבורך את כל מה שצריך כדי להתקדם באנגלית:
-            מסלול אישי, שיעורים, תרגול, כתיבה, מילון, משימות וכלי AI שמכוון
-            אותך לצעד הבא. לא עוד חומר מפוזר — אלא חוויית למידה ברורה,
-            מסודרת ומותאמת.
-          </p>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={onStart}
-              className="rounded-full border-2 border-white/55 bg-gradient-to-b from-[#ff6659] to-[#b8322a] px-8 py-4 text-base font-black text-white shadow-[0_7px_0_rgba(89,15,20,0.42)] transition hover:-translate-y-1 hover:brightness-110 active:translate-y-1 active:shadow-none"
-            >
-              {isLoggedIn ? "המשיכי ללמוד" : "התחילי עכשיו"}
-            </button>
-
-            {!isLoggedIn && (
-              <button
-                type="button"
-                onClick={onLogin}
-                className="rounded-full border-2 border-white/30 bg-white/10 px-8 py-4 text-base font-black text-white transition hover:bg-white/18"
-              >
-                כבר יש לי חשבון
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="grid gap-4">
-          <HeroMiniCard
-            eyebrow="התחלה אישית"
-            title="כל תלמידה נכנסת למסלול שמתאים לה"
-            text="המערכת מתחשבת ברמה, גיל, תחומי עניין ומטרות, כדי שהלמידה לא תרגיש כללית מדי."
-          />
-
-          <HeroMiniCard
-            eyebrow="למידה פעילה"
-            title="לא רק לצ"
-            text="שיעורים, משימות, בחנים, מילון וכתיבה מתחברים למסלול אחד ברור, בלי עומס מיותר."
-            highlight
-          />
-
-          <HeroMiniCard
-            eyebrow="כלי AI"
-            title="עזרה חכמה כשנתקעים"
-            text="האתר עוזר לזהות מה חסר, מה כדאי לחזק ומה הצעד הבא בלמידה."
-          />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function HeroMiniCard({ eyebrow, title, text, highlight = false }) {
-  return (
-    <article
-      className={`rounded-[2rem] border-2 p-5 shadow-[0_22px_70px_rgba(3,31,61,0.30),inset_0_1px_0_rgba(255,255,255,0.13)] backdrop-blur-xl ${
-        highlight
-          ? "border-[#ffd439]/55 bg-[#ffd439]/13"
-          : "border-white/24 bg-[#061f36]/64"
-      }`}
-    >
-      <p
-        className={`text-sm font-extrabold ${
-          highlight ? "text-[#ffe89a]" : "text-white/58"
-        }`}
-      >
-        {eyebrow}
-      </p>
-
-      <h2 className="mt-2 text-2xl font-black leading-tight text-white">
-        {title}
-      </h2>
-
-      <p className="mt-3 text-base font-semibold leading-8 text-white/72">
-        {text}
-      </p>
-    </article>
-  );
-}
-
-function AboutSection() {
-  return (
-    <section className="mt-8 grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
-      <article className="rounded-[2.5rem] border-2 border-white/28 bg-[#061f36]/66 p-7 text-white shadow-[0_28px_85px_rgba(3,31,61,0.34),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-xl md:p-8">
-        <p className="text-sm font-extrabold text-[#ffe89a]">אודותינו</p>
-
-        <h2 className="mt-3 text-3xl font-black leading-tight text-white md:text-5xl">
-          אתר שנבנה בשביל ללמוד באמת,
-          <br />
-          לא רק לסמן וי
-        </h2>
-      </article>
-
-      <article className="rounded-[2.5rem] border-2 border-[#2c8fd6]/55 bg-[#123c6b]/78 p-7 text-white shadow-[0_28px_85px_rgba(3,31,61,0.34),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-xl md:p-8">
-        <p className="text-lg font-semibold leading-9 text-white/78">
-          EnglishWise נולד מתוך צורך פשוט: להפוך את לימוד האנגלית למשהו
-          מסודר, נגיש ומתקדם. במקום שתלמידה תרגיש שיש לה יותר מדי חומרים
-          ופחות מדי כיוון, האתר בונה עבורה חוויה שלמה — מהיכרות ראשונית עם
-          הרמה שלה, דרך תרגול וליווי, ועד תחושת התקדמות אמיתית.
-        </p>
-
-        <p className="mt-5 text-lg font-semibold leading-9 text-white/78">
-          זה אתר שמחבר בין תלמידות, מורות ומנהלים במקום אחד: תלמידה לומדת,
-          מורה יוצרת ומנהלת תוכן, והמנהל שומר על סדר במערכת. הכול עטוף
-          בממשק ברור ונעים, כך שהלמידה לא נראית כמו מטלה — אלא כמו מסע
-          שאפשר להמשיך בו בביטחון.
-        </p>
-      </article>
-    </section>
-  );
-}
-
-function ExperienceSection() {
-  return (
-    <section className="mt-8 rounded-[2.5rem] border-2 border-white/28 bg-[#123c6b]/80 p-6 shadow-[0_30px_95px_rgba(3,31,61,0.36),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-xl md:p-8">
-      <div className="grid gap-6 lg:grid-cols-[1fr_1fr_1fr]">
-        <FeaturePanel
-          title="מסלול שמבין את המשתמשת"
-          text="המערכת לא מסתפקת בהצגת חומר. היא מנסה להבין מי לומדת, מה הרמה שלה, מה מעניין אותה ולאן היא רוצה להגיע."
-        />
-
-        <FeaturePanel
-          title="מקום אחד לכל הלמידה"
-          text="קורסים, שיעורים, שירים, משימות, בחנים, מילון וצ׳אט לימודי מתחברים לאזור אחד, כך שהלמידה נשארת מסודרת."
-        />
-
-        <FeaturePanel
-          title="חוויה שנשארת ברורה"
-          text="המידע לא נשפך על המסך בבת אחת. בכל אזור רואיםחים פירוט רק כשצריך."
-        />
-      </div>
-    </section>
-  );
-}
-
-function FeaturePanel({ title, text }) {
-  return (
-    <article className="rounded-[2rem] border-2 border-[#2c8fd6]/50 bg-[#061f36]/58 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
-      <h3 className="text-2xl font-black leading-tight text-white">{title}</h3>
-
-      <p className="mt-4 text-base font-semibold leading-8 text-white/72">
-        {text}
-      </p>
-    </article>
-  );
-}
-
-function ForWhoSection() {
-  return (
-    <section className="mt-8 grid gap-5 lg:grid-cols-3">
-      <AudienceCard
-        label="לתלמידות"
-        title="לראות מה ללמוד עכשיו"
-        text="התלמידה מקבלת קורסים, משימות, מילון אישי, תרגול וכתיבה — עם תחושה שיש לה דרך ולא רק רשימת משימות."
-      />
-
-      <AudienceCard
-        label="למורות"
-        title="לבנות תוכן בצורה מסודרת"
-        text="המורה יכולה להעלות שיעורים, ליצור תרגילים ובחנים, לארגן תכנים וללוות את התלמידות בצורה ברורה."
-        strong
-      />
-
-      <AudienceCard
-        label="למנהלים"
-        title="לשמור על מערכת מאורגנת"
-        text="המנהל מקבל מבט רחב על משתמשים, תכנים, הודעות וניהול אזורים חשובים באתר."
-      />
-    </section>
-  );
-}
-
-function AudienceCard({ label, title, text, strong = false }) {
-  return (
-    <article
-      className={`rounded-[2.4rem] border-2 p-6 shadow-[0_26px_80px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-xl ${
-        strong
-          ? "border-[#ffd439]/55 bg-[#ffd439]/13"
-          : "border-white/26 bg-[#123c6b]/74"
-      }`}
-    >
-      <p
-        className={`text-sm font-extrabold ${
-          strong ? "text-[#ffe89a]" : "text-white/60"
-        }`}
-      >
-        {label}
-      </p>
-
-      <h3 className="mt-3 text-2xl font-black leading-tight text-white">
-        {title}
-      </h3>
-
-      <p className="mt-4 text-base font-semibold leading-8 text-white/72">
-        {text}
-      </p>
-    </article>
-  );
-}
-
-function DecorativeLines() {
-  return (
-    <svg
-      className="pointer-events-none absolute inset-0 h-full w-full opacity-14"
-      viewBox="0 0 1200 420"
-      preserveAspectRatio="none"
-    >
-      <g
-        fill="none"
-        stroke="white"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path
-          d="M-20 330 C150 250 250 310 405 210 C555 112 650 168 805 95 C950 28 1050 82 1230 20"
-          strokeWidth="4"
-        />
-        <path
-          d="M-30 390 C130 320 270 350 420 270 C570 190 690 220 850 160 C990 108 1075 125 1230 80"
-          strokeWidth="3"
-        />
-      </g>
-    </svg>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="relative z-10 mx-auto max-w-7xl px-5 pb-8">
-      <div className="rounded-[2rem] border-2 border-white/18 bg-[#061f36]/58 px-6 py-5 text-center text-sm font-bold text-white/62 shadow-[0_20px_60px_rgba(3,31,61,0.24)] backdrop-blur-xl">
-        © 2026 EnglishWise — לימוד אנגלית בדרך חכמה, אישית וברורה
-      </div>
-    </footer>
-  );
+  return <div className="ewm-home" ref={rootRef} dir="rtl">
+    <Header loggedIn={loggedIn} onStart={onStart} onLogin={() => navigate("/login")} onRegister={() => navigate("/register")}/>
+    <main><Hero loggedIn={loggedIn} onStart={onStart}/><Audience/><Journey/><About/><ReviewsSection/><BottomCTA loggedIn={loggedIn} onStart={onStart}/></main>
+    <footer className="ewm-footer"><div className="ewm-container"><span dir="ltr" lang="en">EnglishWise</span> · ללמוד בדרך שלך <small>© {new Date().getFullYear()}</small></div></footer>
+  </div>;
 }

@@ -1,0 +1,125 @@
+/* EnglishWise / V4 — seamless illustrated sky.
+   Scoped to the homepage: the dashboard and form styles are untouched.
+   Backdrops are finished panoramas, not rectangular foreground photos. */
+.ewm-home { background:#123d72; }
+.ewm-home section { isolation:isolate; }
+.ewm-home .ewm-wave { height:67px;bottom:-29px;z-index:8;opacity:.74;filter:drop-shadow(0 1px 8px rgba(228,246,255,.28)); }
+.ewm-home .ewm-wave--hero {height:70px;}
+.ewm-home .ewm-wave--journey {height:83px;}
+.ewm-home .ewm-wave--about {height:77px;}
+/* Continuity colours at the top and bottom of each background match. */
+.ewm-home .ewm-audiences {
+  background:#236ca8 url('../assets/home-atmosphere/audience-sky-v4.webp') center 49% / cover no-repeat;
+  padding-top:64px;
+  padding-bottom:114px;
+}
+.ewm-home .ewm-audiences::before {
+  background:linear-gradient(180deg,rgba(20,90,147,.15) 0%,transparent 22%,transparent 67%,rgba(12,70,124,.21) 100%);
+  opacity:1;mix-blend-mode:normal;
+}
+.ewm-home .ewm-audiences::after {background:none;}
+.ewm-home .ewm-scenery--aud-clouds {display:none;}
+.ewm-home .ewm-scenery--aud-left,
+.ewm-home .ewm-scenery--aud-right {opacity:.66;filter:saturate(1.02);}
+.ewm-home .ewm-audience {
+  background:linear-gradient(150deg,rgba(188,228,255,.25),rgba(35,103,175,.22));
+  border:1px solid rgba(218,243,255,.61);
+  box-shadow:inset 0 1px 3px rgba(240,250,255,.35),0 14px 34px rgba(0,33,79,.17);
+  backdrop-filter:blur(5px);
+}
+.ewm-home .ewm-audience:hover {
+  background:linear-gradient(150deg,rgba(216,244,255,.34),rgba(49,115,189,.29));
+  box-shadow:inset 0 1px 8px rgba(240,250,255,.4),0 20px 41px rgba(0,32,72,.27);
+}
+.ewm-home .ewm-audience h3,.ewm-home .ewm-audience p {text-shadow:0 2px 10px rgba(1,41,77,.5);}
+.ewm-home .ewm-journey {
+  background:#0c467c url('../assets/home-atmosphere/journey-sky-v4.webp') center / cover no-repeat;
+  padding-top:65px;
+  padding-bottom:116px;
+}
+.ewm-home .ewm-journey::before {
+  background:radial-gradient(ellipse at 53% 18%,rgba(114,174,228,.14),transparent 58%);
+  opacity:1;mix-blend-mode:normal;
+}
+.ewm-home .ewm-journey::after {background:linear-gradient(to bottom,rgba(4,45,91,.08),transparent 40%,rgba(2,42,81,.08));}
+.ewm-home .ewm-scenery--journey-left,.ewm-home .ewm-scenery--journey-right {display:none;}
+.ewm-home .ewm-journey-inner {z-index:3;}
+/* About: illustration and sky fused into the same panoramic asset.
+   Right-side title remains real, editable, accessible text. */
+.ewm-home .ewm-about {
+  background:#5088b8 url('../assets/home-atmosphere/about-sky-v4.webp') center center / cover no-repeat;
+  min-height:470px;
+  padding:70px 0 122px;
+  color:#0a3968;
+}
+.ewm-home .ewm-about::before {
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(90deg,rgba(42,110,166,.02) 0%,rgba(119,177,217,.12) 38%,rgba(159,208,235,.3) 80%,rgba(80,151,203,.11) 100%);
+  opacity:1;mix-blend-mode:normal;
+}
+.ewm-home .ewm-about::after {display:none;}
+.ewm-home .ewm-about-inner {min-height:280px;align-items:center;z-index:3;}
+.ewm-home .ewm-about-copy {width:57%;padding:12px 0 0 0;}
+.ewm-home .ewm-about h2 {color:#092e61;text-shadow:0 2px 8px rgba(237,248,255,.28);}
+.ewm-home .ewm-about-lead {color:#113e70;font-weight:600;text-shadow:0 1px 10px rgba(226,244,255,.28);}
+.ewm-home .ewm-about-script {left:2%;top:-6px;opacity:.7;}
+.ewm-home .ewm-about-scene {display:none;}
+.ewm-home .ewm-scenery--about-clouds {display:none;}
+.ewm-home .ewm-advantage>span {background:rgba(239,251,255,.45);border:1px solid rgba(236,251,255,.54);}
+/* Sapphire review section: detailed landscape without an added image frame. */
+.ewm-home .ewf-reviews {
+  background:#0c497e url('../assets/home-atmosphere/reviews-sky-v4.webp') center 50% / cover no-repeat!important;
+  padding:70px 0 96px!important;
+}
+.ewm-home .ewf-reviews::before {background:linear-gradient(180deg,rgba(9,58,105,.13),rgba(5,47,99,.13) 65%,rgba(14,72,120,.14));opacity:1;mix-blend-mode:normal;}
+.ewm-home .ewf-reviews::after {background:radial-gradient(ellipse at 50% 48%,rgba(101,164,220,.14),transparent 72%);}
+.ewm-home .ewm-scenery--reviews-left,.ewm-home .ewm-scenery--reviews-right {display:none;}
+.ewm-home .ewf-review-card {background:linear-gradient(140deg,rgba(88,139,197,.38),rgba(14,62,122,.59));box-shadow:0 18px 44px rgba(3,28,69,.24),inset 0 1px 8px rgba(243,252,255,.14);}
+/* The closing panel uses the same palette and dissolves into distant hills. */
+.ewm-home .ewm-cta {background:#145388 url('../assets/home-atmosphere/cta-sky-v4.webp') center / cover no-repeat;}
+.ewm-home .ewm-cta::before {background:linear-gradient(180deg,rgba(15,76,133,.13),rgba(8,52,102,.17));}
+.ewm-home .ewm-cta::after {background:radial-gradient(ellipse at 50% 60%,rgba(6,41,85,.12),transparent 75%);}
+.ewm-home .ewm-cta-inner::before,.ewm-home .ewm-cta-inner::after {display:none;}
+/* Atmospheric light: softly moving highlights, never oscillating large layout elements. */
+@keyframes ewm-v4-breath { 0%,100% {opacity:.52} 50% {opacity:.73} }
+.ewm-home .ewm-audiences::before {animation:ewm-v4-breath 16s ease-in-out infinite;}
+/* Reinforce legibility against detailed cloudscapes. */
+.ewm-home .ewm-heading h2,.ewm-home .ewf-reviews-header h2 {text-shadow:0 3px 13px rgba(2,41,82,.4);}
+.ewm-home .ewm-kicker {text-shadow:0 1px 8px rgba(0,39,82,.45);}
+/* No animation may hide the balloon path after returning from a scroll. */
+.ewm-home .ewm-stop,.ewm-home .ewm-balloon-button,.ewm-home .ewm-balloon-body {visibility:visible;opacity:1;}
+@media(max-width:1050px){
+  .ewm-home .ewm-about {background-position:43% center;}
+  .ewm-home .ewm-about-copy {width:60%;}
+}
+@media(max-width:790px){
+  .ewm-home .ewm-audiences {padding-top:55px;}
+  .ewm-home .ewm-about {min-height:610px;padding-top:46px;padding-bottom:80px;background-position:20% center;}
+  .ewm-home .ewm-about-copy {width:100%;padding-bottom:270px;}
+  .ewm-home .ewm-about-inner {padding-bottom:0;}
+  .ewm-home .ewm-about-script {left:8%;top:auto;bottom:30px;}
+  .ewm-home .ewm-about::before {background:linear-gradient(180deg,rgba(159,209,239,.53) 0%,rgba(156,210,243,.30) 48%,rgba(44,107,166,.02) 75%);}
+  .ewm-home .ewf-reviews {padding-top:54px!important;}
+}
+@media(max-width:520px){
+  .ewm-home .ewm-wave {height:45px;bottom:-19px;}
+  .ewm-home .ewm-audiences {padding:49px 0 100px;background-position:center;}
+  .ewm-home .ewm-journey {padding-top:52px;}
+  .ewm-home .ewm-about {background-size:auto 100%;background-position:15% center;min-height:630px;padding:33px 0 67px;}
+  .ewm-home .ewm-about-copy {padding-bottom:235px;}
+  .ewm-home .ewm-about-script {bottom:22px;left:6%;}
+  .ewm-home .ewf-reviews {padding-top:43px!important;}
+}
+@media(prefers-reduced-motion:reduce){.ewm-home .ewm-audiences::before {animation:none!important;opacity:.6}}
+/* Mobile: keep clouds behind the copy and the reading illustration below it. */
+@media(max-width:790px){
+  .ewm-home .ewm-about {
+    background-image:url('../assets/home-atmosphere/about-sky-mobile-v4.webp');
+    background-position:center center;
+    background-size:100% 100%;
+  }
+  .ewm-home .ewm-about::before {
+    background:linear-gradient(180deg,rgba(177,219,243,.12) 0%,rgba(210,238,253,.14) 52%,transparent 79%);
+  }
+  .ewm-home .ewm-about-script {color:#ffd6db;text-shadow:0 1px 12px rgba(6,32,78,.67);}
+}

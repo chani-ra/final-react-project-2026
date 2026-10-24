@@ -6,9 +6,9 @@ EnglishWise combines structured courses with AI-generated lessons, a personal st
 
 **[Live application](https://englishwise-web.onrender.com/)** · **[Backend repository](https://github.com/chani-ra/final-node-project-2026)** · **[API specification](https://github.com/chani-ra/final-node-project-2026/blob/main/docs/openapi.yaml)**
 
-## Practicum walkthrough — from prompt to saved lesson
+## Core workflow — from prompt to saved lesson
 
-The central requirement of the **Practec Full Stack Mini MVP** is implemented as a complete, working flow. It is the recommended starting point for evaluating this project:
+AI Learning Studio offers an end-to-end path from selecting a topic to creating, saving, and revisiting an AI-generated lesson:
 
 ```text
 1. Register or log in as a student
@@ -33,9 +33,9 @@ The central requirement of the **Practec Full Stack Mini MVP** is implemented as
 
 Successful results are **persisted**, not merely displayed in browser state. Personal history is scoped to the authenticated student; administrative access is enforced on the **server**, not only in React. Learning Studio generates **text lessons**, including when the chosen topic is listening.
 
-### Practicum requirements at a glance
+### Core workflow capabilities
 
-| Brief requirement | EnglishWise implementation |
+| Capability | EnglishWise implementation |
 | --- | --- |
 | Register users | Student registration with a MongoDB-backed profile and authentication. |
 | Select category and subcategory | Learning Studio uses an API-backed, related category/subcategory catalog. |
@@ -137,7 +137,7 @@ Route-level lazy loading limits how many screens are loaded up front. Server aut
 
 ## Assumptions and design decisions
 
-- **Focus on the evaluation journey:** AI Learning Studio implements the requested category → subcategory → prompt → generated lesson → history flow. The additional courses, quizzes, media, and assistant tools are separate product features, not dependencies for understanding that workflow.
+- **Focused lesson workflow:** AI Learning Studio keeps the category → subcategory → prompt → generated lesson → history path straightforward. Courses, quizzes, media, and assistant tools complement this workflow without being required to use it.
 - **Existing content for personalized courses:** registration creates a student-specific course by *matching and ranking existing published material*. It does not claim to generate an entire course with an LLM. When no content matches, the course can be refreshed after relevant material is added.
 - **On-demand AI assistance:** the Personal AI Coach and Daily Smart Guide are tool-using, request-driven assistants; they do not monitor users continuously. Their recommendations use available student data and may fall back when AI is unavailable.
 - **Server-enforced access control:** React guards improve navigation and UX, while the backend determines who can read student history and administrator data.

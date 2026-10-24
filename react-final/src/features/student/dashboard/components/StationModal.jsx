@@ -1,3 +1,4 @@
+import "./learningStationTheme.css";
 import { apiUrl } from "../../../../services/axiosConfig";
 
 import AppModal from "../../../../components/ui/AppModal";
@@ -22,13 +23,14 @@ export default function StationModal({
     <AppModal
       isOpen={!!activeStation}
       onClose={onClose}
+      variant="sky"
       title={activeStationData?.title || ""}
       subtitle={activeStationData?.short || ""}
       icon={activeStationData ? <StationIcon iconKey={activeStationData.iconKey} /> : null}
       maxWidth={
         activeStation === "weekly-song"
           ? "max-w-2xl"
-          : activeStation === "coach" ? "max-w-4xl" : "max-w-6xl"
+          : activeStation === "coach" ? "max-w-4xl" : "max-w-5xl"
       }
     >
       {activeStation === "smart-guide" && <SmartLearningPath user={user} />}
@@ -71,7 +73,7 @@ function WeeklySongModalContent({ weeklySong, loading, error }) {
   };
   if (loading) {
     return (
-      <div className="rounded-3xl border border-sky-100 bg-white p-8 text-center font-bold text-slate-500">
+      <div className="rounded-2xl border border-white/30 ew-sky-inset p-5 text-center font-bold text-white/90 sm:p-7">
         טוען את שיר השבוע...
       </div>
     );
@@ -79,7 +81,7 @@ function WeeklySongModalContent({ weeklySong, loading, error }) {
 
   if (error) {
     return (
-      <div className="rounded-3xl border border-red-100 bg-red-50 p-6 font-bold text-red-500">
+      <div className="rounded-2xl border border-red-200/55 bg-red-900/30 p-4 font-bold text-red-100 sm:p-5">
         {error}
       </div>
     );
@@ -87,16 +89,16 @@ function WeeklySongModalContent({ weeklySong, loading, error }) {
 
   if (!weeklySong) {
     return (
-      <div className="rounded-3xl border border-sky-100 bg-white p-10 text-center">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border border-sky-100 bg-sky-50 text-sky-700">
+      <div className="rounded-2xl border border-white/30 ew-sky-inset p-5 text-center sm:p-7">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/40 bg-sky-200/20 text-sky-50">
           <MusicIcon large />
         </div>
 
-        <h3 className="mt-5 text-2xl font-black text-slate-800">
+        <h3 className="mt-4 text-xl font-black text-white">
           עדיין לא נבחר שיר שבועי
         </h3>
 
-        <p className="mt-2 text-slate-500">
+        <p className="mt-2 text-sm leading-6 text-sky-50/90">
           כשהמנהל יבחר שיר, הוא יופיע כאן לתרגול שמיעה.
         </p>
       </div>
@@ -105,16 +107,16 @@ function WeeklySongModalContent({ weeklySong, loading, error }) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl border border-sky-100 bg-white p-4 shadow-sm">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-sky-100 bg-sky-50 text-sky-700">
+      <div className="rounded-2xl border border-white/35 ew-sky-panel p-4 shadow-[0_12px_28px_rgba(7,39,75,0.18)]">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/35 bg-sky-200/20 text-white">
           <MusicIcon large />
         </div>
 
-        <h3 className="mt-3 text-xl font-black text-slate-900">
+        <h3 className="mt-3 text-lg font-black text-white sm:text-xl">
           {weeklySong.title || weeklySong.theme || "שיר השבוע"}
         </h3>
 
-        <p className="mt-2 text-slate-500">
+        <p className="mt-2 text-sm leading-6 text-sky-50/90">
           רמה: {getLevelLabel(weeklySong.level)} · נושא:{" "}
           {weeklySong.theme || "לא צוין"}
         </p>
@@ -135,10 +137,10 @@ function WeeklySongModalContent({ weeklySong, loading, error }) {
         error={isCurrentSong ? audioError : ""}
       />
 
-      <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
-        <h4 className="mb-2 font-black text-sky-800">הצעת תרגול</h4>
+      <div className="rounded-2xl border border-white/30 bg-sky-200/15 p-4">
+        <h4 className="mb-2 font-black text-yellow-100">הצעת תרגול</h4>
 
-        <p className="text-sm leading-relaxed text-slate-600">
+        <p className="text-sm leading-6 text-sky-50/90">
           האזיני פעם אחת להבנה כללית, ואז פעם נוספת כדי לזהות שלוש מילים או
           ביטויים חדשים.
         </p>

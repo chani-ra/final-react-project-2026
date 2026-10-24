@@ -32,8 +32,8 @@ export default function PlanTaskGroup({
   );
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-white/15 bg-white/5">
-      <div className="border-b border-white/10 bg-slate-950/25 p-5">
+    <section className="overflow-hidden rounded-[1.3rem] border border-white/20 bg-[#245d8c]/50">
+      <div className="border-b border-white/15 bg-[#1b4e7a]/60 p-3 sm:p-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -46,7 +46,7 @@ export default function PlanTaskGroup({
               </span>
             </div>
 
-            <h2 className="mt-3 text-2xl font-black text-white">
+            <h2 className="mt-2 text-lg font-black text-white">
               {title}
             </h2>
           </div>
@@ -101,9 +101,9 @@ export default function PlanTaskGroup({
           return (
             <div
               key={task._id}
-              className="p-5"
+              className="p-3 sm:p-4"
             >
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div className="flex min-w-0 gap-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-yellow-400 font-black text-slate-950">
                     {index + 1}

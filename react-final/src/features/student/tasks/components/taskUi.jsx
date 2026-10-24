@@ -10,10 +10,10 @@ export function StatBox({ label, value, tone }) {
 
   return (
     <div
-      className={`rounded-[1.55rem] border-2 p-4 text-center ${toneClasses[tone] || toneClasses.yellow
+      className={`rounded-[1rem] border p-2.5 text-center ${toneClasses[tone] || toneClasses.yellow
         }`}
     >
-      <div className="text-3xl font-black">{value}</div>
+      <div className="text-xl font-black">{value}</div>
       <div className="mt-1 text-xs font-black opacity-75">{label}</div>
     </div>
   );
@@ -24,7 +24,7 @@ export function TabButton({ label, count, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border-2 px-5 py-3 text-sm font-black transition ${active
+      className={`rounded-full border px-4 py-2 text-sm font-black transition ${active
         ? "border-yellow-300 bg-yellow-300 text-slate-950 shadow-[0_0_24px_rgba(253,224,71,0.25)]"
         : "border-white/16 bg-white/10 text-white hover:border-yellow-300/45 hover:bg-white/16"
         }`}
@@ -54,10 +54,10 @@ export function EmptyTasks({ activeTab }) {
   };
 
   return (
-    <div className="rounded-[2rem] border-2 border-dashed border-white/20 bg-white/8 p-10 text-center">
-      <h3 className="text-2xl font-black text-white">אין משימות כאן כרגע</h3>
+    <div className="rounded-[1.3rem] border border-dashed border-white/25 bg-[#245d8c]/45 p-6 text-center">
+      <h3 className="text-lg font-black text-white">אין משימות כאן כרגע</h3>
 
-      <p className="mt-3 text-base font-semibold leading-8 text-white/60">
+      <p className="mt-3 text-sm font-semibold leading-6 text-white/80">
         {textByTab[activeTab] || "אין משימות בקטגוריה זו כרגע."}
       </p>
     </div>

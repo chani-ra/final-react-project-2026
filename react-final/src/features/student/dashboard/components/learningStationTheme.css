@@ -1,0 +1,45 @@
+/* EnglishWise learning stations — airy glass, not flat blue panels.
+   Scoped to station dialogs so the rest of the site keeps its existing look. */
+.ew-learning-station.ew-sky-dialog {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 7% 4%, rgba(255, 207, 215, .24), transparent 43%),
+    radial-gradient(ellipse at 100% 88%, rgba(186, 232, 255, .25), transparent 48%),
+    linear-gradient(142deg, #215889 0%, #387fae 48%, #205582 100%);
+  border-color: rgba(220, 243, 255, .52);
+}
+
+/* Use the existing cloud illustration, gently, without obscuring the text. */
+.ew-learning-station.ew-sky-dialog::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .20;
+  background: url("../../../../assets/home-motion/audience-cloudscape.webp") center / cover no-repeat;
+}
+
+.ew-learning-station .ew-sky-panel {
+  background:
+    radial-gradient(ellipse at 9% 4%, rgba(255, 231, 234, .17), transparent 42%),
+    linear-gradient(147deg, rgba(63, 132, 178, .69) 0%, rgba(24, 70, 116, .78) 100%);
+  border-color: rgba(224, 243, 255, .29);
+  box-shadow: 0 15px 42px rgba(11, 51, 91, .16), inset 0 1px 0 rgba(255, 255, 255, .13);
+}
+
+.ew-learning-station .ew-sky-inset {
+  background: linear-gradient(135deg, rgba(13, 56, 95, .43), rgba(29, 87, 133, .28));
+  border-color: rgba(218, 238, 255, .22);
+  backdrop-filter: blur(9px);
+}
+
+.ew-learning-station .ew-sky-center {
+  background: linear-gradient(135deg, #245b90, #153e6d);
+}
+
+@media (max-width: 639px) {
+  .ew-learning-station.ew-sky-dialog::before {
+    opacity: .13;
+  }
+}

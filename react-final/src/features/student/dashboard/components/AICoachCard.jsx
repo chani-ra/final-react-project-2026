@@ -224,13 +224,13 @@ export default function AICoachCard({ user }) {
   return (
     <section className="space-y-5 text-white" dir="rtl">
       <div
-        className="rounded-[2rem] border-2 border-white/18 bg-slate-950/60 p-5 backdrop-blur-xl"
+        className="rounded-[2rem] border-2 border-white/18 ew-sky-panel p-5 backdrop-blur-xl"
         style={{
           boxShadow:
             "0 24px 75px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
         }}
       >
-        <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
+        <div className="grid gap-5 xl:grid-cols-[minmax(260px,290px)_minmax(0,1fr)]">
           <aside className="space-y-4">
             <div>
               <div className="mb-3 inline-flex rounded-full border border-yellow-300/45 bg-yellow-300/15 px-4 py-2 text-xs font-black text-yellow-100">
@@ -238,7 +238,7 @@ export default function AICoachCard({ user }) {
               </div>
 
               <h2
-                className="text-3xl font-black leading-tight text-white"
+                className="text-2xl font-black leading-tight text-white"
                 style={{
                   textShadow:
                     "2px 2px 0 rgba(184,50,42,0.40), -1px -1px 0 rgba(15,76,117,0.90)",
@@ -247,13 +247,13 @@ export default function AICoachCard({ user }) {
                 מאמן אישי
               </h2>
 
-              <p className="mt-2 text-sm font-semibold leading-7 text-white/62">
+              <p className="mt-2 text-sm font-semibold leading-7 text-white/85">
                 כתבי במה את צריכה עזרה, והמאמן יבנה תוכנית קצרה וברורה להיום.
               </p>
             </div>
 
             <div className="rounded-[1.4rem] border border-white/12 bg-white/8 p-4">
-              <div className="text-[11px] font-black text-white/42">
+              <div className="text-[11px] font-black text-white/85">
                 רמת לימוד
               </div>
 
@@ -262,7 +262,7 @@ export default function AICoachCard({ user }) {
               </div>
             </div>
 
-            <div className="rounded-[1.4rem] border border-white/12 bg-slate-950/45 p-4">
+            <div className="rounded-[1.4rem] border border-white/12 ew-sky-inset p-4">
               <label className="mb-2 block text-sm font-black text-white">
                 במה תרצי להתמקד היום?
               </label>
@@ -343,7 +343,7 @@ function PlanCard({
   savingTasks,
 }) {
   return (
-    <section className="rounded-[1.8rem] border-2 border-white/14 bg-slate-950/45 p-5">
+    <section className="rounded-[1.8rem] border-2 border-white/14 ew-sky-inset p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="text-xs font-black text-yellow-100">
@@ -375,7 +375,7 @@ function PlanCard({
       {studyMode && (
         <div className="mt-5 rounded-[1.2rem] border border-white/12 bg-white/8 p-4">
           <div className="mb-2 flex items-center justify-between text-xs font-black">
-            <span className="text-white/55">התקדמות</span>
+            <span className="text-white/85">התקדמות</span>
             <span className="text-yellow-100">{progress}%</span>
           </div>
 
@@ -470,11 +470,11 @@ function HistoryPanel({ loading, history, onSelect }) {
 
       <div className="mt-3 max-h-[260px] space-y-3 overflow-y-auto pr-1">
         {loading ? (
-          <div className="rounded-[1.1rem] border border-white/12 bg-slate-950/45 p-4 text-sm font-black text-white/55">
+          <div className="rounded-[1.1rem] border border-white/12 ew-sky-inset p-4 text-sm font-black text-white/85">
             טוען היסטוריה...
           </div>
         ) : history.length === 0 ? (
-          <div className="rounded-[1.1rem] border border-white/12 bg-slate-950/45 p-4 text-sm font-semibold leading-6 text-white/55">
+          <div className="rounded-[1.1rem] border border-white/12 ew-sky-inset p-4 text-sm font-semibold leading-6 text-white/85">
             עדיין אין תוכניות קודמות.
           </div>
         ) : (
@@ -483,13 +483,13 @@ function HistoryPanel({ loading, history, onSelect }) {
               key={item._id || `${item.createdAt}-${index}`}
               type="button"
               onClick={() => onSelect(item)}
-              className="w-full rounded-[1.1rem] border border-white/12 bg-slate-950/45 p-3 text-right transition hover:border-yellow-300/45 hover:bg-white/12"
+              className="w-full rounded-[1.1rem] border border-white/12 ew-sky-inset p-3 text-right transition hover:border-yellow-300/45 hover:bg-white/12"
             >
               <div className="line-clamp-1 text-sm font-black text-white">
                 {item.plan?.focus || "תוכנית אישית"}
               </div>
 
-              <div className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-white/45">
+              <div className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-white/80">
                 {item.note || item.plan?.summary || "ללא הערה"}
               </div>
             </button>

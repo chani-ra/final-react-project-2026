@@ -9,11 +9,11 @@ export default function TasksView({
   handleCompleteTask, handleSubmitForReview, handleDeleteTask,
 }) {
   return (
-    <div className="space-y-6" dir="rtl">
+    <div className="mx-auto max-w-6xl space-y-4" dir="rtl">
       <SmartGuideBackButton />
 
       <section
-        className="relative overflow-hidden rounded-[2.5rem] border-2 border-white/25 bg-slate-950/65 p-6 text-white backdrop-blur-xl"
+        className="relative overflow-hidden rounded-[1.6rem] border border-white/30 bg-gradient-to-l from-[#255e90]/90 to-[#1e507e]/90 p-4 sm:p-5 text-white backdrop-blur-xl"
         style={{
           boxShadow:
             "0 32px 95px rgba(3,31,61,0.42), inset 0 1px 0 rgba(255,255,255,0.14)",
@@ -22,14 +22,14 @@ export default function TasksView({
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
 
         <div className="relative z-10">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div>
               <div className="mb-3 inline-flex rounded-full border border-yellow-300/45 bg-yellow-300/15 px-4 py-2 text-sm font-black text-yellow-100">
                 מרכז המשימות
               </div>
 
               <h1
-                className="text-4xl font-black leading-tight text-white md:text-5xl"
+                className="text-2xl font-black leading-tight text-white md:text-3xl"
                 style={{
                   textShadow:
                     "3px 3px 0 rgba(184,50,42,0.45), -1px -1px 0 rgba(15,76,117,0.90)",
@@ -38,14 +38,12 @@ export default function TasksView({
                 המשימות שלי
               </h1>
 
-              <p className="mt-3 max-w-3xl text-base font-semibold leading-8 text-white/68">
-                כאן מרוכזות המשימות שלך: משימות מהמורה, משימות אישיות
-                ומשימות מהמאמן החכם. כל משימה מקבלת סטטוס ברור כדי שתדעי
-                בדיוק מה מחכה לביצוע ומה כבר התקדם.
+              <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-white/85">
+                כל המשימות שלך במקום אחד: לביצוע, בבדיקה והושלמו.
               </p>
             </div>
 
-            <div className="grid min-w-full grid-cols-2 gap-3 md:grid-cols-4 xl:min-w-[420px]">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:min-w-[360px]">
               <StatBox label="לביצוע" value={stats.pending} tone="yellow" />
               <StatBox label="בבדיקה" value={stats.review} tone="blue" />
               <StatBox label="הושלמו" value={stats.completed} tone="green" />
@@ -53,7 +51,7 @@ export default function TasksView({
             </div>
           </div>
 
-          <div className="mt-7">
+          <div className="mt-4">
             <div className="mb-2 flex justify-between text-sm font-black text-white/66">
               <span>התקדמות כללית במשימות</span>
               <span className="text-yellow-100">{progressPercent}%</span>
@@ -71,7 +69,7 @@ export default function TasksView({
 
 
       <section
-        className="relative overflow-hidden rounded-[2.2rem] border-2 border-white/20 bg-slate-950/55 p-4 text-white backdrop-blur-xl"
+        className="relative overflow-hidden rounded-[1.6rem] border border-white/25 bg-[#205484]/72 p-3 sm:p-4 text-white backdrop-blur-xl"
         style={{
           boxShadow:
             "0 24px 75px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
@@ -80,7 +78,7 @@ export default function TasksView({
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/8 to-transparent" />
 
         <div className="relative z-10">
-          <div className="mb-5 flex flex-wrap gap-3">
+          <div className="mb-4 flex flex-wrap gap-2">
             <TabButton
               label="לביצוע"
               count={stats.pending}
@@ -108,7 +106,7 @@ export default function TasksView({
           ) : displayItems.length === 0 ? (
             <EmptyTasks activeTab={activeTab} />
           ) : (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3">
               {displayItems.map((item) => {
                 if (item.kind === "plan") {
                   return (

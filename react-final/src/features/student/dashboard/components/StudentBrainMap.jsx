@@ -158,7 +158,7 @@ export default function StudentBrainMap({ user }) {
 
   if (loading) {
     return (
-      <div className="rounded-[2rem] border-2 border-white/18 bg-slate-950/55 p-8 text-center text-white">
+      <div className="rounded-[2rem] border-2 border-white/18 ew-sky-panel p-8 text-center text-white">
         <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-white/20 border-t-yellow-300" />
         <p className="mt-4 text-sm font-black text-white/70">
           טוען נתוני למידה...
@@ -169,16 +169,16 @@ export default function StudentBrainMap({ user }) {
 
   return (
     <section className="space-y-5 text-white" dir="rtl">
-      <div className="rounded-[2rem] border-2 border-white/18 bg-slate-950/55 p-5 shadow-[0_22px_70px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.10)]">
+      <div className="rounded-[2rem] border-2 border-white/18 ew-sky-panel p-5 shadow-[0_22px_70px_rgba(3,31,61,0.32),inset_0_1px_0_rgba(255,255,255,0.10)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <div className="mb-2 inline-flex rounded-full border border-yellow-300/45 bg-yellow-300/15 px-4 py-2 text-xs font-black text-yellow-100">
               brain map
             </div>
 
-            <h2 className="text-3xl font-black text-white">מפת יכולות</h2>
+            <h2 className="text-2xl font-black text-white">מפת יכולות</h2>
 
-            <p className="mt-2 max-w-3xl text-sm font-semibold leading-7 text-white/62">
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-7 text-white/85">
               ניתוח אישי של תחומי האנגלית שלך לפי משימות, מילים, קורסים,
               שיחות ובחנים.
             </p>
@@ -204,7 +204,7 @@ export default function StudentBrainMap({ user }) {
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 md:grid-cols-5">
+        <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
           <MiniStat label="משימות" value={currentMap.stats.totalTasks} />
           <MiniStat label="מילים" value={currentMap.stats.totalWords} />
           <MiniStat label="שיחות" value={currentMap.stats.conversations} />
@@ -219,18 +219,18 @@ export default function StudentBrainMap({ user }) {
         </div>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="grid gap-5 xl:grid-cols-[minmax(280px,330px)_minmax(0,1fr)]">
         <BrainVisual skills={currentMap.skills} />
 
         <div className="space-y-5">
-          <div className="rounded-[2rem] border-2 border-white/18 bg-slate-950/55 p-5 shadow-[0_22px_70px_rgba(3,31,61,0.28),inset_0_1px_0_rgba(255,255,255,0.10)]">
+          <div className="rounded-[2rem] border-2 border-white/18 ew-sky-panel p-5 shadow-[0_22px_70px_rgba(3,31,61,0.28),inset_0_1px_0_rgba(255,255,255,0.10)]">
             <div className="text-xs font-black text-yellow-100">ניתוח חכם</div>
 
             <h3 className="mt-1 text-2xl font-black text-white">
               {currentMap.title}
             </h3>
 
-            <p className="mt-3 text-sm font-semibold leading-7 text-white/62">
+            <p className="mt-3 text-sm font-semibold leading-7 text-white/85">
               {currentMap.summary}
             </p>
           </div>
@@ -280,7 +280,7 @@ function BrainVisual({ skills }) {
   const safeSkills = skills.length ? skills : [];
 
   return (
-    <div className="rounded-[2rem] border-2 border-white/18 bg-slate-950/55 p-5 shadow-[0_22px_70px_rgba(3,31,61,0.28),inset_0_1px_0_rgba(255,255,255,0.10)]">
+    <div className="rounded-[2rem] border-2 border-white/18 ew-sky-panel p-5 shadow-[0_22px_70px_rgba(3,31,61,0.28),inset_0_1px_0_rgba(255,255,255,0.10)]">
       <div className="text-center">
         <div className="text-xs font-black text-yellow-100">learning brain</div>
 
@@ -289,7 +289,7 @@ function BrainVisual({ skills }) {
         </h3>
       </div>
 
-      <div className="relative mx-auto mt-5 h-[310px] w-[310px]">
+      <div className="relative mx-auto mt-5 aspect-square w-full max-w-[310px]">
         <div className="absolute inset-8 rounded-[42%] border border-yellow-300/18 bg-gradient-to-br from-yellow-300/12 via-white/8 to-red-500/12 shadow-inner" />
 
         <BrainBubble skill={safeSkills[0]} className="left-1/2 top-0 -translate-x-1/2" />
@@ -300,12 +300,12 @@ function BrainVisual({ skills }) {
         <BrainBubble skill={safeSkills[5]} className="left-0 top-16" />
 
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full border-2 border-white/16 bg-slate-950 text-center shadow-xl">
+          <div className="flex h-[76px] w-[76px] flex-col items-center justify-center rounded-full border-2 border-white/25 ew-sky-center text-center shadow-xl sm:h-24 sm:w-24">
             <div className="text-2xl font-black text-yellow-100">
               {averageSkillScore(safeSkills)}%
             </div>
 
-            <div className="mt-1 text-[10px] font-black text-white/45">
+            <div className="mt-1 text-[10px] font-black text-white/80">
               ממוצע
             </div>
           </div>
@@ -320,7 +320,7 @@ function BrainBubble({ skill, className }) {
 
   return (
     <div
-      className={`absolute flex h-24 w-24 flex-col items-center justify-center rounded-[1.4rem] border p-2 text-center shadow-lg ${getBubbleClass(
+      className={`absolute flex h-20 w-20 flex-col sm:h-24 sm:w-24 items-center justify-center rounded-[1.4rem] border p-2 text-center shadow-lg ${getBubbleClass(
         score
       )} ${className}`}
     >
@@ -335,7 +335,7 @@ function BrainBubble({ skill, className }) {
 
 function SkillBars({ skills }) {
   return (
-    <div className="rounded-[2rem] border-2 border-white/18 bg-slate-950/55 p-5 shadow-[0_22px_70px_rgba(3,31,61,0.28),inset_0_1px_0_rgba(255,255,255,0.10)]">
+    <div className="rounded-[2rem] border-2 border-white/18 ew-sky-panel p-5 shadow-[0_22px_70px_rgba(3,31,61,0.28),inset_0_1px_0_rgba(255,255,255,0.10)]">
       <h3 className="text-xl font-black text-white">פירוט לפי מיומנויות</h3>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -356,7 +356,7 @@ function SkillBar({ skill }) {
         <div>
           <h4 className="font-black text-white">{skill.label}</h4>
 
-          <p className="mt-1 text-xs font-semibold leading-5 text-white/45">
+          <p className="mt-1 text-xs font-semibold leading-5 text-white/80">
             {skill.reason}
           </p>
         </div>
@@ -386,7 +386,7 @@ function InsightCard({ title, value, text, tone }) {
 
       <h3 className="mt-1 text-xl font-black text-white">{value}</h3>
 
-      <p className="mt-2 text-sm font-semibold leading-7 text-white/62">
+      <p className="mt-2 text-sm font-semibold leading-7 text-white/85">
         {text}
       </p>
     </div>
@@ -397,7 +397,7 @@ function MiniStat({ label, value }) {
   return (
     <div className="rounded-[1.2rem] border border-white/12 bg-white/8 p-4 text-center">
       <div className="text-2xl font-black text-white">{value}</div>
-      <div className="mt-1 text-xs font-black text-white/45">{label}</div>
+      <div className="mt-1 text-xs font-black text-white/80">{label}</div>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default function TaskCard({
 
   return (
     <article
-      className="relative overflow-hidden rounded-[2rem] border-2 border-white/18 bg-white/10 p-5 text-white transition hover:border-yellow-300/38 hover:bg-white/13 md:p-6"
+      className="relative overflow-hidden rounded-[1.3rem] border border-white/22 bg-[#245d8c]/60 p-3 text-white transition hover:border-yellow-300/38 hover:bg-white/13 md:p-4"
       style={{
         boxShadow:
           "0 18px 55px rgba(3,31,61,0.24), inset 0 1px 0 rgba(255,255,255,0.10)",
@@ -23,8 +23,8 @@ export default function TaskCard({
     >
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/7 to-transparent" />
 
-      <div className="relative z-10 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-        <div className="max-w-3xl space-y-4">
+      <div className="relative z-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="max-w-3xl space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <SourceBadge source={task.source} type={task.type} />
 
@@ -45,30 +45,30 @@ export default function TaskCard({
             </span>
           </div>
 
-          <h3 className="text-2xl font-black leading-tight text-white">
+          <h3 className="text-lg font-black leading-snug text-white">
             {task.title}
           </h3>
 
           {task.description && (
-            <p className="text-base font-semibold leading-8 text-white/68">
+            <p className="text-sm font-semibold leading-6 text-white/85">
               {task.description}
             </p>
           )}
 
           {task.coachPlanFocus && (
-            <div className="rounded-[1.4rem] border border-yellow-300/30 bg-yellow-300/12 p-4 text-sm font-bold leading-7 text-yellow-100">
+            <div className="rounded-[1rem] border border-yellow-300/30 bg-yellow-300/12 p-3 text-sm font-bold leading-7 text-yellow-100">
               מתוך תוכנית המאמן: {task.coachPlanFocus}
             </div>
           )}
 
           {task.status === "completed" && task.feedback && (
-            <div className="rounded-[1.4rem] border border-emerald-300/30 bg-emerald-400/12 p-4 text-sm font-bold leading-7 text-emerald-100">
+            <div className="rounded-[1rem] border border-emerald-300/30 bg-emerald-400/12 p-3 text-sm font-bold leading-7 text-emerald-100">
               פידבק: {task.feedback}
             </div>
           )}
         </div>
 
-        <div className="flex w-full flex-col gap-3 border-t border-white/10 pt-4 md:w-auto md:min-w-[190px] md:border-none md:pt-0">
+        <div className="flex w-full flex-col gap-3 border-t border-white/10 pt-4 md:w-auto md:min-w-[160px] md:border-none md:pt-0">
           {task.status === "pending" && (
             <>
               {task.dueDate && (
@@ -142,14 +142,14 @@ export default function TaskCard({
           )}
 
           {task.status === "completed" && (
-            <div className="rounded-[1.6rem] border border-emerald-300/28 bg-emerald-400/12 p-4 text-center">
+            <div className="rounded-[1rem] border border-emerald-300/28 bg-emerald-400/12 p-3 text-center">
               <span className="block text-xs font-bold text-white/50">
                 {task.grade !== null && task.grade !== undefined
                   ? "ציון סופי"
                   : "סטטוס"}
               </span>
 
-              <span className="mt-1 block text-4xl font-black text-emerald-100">
+              <span className="mt-1 block text-2xl font-black text-emerald-100">
                 {task.grade !== null && task.grade !== undefined
                   ? task.grade
                   : "✓"}

@@ -154,12 +154,12 @@ export default function SmartLearningPath({
         className="space-y-5 text-white"
         dir="rtl"
       >
-        <div className="rounded-[2rem] border-2 border-white/18 bg-slate-950/60 p-8 text-center backdrop-blur-xl">
+        <div className="rounded-[2rem] border-2 border-white/18 ew-sky-panel p-8 text-center backdrop-blur-xl">
           <div className="text-xl font-black text-white">
             מכינים לך את המדריך של היום...
           </div>
 
-          <p className="mt-2 text-sm font-semibold text-white/55">
+          <p className="mt-2 text-sm font-semibold text-white/85">
             המערכת בודקת את ההתקדמות שלך
             ובונה את הצעד הבא.
           </p>
@@ -183,20 +183,20 @@ export default function SmartLearningPath({
       )}
 
       <div
-        className="rounded-[2rem] border-2 border-white/18 bg-slate-950/60 p-5 backdrop-blur-xl"
+        className="rounded-[2rem] border-2 border-white/18 ew-sky-panel p-5 backdrop-blur-xl"
         style={{
           boxShadow:
             "0 24px 75px rgba(3,31,61,0.34), inset 0 1px 0 rgba(255,255,255,0.10)",
         }}
       >
-        <div className="grid gap-5 xl:grid-cols-[330px_minmax(0,1fr)]">
-          <aside className="rounded-[1.6rem] border border-white/12 bg-slate-950/45 p-5">
+        <div className="grid gap-5 xl:grid-cols-[minmax(255px,280px)_minmax(0,1fr)]">
+          <aside className="rounded-[1.6rem] border border-white/12 ew-sky-inset p-5">
             <div className="mb-3 inline-flex rounded-full border border-yellow-300/45 bg-yellow-300/15 px-4 py-2 text-xs font-black text-yellow-100">
               daily guide
             </div>
 
             <h2
-              className="text-3xl font-black leading-tight text-white"
+              className="text-2xl font-black leading-tight text-white"
               style={{
                 textShadow:
                   "2px 2px 0 rgba(184,50,42,0.40), -1px -1px 0 rgba(15,76,117,0.90)",
@@ -205,7 +205,7 @@ export default function SmartLearningPath({
               המדריך היומי
             </h2>
 
-            <p className="mt-2 text-sm font-semibold leading-7 text-white/62">
+            <p className="mt-2 text-sm font-semibold leading-7 text-white/85">
               המערכת מנתחת את נתוני
               הלמידה שלך ומחליטה במה הכי
               כדאי להתמקד היום.
@@ -237,7 +237,7 @@ export default function SmartLearningPath({
                   תוכנית חלופית
                 </div>
 
-                <p className="mt-1 text-xs font-semibold leading-6 text-white/55">
+                <p className="mt-1 text-xs font-semibold leading-6 text-white/85">
                   כרגע מוצגת תוכנית בטוחה
                   שאינה מבוססת על ניתוח AI
                   מלא.
@@ -265,13 +265,13 @@ export default function SmartLearningPath({
           </aside>
 
           <main className="space-y-4">
-            <div className="rounded-[1.6rem] border border-white/12 bg-slate-950/45 p-5">
+            <div className="rounded-[1.6rem] border border-white/12 ew-sky-inset p-5">
               <h3 className="text-2xl font-black text-white">
                 {username}, זה המסלול שלך
                 להיום
               </h3>
 
-              <p className="mt-2 text-sm font-semibold leading-7 text-white/62">
+              <p className="mt-2 text-sm font-semibold leading-7 text-white/85">
                 {plan.reason}
               </p>
             </div>
@@ -293,7 +293,7 @@ export default function SmartLearningPath({
                           {step.title}
                         </h4>
 
-                        <p className="mt-1 text-sm font-semibold leading-7 text-white/62">
+                        <p className="mt-1 text-sm font-semibold leading-7 text-white/85">
                           {
                             step.description
                           }
@@ -350,7 +350,7 @@ export default function SmartLearningPath({
             </div>
 
             {plan.encouragement && (
-              <div className="rounded-[1.3rem] border border-white/12 bg-slate-950/45 p-4">
+              <div className="rounded-[1.3rem] border border-white/12 ew-sky-inset p-4">
                 <p className="text-sm font-bold leading-7 text-white/70">
                   {plan.encouragement}
                 </p>

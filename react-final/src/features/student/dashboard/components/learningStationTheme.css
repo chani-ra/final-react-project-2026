@@ -17,7 +17,7 @@
   z-index: -1;
   pointer-events: none;
   opacity: .20;
-  background: url("../../../../assets/home-motion/audience-cloudscape.webp") center / cover no-repeat;
+  background: url("../../../../assets/home-motion/src/assets/home-motion/about-cloud-left.webp") center / cover no-repeat;
 }
 
 .ew-learning-station .ew-sky-panel {

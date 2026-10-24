@@ -1,142 +1,192 @@
-# EnglishWise — React Client
+# EnglishWise — Frontend
 
-**EnglishWise** is an AI-assisted English-learning platform with separate **student, teacher and administrator** experiences. This repository contains its React frontend; the Node.js API is maintained separately.
+**A personalized, AI-assisted English learning platform built with React.**
 
-**[Live demo](https://englishwise-web.onrender.com)** · **[Backend repository](https://github.com/chani-ra/final-node-project-2026)** · **[Backend API documentation](https://github.com/chani-ra/final-node-project-2026/blob/main/docs/openapi.yaml)**
+EnglishWise combines structured courses with AI-generated lessons, a personal study coach, progress insights, and dedicated workspaces for students, teachers, and administrators. This repository contains the **React/Vite client**; the API and database live in a separate backend repository.
+
+**[Live application](https://englishwise-web.onrender.com/)** · **[Backend repository](https://github.com/chani-ra/final-node-project-2026)** · **[API specification](https://github.com/chani-ra/final-node-project-2026/blob/main/docs/openapi.yaml)**
+
+## Practicum walkthrough — from prompt to saved lesson
+
+The central requirement of the **Practec Full Stack Mini MVP** is implemented as a complete, working flow. It is the recommended starting point for evaluating this project:
+
+```text
+1. Register or log in as a student
+        ↓
+2. Courses → "שיעור AI לפי בקשה" (AI lesson on demand)
+        ↓
+3. Choose a learning category and its subcategory
+        ↓
+4. Enter a prompt (e.g., "Explain Past Simple with examples")
+   and select an available AI provider
+        ↓
+5. Generate and read a personalized AI text lesson
+        ↓
+6. Open the student's saved learning history
+   and revisit the lesson after refreshing the page
+        ↓
+7. Log in as an administrator → AI Learning History
+   to view users' stored prompts and generated responses
+```
+
+**What happens behind the UI:** `LearningStudio.jsx` → `useLearningStudio.js` → `src/services/learningService.js` → authenticated Express REST API → Joi validation and learning service → Gemini/OpenAI → `LearningPrompt` document in MongoDB → personal/admin history endpoints.
+
+Successful results are **persisted**, not merely displayed in browser state. Personal history is scoped to the authenticated student; administrative access is enforced on the **server**, not only in React. Learning Studio generates **text lessons**, including when the chosen topic is listening.
+
+### Practicum requirements at a glance
+
+| Brief requirement | EnglishWise implementation |
+| --- | --- |
+| Register users | Student registration with a MongoDB-backed profile and authentication. |
+| Select category and subcategory | Learning Studio uses an API-backed, related category/subcategory catalog. |
+| Submit a prompt and display AI response | Authenticated lesson-generation form with Gemini/OpenAI integration. |
+| Store and revisit learning history | Persistent lessons and paginated personal history. |
+| Admin views user prompt history | Protected AI Learning History dashboard. |
+| Modular Full Stack application | React feature modules and a separate Express/Mongoose REST API. |
+
+## At a glance
+
+| Area | What it includes |
+| --- | --- |
+| **Students** | Courses, lessons, exercises, quizzes, a personal dictionary, writing practice, AI chat, tasks, and progress tracking. |
+| **Personalized learning** | AI Learning Studio, personal AI coach, daily smart guide, learning brain map, and weekly song. |
+| **Teachers** | Content creation and editing, a resource library, exercise and quiz builders, student views, and grading workflows. |
+| **Administrators** | User and content management, messages, reviews, weekly-song selection, and AI learning history. |
+
+### Key student experiences
+
+- **AI Learning Studio:** select a category and subcategory, submit a prompt, choose an available AI provider, receive a generated **text lesson**, and revisit saved lessons.
+- **Personal AI Coach:** request a focused study plan, review earlier plans, track steps, and turn recommendations into tasks.
+- **Daily Smart Guide:** view daily learning recommendations with shortcuts to relevant activities; a fallback plan is shown if the service is unavailable.
+- **Learning Brain Map:** combine course progress, quizzes, vocabulary, conversations, and tasks into a learning overview, with an optional AI-enhanced analysis.
+- **Weekly Song:** practice listening with a featured song selected by an administrator, using the shared audio player.
+- **Personal tasks and progress:** organize study activities and track completed learning work.
+
+### Adaptive onboarding and tool-using AI agents
+
+- **Personal course from day one:** after registration, the backend assembles a private learning course from **existing** lessons, songs, exercises, and quizzes. Matching uses the student's English level, age, hobbies, and learning goals; later, a personalized course can be refreshed with newly available relevant content. This is a **rule-based matching workflow**, not a claim that an LLM generates every course item.
+- **Two scoped AI agents:** the Personal AI Coach and Daily Smart Guide use Gemini function calling through a shared agent runner. When relevant, they can retrieve the **authenticated student's** recent quiz scores, grammar-correction history, course progress, and tasks. They use that context to produce practical study plans and recommendations.
+- **Controlled execution:** the agent runner limits tool use (up to three calls per run), returns structured plans, and the application supports fallback guidance when the AI provider is unavailable. These are **on-demand, tool-assisted workflows**, not continuously running autonomous agents.
+
+The homepage uses an illustrated, sky-themed visual language; the application includes responsive layouts for student, teacher, and administrator views.
 
 ## Tech stack
 
-- **Frontend:** React 19, Vite 8, JavaScript/JSX and incremental **TypeScript**.
-- **Styling and navigation:** Tailwind CSS 3 and React Router 7.
-- **State and communication:** Redux Toolkit (global authentication state), Axios (API and session handling), and feature-level React hooks.
-- **Testing:** Node's built-in test runner for unit tests, Playwright for browser smoke tests, ESLint, and TypeScript type checking.
-- **Deployment:** Render Static Site; the backend is a separate Node.js service.
+- **UI:** React 19, JavaScript/JSX, Vite 8, React Router 7, Tailwind CSS 3.
+- **State and networking:** Redux Toolkit for authentication, feature-level hooks for local behavior, Axios for the REST API and token refresh.
+- **Type safety:** incremental TypeScript for selected shared contracts and API functions; the full JSX application has not been migrated.
+- **Quality tools:** ESLint, TypeScript checking, Node.js unit tests, Playwright browser smoke tests.
+- **Hosting:** Render Static Site; the Express API is hosted separately.
 
-## What the platform offers
+## Getting started
 
-| Role | Main capabilities |
-| --- | --- |
-| **Student** | Browse and enroll in courses, complete lessons/exercises/quizzes, track progress, listen to songs, use a personal dictionary, chat with AI, and generate personalized AI text lessons. |
-| **Teacher** | Create and manage learning content, work with exercise and quiz builders, review students and grading workflows. |
-| **Administrator** | Manage users, published content and songs, messages and reviews, and inspect AI Learning Studio history. |
+**Requirements:** Node.js compatible with Vite 8, npm, and a running EnglishWise backend (locally or remotely).
 
-The AI Learning Studio complements the existing features; it does **not** replace the chat, course system, or teacher content tools.
-
-## Suggested demo: AI Learning Studio
-
-```text
-Student login
-  └─ Courses → "שיעור AI לפי בקשה" (AI lesson on demand)
-      ├─ Choose category and subcategory
-      ├─ Choose Gemini or OpenAI GPT (if enabled on the backend)
-      ├─ Enter a prompt and generate a text lesson
-      └─ Reopen the lesson from personal history
-
-Admin login → Learning History → Review saved lesson requests
-```
-
-**Note:** Selecting the Listening category in this flow generates **text**, not automatic speech audio.
-
-## Run locally (Windows CMD)
-
-Prerequisites: a recent Node.js version compatible with Vite 8, npm, and a running EnglishWise backend.
-
-From the **`react-final`** directory:
+From the **`react-final`** directory, run these commands in **Windows CMD**:
 
 ```cmd
 npm ci
 copy .env.example .env
-npm run dev
+npm run dev -- --port 5173 --strictPort
 ```
 
-The local `.env` example is:
+Open **http://localhost:5173/**.
+
+The example frontend environment file contains:
 
 ```dotenv
 VITE_API_URL=http://localhost:3000
 ```
 
-Start the backend separately on port 3000, or set `VITE_API_URL` to your backend's base URL. Do not append `/learning` to this value. `VITE_*` variables are exposed to client-side code: **never place API keys, MongoDB credentials, passwords, or JWT secrets in the React `.env` file.**
+Start the API separately on port `3000`, or set `VITE_API_URL` to a reachable backend base URL (without appending `/learning`). The backend must allow the **exact** frontend origin in `CLIENT_ORIGINS`; using a different local port can trigger CORS errors.
 
-For a production build and local preview:
+> **Security:** Vite embeds `VITE_*` values into the browser build. Never place API keys, JWT secrets, passwords, or database credentials in the frontend `.env` file.
+
+### Build and preview
 
 ```cmd
 npm run build
 npm run preview
 ```
 
-## Quality checks
+## Architecture
+
+The client is organized primarily by **feature and user role**, with shared UI and API infrastructure:
+
+| Path | Responsibility |
+| --- | --- |
+| `src/App.jsx` | Routes, role-based guards, and lazy-loaded screens. |
+| `src/features/auth/` | Authentication and registration. |
+| `src/features/student/` | Dashboard, courses, learning studio, chat, tasks, exercises, quizzes, dictionary, writing. |
+| `src/features/teacher/` | Teaching resources, authoring tools, and grading. |
+| `src/features/admin/` | Administrative views, including learning history. |
+| `src/features/general/` | Cross-role screens and shared learning/audio behavior. |
+| `src/components/` | Layout, dialogs, reusable UI, and presentation assets. |
+| `src/services/` | API calls, shared Axios client, and authentication/session handling. |
+| `src/redux/` | Global authentication state. |
+| `src/contracts/` | Selected TypeScript API/data contracts. |
+| `docs/FRONTEND_ARCHITECTURE.md` | Detailed architectural conventions. |
+
+Typical request flow:
+
+```text
+Page / UI component → feature hook or model → API service → Express backend → MongoDB / AI provider
+```
+
+Route-level lazy loading limits how many screens are loaded up front. Server authorization—not client route guards—is the source of truth for protected data.
+
+## Assumptions and design decisions
+
+- **Focus on the evaluation journey:** AI Learning Studio implements the requested category → subcategory → prompt → generated lesson → history flow. The additional courses, quizzes, media, and assistant tools are separate product features, not dependencies for understanding that workflow.
+- **Existing content for personalized courses:** registration creates a student-specific course by *matching and ranking existing published material*. It does not claim to generate an entire course with an LLM. When no content matches, the course can be refreshed after relevant material is added.
+- **On-demand AI assistance:** the Personal AI Coach and Daily Smart Guide are tool-using, request-driven assistants; they do not monitor users continuously. Their recommendations use available student data and may fall back when AI is unavailable.
+- **Server-enforced access control:** React guards improve navigation and UX, while the backend determines who can read student history and administrator data.
+- **Text generation, not audio generation:** AI Learning Studio produces structured text; featured songs and other audio are independent media features.
+- **Environment-specific configuration:** API keys stay on the server. Local development uses the allowed frontend origin and a separate backend process; production uses Render and MongoDB Atlas.
+
+## Tests and checks
 
 ```cmd
-npm run typecheck
 node --test
+npm run typecheck
 npm run lint
 npm run build
 npm run test:e2e
 ```
 
-- `typecheck` runs TypeScript's `tsc --noEmit`; it checks the TypeScript files without producing output files. Existing JavaScript/JSX files are not all type-checked (`checkJs: false`).
-- `node --test` runs the unit tests discovered by the Node.js test runner.
-- `test:e2e` runs Playwright smoke tests in desktop and mobile Chrome configurations. A local Vite server is started automatically unless `E2E_BASE_URL` points to an external site.
-- Authenticated E2E scenarios require optional `E2E_STUDENT_EMAIL/PASSWORD`, `E2E_TEACHER_EMAIL/PASSWORD`, and `E2E_ADMIN_EMAIL/PASSWORD` environment variables; without them, those scenarios are **skipped**, not passed.
-- The smoke suite covers a subset of navigation and authentication behavior; manually verify student, teacher and admin workflows before release.
+- `node --test`: unit tests covering selected UI models, state transformations, and service helpers.
+- `typecheck`: strict checking of the `.ts`/`.tsx` portion of the codebase; **not** a complete JavaScript/JSX type audit.
+- `test:e2e`: Playwright smoke tests using desktop and mobile Chromium configurations. Authenticated scenarios need optional `E2E_STUDENT_*`, `E2E_TEACHER_*`, and `E2E_ADMIN_*` credentials and are skipped when none are provided.
+- `build`: production bundle validation; successful compilation does not replace browser/device testing.
 
-## Frontend architecture
+See [`docs/E2E_TESTING.md`](docs/E2E_TESTING.md) for the browser-test setup.
 
-The application follows a **feature-first** structure. UI, hooks, feature models and tests are colocated by feature; shared infrastructure is kept outside individual roles.
+## Deploying on Render
 
-| Location | Responsibility |
-| --- | --- |
-| `src/App.jsx` | Application routes, role guards and lazy-loaded screens. |
-| `src/features/auth/` | Login, registration and form validation. |
-| `src/features/student/` | Courses, chat, dashboard, dictionary, tasks, writing, quizzes and exercises. |
-| `src/features/teacher/` | Content creation and editing, library, students, grading and quiz/exercise builders. |
-| `src/features/admin/` | User/content management, songs, messages, reviews and AI learning history. |
-| `src/features/general/` | Cross-role features, shared lesson views, navigation and background audio. |
-| `src/components/` | Shared layouts, route guards, notifications and UI components. |
-| `src/services/` | API services and centralized Axios authentication/refresh handling. |
-| `src/contracts/courseContracts.ts` | Shared TypeScript types for course data and API responses. |
-| `src/redux/` | Application-wide authentication state. |
-| `docs/FRONTEND_ARCHITECTURE.md` | Architectural conventions and feature ownership. |
-
-The typical data flow is **page → feature hook/model → API service → backend**. React renders views and manages local interactions, while services own server requests. Route-level lazy loading keeps unrelated screens out of the initial bundle.
-
-### Incremental TypeScript
-
-TypeScript is used **selectively** to strengthen important data boundaries while preserving the existing working JavaScript/JSX application:
-
-- `tsconfig.json` enables strict checks for `.ts` / `.tsx` files.
-- `src/contracts/courseContracts.ts` defines course-related data contracts and a typed content selector.
-- `src/services/courseService.ts` types requests and responses for course API operations while reusing the existing shared Axios client.
-- Existing JS/JSX components continue to run alongside TS modules; the backend has not been migrated to TypeScript.
-
-These contracts provide **compile-time checking**, not runtime validation of backend JSON.
-
-## Deployment (Render)
-
-Deploy the frontend as a **Render Static Site** using:
+The client is configured for a **Render Static Site**:
 
 | Setting | Value |
 | --- | --- |
-| Repository root directory | `react-final` |
+| Root directory | `react-final` |
 | Build command | `npm ci && npm run build` |
 | Publish directory | `dist` |
-| Build-time environment variable | `VITE_API_URL=https://englishwise-api.onrender.com` |
-| SPA rewrite rule | `/*` → `/index.html` (**Rewrite**, not Redirect) |
+| Environment variable | `VITE_API_URL=https://englishwise-api.onrender.com` |
+| SPA rewrite | `/*` → `/index.html` (**Rewrite**) |
 
-The backend should allow `https://englishwise-web.onrender.com` in its `CLIENT_ORIGINS` setting. The two services are deployed independently. Because Vite embeds `VITE_*` values in the frontend build, a changed API URL requires a new build/deployment.
+On the backend, allow `https://englishwise-web.onrender.com` through `CLIENT_ORIGINS`. A new frontend environment value requires a rebuild. If auto-deploy is enabled for `main`, a push starts a deployment; confirm the commit is marked **Live** before considering it published.
 
-## Manual acceptance checklist
+## Demo checklist
 
-- [ ] Student: log in, open a course, switch between lessons/songs/exercises/quizzes, and confirm progress after completing an activity.
-- [ ] Student: play a course song, navigate away, and verify expected audio/navigation behavior.
-- [ ] Student: switch between two AI conversations and verify that their messages remain separate.
-- [ ] Student: generate a short AI text lesson and reopen it from personal history.
-- [ ] Teacher: open library and verify create/edit workflows relevant to the demo.
-- [ ] Admin: open content management, verify songs and the weekly-song selection, and review AI Learning Studio history.
-- [ ] Verify role-based access and the deployed backend connection.
+- [ ] Register/log in as a student and access the dashboard.
+- [ ] Generate an AI text lesson, then find it in learning history.
+- [ ] Open the coach, daily guide, brain map, weekly song, and tasks.
+- [ ] Complete a sample course activity and review progress.
+- [ ] Demonstrate teacher authoring and administrator learning history.
+- [ ] Check layout at mobile and desktop widths, plus browser console/network errors.
 
-## Security and operational notes
+## Limitations and notes
 
-AI provider calls and secrets belong to the **backend**, not the browser. The backend implements authorization, input checks, rate limiting and daily OpenAI lesson quotas. A request-count quota is **not** a spending limit for the shared provider account.
-
-For server environment variables, endpoint contracts, and further operational notes, consult the [Backend README](https://github.com/chani-ra/final-node-project-2026/blob/main/README.md) and [OpenAPI specification](https://github.com/chani-ra/final-node-project-2026/blob/main/docs/openapi.yaml).
+- Some AI capabilities require working backend provider credentials and may be subject to provider limits.
+- Song/video playback depends on media availability and the user's network or content filters.
+- Tests cover representative workflows; they do not certify every end-to-end role scenario.
+- For backend setup, validation, persistence, and API details, see the [Backend README](https://github.com/chani-ra/final-node-project-2026#readme) and [OpenAPI specification](https://github.com/chani-ra/final-node-project-2026/blob/main/docs/openapi.yaml).

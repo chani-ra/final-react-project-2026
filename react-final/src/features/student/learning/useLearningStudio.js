@@ -18,6 +18,7 @@ export function useLearningStudio() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("create");
+  const [topicConflict, setTopicConflict] = useState("");
 
   const loadHistory = useCallback(async (page = 1) => {
     setHistoryLoading(true);
@@ -50,27 +51,32 @@ export function useLearningStudio() {
   const changeCategory = (nextId) => {
     setCategoryId(nextId);
     setSubcategoryId(subcategoriesOf(categories, nextId)[0]?._id || "");
+    setTopicConflict("");
   };
 
-  const createLesson = async (event) => {
-    event.preventDefault();
+  const createLesson = async (event, confirmTopic = false) => {
+    event?.preventDefault();
+    setTopicConflict("");
     setError("");
     try {
       const request = learningRequest({ categoryId, subcategoryId, prompt, provider });
       setSaving(true);
-      const item = await createAILesson(request);
+      const item = await createAILesson({ ...request, confirmTopic });
       setLesson(item);
       setActiveTab("create");
       await loadHistory(1);
       notices.success("השיעור נוצר ונשמר בהיסטוריה שלך.", "השיעור מוכן!");
-    } catch (err) { setError(err.message); notices.error(err.message, "יצירת השיעור נכשלה"); }
+    } catch (err) {
+      if (err.status === 409) { setTopicConflict(err.message); setError(""); }
+      else { setError(err.message); notices.error(err.message, "יצירת השיעור נכשלה"); }
+    }
     finally { setSaving(false); }
   };
 
   return {
     categories, providers, categoryId, subcategoryId, provider, prompt, lesson, history,
-    loading, saving, historyLoading, error, activeTab, setActiveTab,
-    setProvider, setPrompt, setLesson, changeCategory, setSubcategoryId, createLesson, loadHistory,
+    loading, saving, historyLoading, error, activeTab, setActiveTab, topicConflict,
+    setProvider, setPrompt: (value) => { setPrompt(value); setTopicConflict(""); }, setLesson, changeCategory, setSubcategoryId: (value) => { setSubcategoryId(value); setTopicConflict(""); }, createLesson, loadHistory,
     subcategories: subcategoriesOf(categories, categoryId),
   };
 }

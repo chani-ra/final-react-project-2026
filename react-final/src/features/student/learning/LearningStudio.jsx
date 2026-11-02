@@ -8,7 +8,7 @@ export default function LearningStudio() {
   const navigate = useNavigate();
   const data = useLearningStudio();
   const { categories, providers, categoryId, subcategoryId, provider, prompt, lesson, history,
-    loading, saving, historyLoading, error, activeTab, setActiveTab,
+    loading, saving, historyLoading, error, activeTab, setActiveTab, topicConflict,
     setProvider, setPrompt, setLesson, changeCategory, setSubcategoryId, createLesson, loadHistory, subcategories } = data;
   const currentProvider = providers.find((engine) => engine.id === provider);
 
@@ -54,6 +54,11 @@ export default function LearningStudio() {
               <textarea className={`${inputStyle} min-h-36 resize-y`} maxLength={800} minLength={5} value={prompt} onChange={(event) => setPrompt(event.target.value)} disabled={saving} placeholder="למשל: תסביר לי Past Simple בעברית, תן דוגמאות מחיי היום-יום ובסוף תרגול קצר..." required />
               <span className="block text-left text-xs text-white/50">{prompt.length}/800</span>
             </label>
+            {topicConflict && <div role="alert" className="rounded-xl border border-yellow-300/60 bg-slate-900/80 p-4 text-sm text-white space-y-3">
+              <p className="font-bold">{topicConflict}</p>
+              <p>אפשר לערוך את הבקשה או להמשיך עם הנושא שבחרת. במקרה השני השיעור יתמקד בנושא הנבחר.</p>
+              <button type="button" disabled={saving} onClick={() => createLesson(null, true)} className="rounded-full border border-yellow-300 px-4 py-2 font-bold text-yellow-200">המשיכי עם הנושא שבחרתי</button>
+            </div>}
             <button type="submit" disabled={saving || !categoryId || !subcategoryId || !currentProvider?.available} className="w-full rounded-full bg-gradient-to-b from-yellow-200 to-yellow-400 px-5 py-3.5 font-black text-slate-950 shadow-[0_5px_0_#8f641a] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50">{saving ? "יוצרים עבורך שיעור..." : "✨ צרי לי שיעור אישי"}</button>
           </form>
           <LessonPanel lesson={lesson} pending={saving} />
